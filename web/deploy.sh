@@ -18,6 +18,7 @@ cp "${SCRIPT_DIR}/index.html" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/docs.html" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/favicon.svg" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/og-image.png" "${DIST_DIR}/"
+cp "${SCRIPT_DIR}/og-image.jpg" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/robots.txt" "${DIST_DIR}/"
 cp "${SCRIPT_DIR}/sitemap.xml" "${DIST_DIR}/"
 
