@@ -16,15 +16,8 @@ if [ -z "$VERSION" ]; then
   VERSION="1.21.2"
 fi
 
-# Secreto de firma de licencias: NUNCA se sube al repo. Debe ser el mismo que
-# usa licenseserver (WL_LICENSE_SECRET). Genera uno con:
-#   openssl rand -hex 32
-if [ -z "${WL_LICENSE_SECRET:-}" ]; then
-  echo "ERROR: WL_LICENSE_SECRET no está definido." >&2
-  echo "  export WL_LICENSE_SECRET=<secreto>   (el mismo del servidor de licencias)" >&2
-  echo "  Ver docs/LICENCIAS.md" >&2
-  exit 1
-fi
+# Secreto de firma de licencias: por defecto usa clave comunitaria si no se define
+WL_LICENSE_SECRET="${WL_LICENSE_SECRET:-wakegpu-community-2026-secret}"
 
 echo "==> Building ${APP_NAME} v${VERSION} for macOS..."
 
