@@ -1,0 +1,161 @@
+# Wakeloom 接管待办与验收清单
+
+基线：2026-11-07，main `7cae344`（1.21.0）。以下是历史需求整理及当前代码核对，不是一次性执行全部事项或立即发版的指令。优先级为本次接管建议。
+
+## GitHub 提交署名
+
+2026-11-07：按用户要求，将主分支历史中 6 次 AI 助手署名的提交归到项目所有者 `a3974892-cmd`，删除相应共同作者及会话链接。后续提交同样使用所有者署名。重建的每个历史提交沿用原源码树，仅更新提交元数据与父提交编号；操作前完整历史备份仅留在本地。README 增加维护者链接，AGENTS.md 记录后续署名规则。已发布的标签、Release 和安装包保留原样，既有发布记录中的旧提交编号仍对应当时的构建来源。本次不改程序功能或版本号，检查提交树、署名、文档差异和发布入口，不重复运行功能测试。
+
+## v1.21.2：已部署配置的使用入口
+
+2026-11-07：用户已要求同步 1.21.2 到 GitHub，进入正式发布；以随后记录的 Release、附件与自动更新核验结果为准。
+
+**发布核验完成：** [v1.21.2](https://github.com/a3974892-cmd/wakeloom/releases/tag/v1.21.2) 已正式发布，源码/标签提交 `d992c48c613c5c9f0c6a7a031c4e6fa5a54edb48`。[流水线](https://github.com/a3974892-cmd/wakeloom/actions/runs/42341318829) 的 Go 测试、图片模型检查及 Windows 构建全部成功。实际下载的 exe 为 10,115,072 字节，SHA-256 `b3a83292df5cc21d872743fe15c9d39f2c3671ba748a6121983de0ecbd28c39c`，与附件摘要、自动更新清单一致；构建信息确认 Go 1.24.7、提交一致、工作树未修改。latest API、无查询参数的 latest/download/latest.json 及版本固定清单均已核对为 1.21.2；发布后短暂的下载缓存滞后已消退。未替换用户当前程序，未操作 GPU 会话。
+
+- 用户截图显示 Qwen-Image 2.1 已就绪，但 AI 页只展示 llm/image 配置与自定义模型，生成页停留在旧 Chroma 模板。根因是内置非 ai 配置被使用页面过滤，不代表模型没有部署。
+- 增加官方工作流入口，覆盖 Qwen 等无快捷表单的内置配置，展示当前运行配置、默认及其他工作流、打开 ComfyUI、下载原始 UI JSON。UI JSON 不冒充 API 模板；需要桌面队列时仍由 ComfyUI 导出 API JSON 后导入。
+- 前后端均检查绑定配置的模板与当前运行配置，防止旧 Chroma 任务提交到 Qwen 环境。保留旧模板和草稿，不删除数据。
+- 本地诊断版的模型名称提示改进一并纳入。已交付 `Wakeloom-1.21.2-test.exe`；随后获得用户正式发布授权。
+- 验证完成：Go 测试通过；独立模拟环境验证 Qwen 在 AI 页可见、4 个原始 UI 工作流下载、打开 ComfyUI、配置变化刷新、旧 Chroma 任务前后端拦截、浅深色显示和旧模板内容保留。未运行真实 GPU 生成；现有 Jupyter / 系统 python3-PyYAML 条件测试仍按环境跳过。新增入口不需要改变正在运行 VM 的套件。
+
+## v1.21.1：CU 余额、弹窗和生图模型检查
+
+### 发布后诊断：另一台电脑上的模型名称不匹配
+
+- 用户新截图：期望 `Chroma1-HD.safetensors`，UNETLoader 列表有 1 个模型但不匹配。用户确认截图来自远程桌面或另一台电脑，本机仍运行 test4，不能用本机状态解释远端报错。
+- 已在本地增强报错，列出最多 5 个实际可用模型名；相关测试通过，生成 `Wakeloom-1.21.1-model-check.exe`。用户随后于 2026-11-07 反馈“已恢复正常”，未提供实际候选名称或具体恢复操作；记录为已恢复、根因未确认，不宣称自动修复或根治。未实施模型自动替换，不因只有一个候选就选用其他模型。此诊断改动后续纳入 1.21.2，不属于原 1.21.1 发布附件。
+
+### 正式发布记录
+
+2026-11-07：用户已要求将最后一版同步到 GitHub，进入正式发布。以下各轮测试文件和“待验收”描述为过程记录；以本节后续发布核验结果为准。新增主分支版本号变更触发发布，创建 Release 时显式设为 latest，避免旧版本后发布导致自动更新指向错误。
+
+**发布核验完成（2026-11-07）：** [v1.21.1](https://github.com/a3974892-cmd/wakeloom/releases/tag/v1.21.1) 已正式发布，源码/标签提交为 `a80b2e35d43da0c6df780932b0494932e4b61b5c`。[发布流水线](https://github.com/a3974892-cmd/wakeloom/actions/runs/42337244321) 的 Go 测试、图片模型检查及 Windows 构建全部成功。exe 为 10,101,760 字节，SHA-256 为 `d676b25621448d638bb048dd6fe89cdcfdf4ad5d19616516423cc1f4249040b2`，与 GitHub 附件摘要、`latest.json` 和实际下载文件一致；构建信息确认 Go 1.24.7、源码提交一致且工作树未修改。`/releases/latest` 与 `latest/download/latest.json` 均指向 1.21.1。未替换用户正在运行的测试版，未操作用户 GPU 会话。
+
+- Chroma 生图反馈：用户确认此前使用 Chroma 配置，截图为 UNETLoader 模型列表为空；后续明确反馈部署到 G4 已能生成。现场读取时原失败会话已休眠，缺少该次文件和启动日志，尚不能证明 T4 显存不足就是列表为空的原因。
+- 后续 T4 实测反馈：用户看到生成节点 15、0% 与显存占满，随后确认最终也能生成，只是慢。结论更新为“用户已验证 T4 可生成，但性能明显弱于 G4”，保留 T4 选项，Chroma 默认仍为 G4。不能把这次等待判为死锁或把显存占满直接判为 OOM；是否发生 CPU 卸载尚无运行日志证明。此前提出的 T4 禁用方案未实施。
+- 第五轮保护：生图启动检查下载后文件与加载器列表，桌面端对旧 VM 也检查实际模型列表，提交 AI 生图前复核；模板绑定启动配置并保留模型子目录名。测试文件 `Wakeloom-1.21.1-test5.exe`，不将此保护等同于已修复原 T4 现场的下载原因。
+
+- 第四轮界面反馈：全量替换 UI 中的原生 alert/confirm/prompt，复用应用内 dialog；模式切换说明 GPU 与队列影响，输入框支持回车保存和 Esc 取消，Esc 不关闭底下的编辑器。测试文件为 `Wakeloom-1.21.1-test4.exe`，等待验收后再发布。
+
+- 第三轮界面反馈：余额提示改为应用内 dialog，移除原生弹窗的 IP 标题，支持浅深色、键盘关闭/焦点返回，更换 GPU 和购买 CU 操作。测试文件为 `Wakeloom-1.21.1-test3.exe`，仍不发布 GitHub。
+
+- 第二轮反馈：用户报告 G4 消耗 10 CU/小时，低于 10 CU 时申请卡住。新增 G4 10 CU 本地启动预留检查（界面及后台）、申请总超时 3 分钟，默认耗速估计改为 10；不把此保护描述为已独立验证的 Colab 通用规则。交付文件更新为 `Wakeloom-1.21.1-test2.exe`，仍待用户实际验收。
+
+- 用户报告本地登录后余额误报为 0；随后只读检查 Google 与运行中的 1.21.0，两者均返回约 8.63 CU。历史弹窗未能当场复现，不能断言当时 Google 返回了什么。
+- 已修改源码：严格校验余额响应；缺失或失败显示未知；登录/退出清除缓存；手动查询同步缓存；开机前重新查询；引导取消开机后保持原步骤。
+- 启动取消：用户确认只点一次唤醒、未点停止。尚未复现具体原因；新增主动停止与网络请求取消的区分、停止原因日志、重复唤醒保护和可取消的重试等待，不宣称已根治该报告。
+- 验证：Go 测试通过；Jupyter 集成测试与依赖系统 python3/PyYAML 的交叉校验按条件跳过。独立模拟 Colab 环境中验证 Windows exe 的新旧余额、真实零余额、缺失余额、新手引导重试/取消及浅深色显示；未启动真实 GPU。
+- 交付：本地 `Wakeloom-1.21.1-test.exe`，等待用户验收。用户要求先测试，确认无问题后再提交和发布 GitHub；目前未推送本次功能变更、未发布 Release、未替换用户现有 exe。
+
+## P0：发布入口和成果安全
+
+### 发布入口指向
+
+- 原问题：GitHub `/releases/latest` 曾返回 1.20.1，而 main 和更高版本 Release 为 1.21.0。
+- 已随 1.21.1 发布修复：新 Release 显式标为 latest；latest API、latest/download/latest.json、exe 下载地址、版本、文件大小与哈希均已核对一致。没有重推旧标签。
+- 旧版程序实际点击更新的用户端验收仍以现场反馈为准。
+
+### 防止后台生成误停及结果丢失
+
+- 核对生产网关 `queue_busy()` 的错误处理是否已经按历史回贴部署；失败/超时应视为未知或忙，不能当作空闲。保留独立时长/预算上限，避免无限运行。
+- 复查网关、桌面本地网关和 VM watchdog 的停止条件；重负载、网络抖动和后台标签页不应导致空闲误判。
+- 区分工作流设置备份与视频输出归档。调查直接从 ComfyUI 网页提交的任务是否被桌面端接管下载，明确停止前未下载成果的处理。
+- 验收：运行中、排队中、队列超时、真实空闲、已生成未下载、恢复连接六类场景；不能用“网页没关”替代服务端状态测试。
+- 历史 iframe 弹窗修复已有用户成功反馈；悬浮条显示仍待核对。更新网关前保存现有补丁差异，不重复历史按行号 sed 修改。
+
+## P1：会话延长（来源 wakeloom-spec-extend.md）
+
+- 去掉本地写死两次的限制；每次 30 分钟/1 小时/2 小时，默认 1 小时。总时长以开机时间为基准限制，不能用剩余时间重复累计绕过上限。
+- 历史产品目标是最多 24 小时；这是应用拟设上限，不能承诺 Colab 一定提供 24 小时。实现时核对平台当前限制。
+- 网关 `EXTEND_MAX_TIMES=0` 表示不限次数但受总时长限制；未显式配置时按不限次数处理，显式数字继续生效。
+- 网关延长后同步 VM watchdog；例如通过受控通道更新 `/content/kit_max_session` 并由 watchdog 动态读取，不能只修改桌面显示。
+- 状态增加 `extend_left`（不限为 null）、`session_cap_s`；显示延长后截止时间、拒绝原因和少于 15 分钟的提醒。
+- 拒绝原因区分应用总时长上限和网关管理员次数限制。既有会话恢复/重启后的计时须一致。
+- 验收：连续多次延长、精确上限边界、显式次数配置、VM 同步、旧补丁原地升级、浅深色 UI；Go 与网关 pytest 覆盖。
+- 发布说明提醒网关用户更新补丁并重建对应容器。
+
+## P1：快速创作与工作流（来源 wakeloom-spec-pages.md）
+
+- 导航调整为：控制台、快速创作、工作流、队列、结果、库、设置。保留旧 `ai` / `gen` ID 和跳转兼容。
+- 快速创作面向常用模型和少量参数；工作流面向任意导入 API 模板、全部参数、试生成/高清、批量和提示词库。
+- 工作流模板分为“我的工作流”（置顶默认展开）与“内置模型模板”（默认折叠并解释来源）；`ai-` 模板属于后者，自带 H3 模板按实际来源归类。
+- 只有含 MiniMaxH3 节点或可靠 H3 字段角色的模板显示 H3 工具栏；SDXL/Chroma 等图片模板完全隐藏该栏。
+- 通用“AI 写提示词”靠近普通提示词框，按图片/视频类型生成说明，不把 H3 视频规则强套给图片模型。
+- 快速创作可以带提示词、尺寸、步数跳到对应工作流；`ai-` 模板有返回快速创作提示。
+- H3 快速文生视频卡片可延期，但需明确记录，不标成已实现。
+- 验收：Chroma 不出现 H3 控件、H3 模板出现控件、分组/折叠正确、双向跳转参数保留、旧草稿与模板不丢、浅深色截图、Go 回归。
+- 同步 README、新手指南和已有引导文案，避免同时存在两套入口名称。
+
+## P1：算力监控（来源 wakeloom-spec-monitor.md）
+
+### 遗留机器
+
+- 本机登录 Google 时启动查一次，此后每 5 分钟用 `colabList()` 查询所有分配机器；未登录只提示，不强制登录。
+- 区分本地当前会话、可能属于网关、其他/遗留。网关归属只能标“可能”，GPU/时间相似不证明归属。
+- 显示 GPU、运行时间和可获得的 CU 速率；可忽略提醒。信息不足不提供释放按钮。
+- 释放操作必须在产品 UI 中确认数据不可恢复；可能是网关机器时额外提醒。接口也验证确认约束，不能仅靠前端。
+
+### CU 用量
+
+- 本机 usage.jsonl 记录时间、余额、速率和模式，保留 90 天。
+- 花费按余额下降量累加，余额增加标充值；这是账号余额变化估算，不是精确按任务计费。多台机器并行时不能把所有变化归到当前会话。
+- 今天/7 天/30 天花费，余额或花费曲线支持 1 小时/24 小时/7 天/30 天；会话明细列配置、GPU、时长和可归属的花费。
+- 余额除以当前小时速率估算可用时长；速率无效时显示未知，不除零。低于 2 小时醒目提醒。
+
+### Windows 通知
+
+- 生成完成/失败（批次合并）、GPU 就绪、自动停机及原因、会话余 10 分钟、遗留机器、余额不足 2 小时。
+- 每项设置开关默认开；同类 10 分钟去重；前台可仅用界面提示。无 cgo，非 Windows 跳过。
+- 点击通知唤起窗口可延期；命令行 `status --json` 为可选，需考虑单实例。
+- 验收：机器分类、释放确认、充值跳变、并行用量归属说明、90 天清理、通知合并去重；Colab 用 httptest，UI 浅深色检查。
+
+## 已实现需求的回归清单
+
+以下不是待重做功能；真实环境是否完整验收仍应单独记录。
+
+| 来源需求 | 已有实现与应保留的约束 |
+|---|---|
+| 自定义模型（原 1.19.0） | HF 链接解析；GGUF、SDXL、Chroma、通用模型配模板；代理 transport；HF token 不进日志；本地 profiles 与网关 STATE_DIR/custom_profiles；内置配置不能覆盖删除，正在使用的配置不能删除 |
+| 坏配置修复（原 1.19.1） | 非 GGUF 对话模型拒绝并搜索 GGUF；空模型/无入口拒绝；已知坏配置提示并在唤醒前拦截；Go/Python 同步校验；保存模型总大小上限 86.4 GB；core 兜底不能改变内置配置的计划快照 |
+| 用户数据（原 1.20.0） | userdata API，保留 %2F；每次会话先恢复成功再允许备份/镜像删除；每 5 分钟增量；停止前最多 20 秒；单文件 20 MB、总量 200 MB；删除进 30 天回收站；未改原始文件不覆盖新版；防路径穿越；本地 X-WB-Sync 不算活动，VPS 请求仍可能延迟空闲停机 |
+| 新手引导（原 1.21.0） | Google 开始→授权码→RealVisXL/L4；老用户不反复弹；中断续步；设置重开；高级网关路径；后台网络检测；入门清单；假服务测试与浅深色验收；实际开机时间/费率不应写成保证 |
+| 指南移除 | 原创默认说明；用户本机导入/清除；仓库/exe 不附带官方指南；当前可见 refs 未发现该路径历史，旧 Release 已不在列表，不重复强推或删除 |
+
+## 未确认或可延期
+
+- Civitai 和任意 HTTPS 直链来源仅在开发记录中提出，未确认；ModelScope 不在当时范围。
+- 本地模式真实 H3/AI 唤醒、配置导入 UI、插件搜索、LLM 视觉 mmproj、截图补齐仍需逐项确认状态。
+- X 宣传草稿不等于发布授权；先确保功能、下载入口和说明一致。
+- 真实 VPS 的补丁版本、容器镜像、隧道状态和本机数据不由公开仓库推断，需在后续相应任务中实查。
+
+## Modelo Freemium y Portabilidad macOS (2026-11)
+
+### Fase 1: Motor Criptográfico de Licencias y Guardián Zero-Waste
+- **Licenciamiento Offline**: Implementado en `license.go` con HMAC-SHA256 (`WLPRO-<payload>-<sig>`). Soporte de claves permanentes, temporales y clave de prueba/desarrollo `WLPRO-DEMO-2026`. Endpoints `GET /api/license`, `POST /api/license/activate`, `POST /api/license/deactivate`.
+- **Zero-Waste Watchdog**: En `localgate.go` y `config.go`. Apagado automático agresivo tras vaciarse la cola de tareas (`ZeroWasteIdleSec`), corte por presupuesto de CU por sesión (`ZeroWasteMaxCU`) y umbral de seguridad de saldo mínimo (`ZeroWasteMinBal`). Muestra motivo de parada en español.
+- **UI en macOS**: En `ui/index.html`, `ui/style.css` y `ui/app.js`. Indicadores visuales en barra lateral (`Free`/`Pro`), sección 12 de Ajustes para activar/desactivar y ver estado de licencia, sección 13 para configurar Zero-Waste con bloqueo visual si no se dispone de licencia Pro.
+- **Pruebas y Validación**: `license_test.go` cubre validación de firma, expiración, claves alteradas y bypass de demo.
+
+### Fase 2: Matriz por Lotes y Pipelines Encadenados (Batch & Chained Pipelines)
+- **Generación por Lotes (Batch Matrix)**: Parámetro `Count` en `createJob` (`server.go`). Restringido a 1 copia en plan Free (retorna HTTP 403 Forbidden); en plan Pro permite hasta 50 variantes automáticas con re-roll de semillas aleatorias y numeración en títulos `(i/N)`.
+- **Pipelines Encadenados (Auto-HD)**: Campo `AutoHires` en `Job` (`jobs.go`). En planes Pro, al finalizar con éxito una generación en borrador (`Draft: true`), el sistema encola automáticamente la versión de alta resolución (`queueHiresJob`) preservando las semillas utilizadas y dimensiones finales.
+- **UI de Generación**: Toggle de `⚡ Auto-HD (Pro)` y selector de copias con distintivo Pro en `ui/index.html`. Interceptores en `ui/app.js` que guían al usuario al modal de activación Pro si intenta usar lotes o Auto-HD en el plan Free.
+- **Pruebas y Validación**: `jobs_pro_test.go` verifica el bloqueo 403 en Free, el despacho múltiple en Pro y el encadenado correcto de tareas secundarias HD.
+
+### Fase 3: Notificaciones Remotas y Sincronización en la Nube (Cloud Sync)
+- **Notificaciones Remotas**: Implementado en `notify.go` con soporte para Discord Webhooks y Telegram Bot API (`sendMessage`). Disparo automático ante eventos de tarea finalizada (`job_done`), tarea fallida (`job_failed`) y detención de GPU (`gpu_stop`). Endpoint de comprobación `POST /api/notify/test`. Configuración enmascarada para tokens de Telegram.
+- **Sincronización y Respaldo (Cloud Sync)**: Implementado en `sync.go`. Exportación en 1-clic de la biblioteca de prompts y flujos (`GET /api/sync/export`) en formato JSON transportable. Importación y fusión inteligente (`POST /api/sync/import`) evitando colisiones de nombres. Restringido a licencias Pro con código HTTP 403 Forbidden.
+- **UI en macOS**: Secciones 14 (Notificaciones Remotas) y 15 (Sincronización y Respaldo) añadidas a los Ajustes en `ui/index.html` con retroalimentación en `ui/app.js`.
+- **Pruebas y Validación**: `notify_test.go` (con `mockTransport` para simular llamadas HTTP de Discord y Telegram sin requerir red viva) y `sync_test.go` verificando exportación, importación en workspace limpio y bloqueo en Free tier.
+
+### Empaquetado macOS
+- Script de compilación `build_app.sh`: genera el bundle `Wakeloom.app` con icono `AppIcon.icns`, `Info.plist` con permisos de red local (`NSAllowsLocalNetworking`), firma ad-hoc, compresión en `dist/Wakeloom-1.21.2-macos.zip` y manifiesto `dist/latest-macos.json`.
+- **Distribución (2026-11-08)**: canal elegido GitHub Releases, sin App Store. `build_app.sh` queda parametrizado para firma Developer ID + notarización (`notarytool`/`stapler`) mediante variables `APPLE_DEVELOPER_ID`, `APPLE_TEAM_ID`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`; sin ellas compila ad-hoc como antes. Nuevo `Entitlements.plist` (JIT de WKWebView, solo usado al firmar con Developer ID). Documentación e instrucciones anti-Gatekeeper (incluida la opción de tap de Homebrew, que no aplica cuarentena) en `docs/DISTRIBUCION_MACOS.md`. Pendiente: cuenta de Apple Developer Program ($99/año) para eliminar el aviso de Gatekeeper.
+- **Corrección UI (2026-11-08)**: coma doble en `ui/app.js:1553` (diálogo Pro Zero-Waste) impedía parsear todo el archivo JS: la interfaz cargaba sin registrar ningún manejador de eventos (ningún clic respondía). Corregido; verificado con `node --check` en los 7 JS de `ui/` y build + arranque headless con respuesta 200.
+- **Internacionalización ES/EN (2026-11-08)**: el toggle de idioma solo traducía la barra lateral (12 elementos con `data-i18n`); el resto del HTML estaba en español fijo y el contenido dinámico no se re-renderizaba. Añadidos ~230 atributos `data-i18n*` en `ui/index.html` y 60 claves nuevas a `T.es`/`T.en` en `ui/i18n.js` (paridad 744/744), `updateDOM` soporta `-placeholder` y protege elementos con hijos, y `i18n.setLang` en `ui/app.js` re-renderiza las vistas dinámicas seguras. Verificado en navegador: ES↔EN cambia toda la interfaz (tagline, navegación con numeración, secciones, botones y ajustes). Pendiente: strings literales en español dentro de JS (mosaicos de estado, diálogos, biblioteca) siguen en español — tarea separada de i18n-ificación de `app.js`.
+
+## 完成标准
+
+功能修改提供相关自动测试；完整检查包括 Go 回归、涉及的网关补丁原地升级、UI 浅深色和必要的假服务端到端测试。真实 GPU 验收独立记录，说明耗时、结果保存和停机结果。
+
+源码、测试、发布、部署各自登记；发布遵循 CLAUDE.md，并检查 latest 指向。需求有冲突时先结合当前代码和用户最新决定处理，不照历史版本号依次发布多个旧版本。

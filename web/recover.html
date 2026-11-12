@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WakeGPU · Recuperar clave Pro</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="theme-color" content="#090a0f">
+<style>
+:root{--bg:#090a0f;--card:#12151e;--line:rgba(255,255,255,.08);--text:#f1f5f9;--muted:#94a3b8;--acc:#f59e0b;--ok:#34d399;--err:#f87171}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(30, 41, 59, 0.45), transparent 70%);color:var(--text);line-height:1.6;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:36px;max-width:440px;width:100%;text-align:center;box-shadow:0 18px 48px rgba(0,0,0,0.6)}
+h1{font-size:22px;margin:0 0 8px;font-weight:700}
+p{color:var(--muted);font-size:14px}
+input{width:100%;background:#090a0f;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:12px 14px;font-size:15px;margin:18px 0 12px;outline:none;transition:border-color .15s}
+input:focus{border-color:var(--acc)}
+button{width:100%;background:var(--acc);border:none;color:#090a0f;font-weight:700;border-radius:8px;padding:12px;font-size:15px;cursor:pointer;transition:filter .12s}
+button:hover{filter:brightness(1.1)}
+.msg{margin-top:14px;font-size:14px;min-height:20px}
+.msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+a{color:var(--acc);font-size:13px;display:block;margin-top:18px;text-decoration:none}
+a:hover{text-decoration:underline}
+.lang{margin-bottom:14px}
+.lang button{width:auto;background:none;border:1px solid var(--line);color:var(--muted);padding:4px 10px;margin:0 4px;font-weight:600;font-size:12px}
+.lang button.on{color:var(--text);border-color:var(--acc);background:rgba(245,158,11,.12)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="lang">
+    <button id="btnEs" class="on" type="button">🇪🇸 ES</button>
+    <button id="btnEn" type="button">🇬🇧 EN</button>
+  </div>
+  <h1 data-es="¿Perdiste tu clave Pro?" data-en="Lost your Pro key?">¿Perdiste tu clave Pro?</h1>
+  <p data-es="Escribe el email con el que compraste en Lemon Squeezy y te reenviamos tu clave WLPRO al instante." data-en="Enter the email you used to purchase on Lemon Squeezy and we'll resend your WLPRO key right away.">Escribe el email con el que compraste en Lemon Squeezy y te reenviamos tu clave WLPRO al instante.</p>
+  <form id="f">
+    <input id="email" type="email" required placeholder="tu@email.com" data-ph-es="tu@email.com" data-ph-en="you@email.com" aria-label="Email">
+    <button type="submit" data-es="Reenviar mi clave" data-en="Resend my key">Reenviar mi clave</button>
+  </form>
+  <div class="msg" id="msg"></div>
+  <a href="index.html" data-es="← Volver a wakegpu.com" data-en="← Back to wakegpu.com">← Volver a wakegpu.com</a>
+</div>
+<script>
+// CONFIG: misma URL que usa la app (default https://lic.wakegpu.com)
+const LICENSE_API = "https://lic.wakegpu.com";
+function setLang(l){
+  document.querySelectorAll("[data-es]").forEach(el=>{ const v=el.dataset[l]; if(v) el.textContent=v; });
+  const em = document.getElementById("email");
+  if (em) em.placeholder = l === "en" ? em.dataset.phEn : em.dataset.phEs;
+  document.documentElement.lang=l;
+  btnEs.classList.toggle("on",l==="es"); btnEn.classList.toggle("on",l==="en");
+  try{localStorage.setItem("wl.lang",l)}catch(e){}
+}
+btnEs.onclick=()=>setLang("es"); btnEn.onclick=()=>setLang("en");
+try{
+  const s=localStorage.getItem("wl.lang");
+  if(s==="en" || s==="es") setLang(s);
+}catch(e){}
+document.getElementById("f").onsubmit = async e=>{
+  e.preventDefault();
+  const msg=document.getElementById("msg");
+  msg.className="msg"; msg.textContent="…";
+  try{
+    const r=await fetch(LICENSE_API+"/api/recover",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.value})});
+    if(!r.ok) throw 0;
+    msg.className="msg ok";
+    msg.dataset.es="Si la dirección está registrada, recibirás un email con tu clave WLPRO en unos minutos.";
+    msg.dataset.en="If the address is registered, you'll get an email with your WLPRO key within minutes.";
+    msg.textContent = document.documentElement.lang==="en" ? msg.dataset.en : msg.dataset.es;
+  }catch(_){
+    msg.className="msg err";
+    msg.textContent = document.documentElement.lang==="en" ? "Service unavailable; try again later." : "Servicio no disponible; prueba más tarde.";
+  }
+};
+</script>
+</body>
+</html>

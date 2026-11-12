@@ -1,0 +1,81 @@
+# 更新日志
+
+## v1.21.3
+
+### Internacionalización (nueva función)
+- **Soporte multidioma (i18n)**: Interfaz completa en español e inglés (castellano).
+- **Marco i18n**: `ui/i18n.js` con 685 claves por idioma, `t(key, ...params)`, `setLang()`, `updateDOM()`.
+- **Contexto CLR 작성한다**: Selector de idioma ES/EN en el panel lateral, persistencia en `localStorage` (`ckwb.lang`).
+- **Traducciones incluidas**: Navegación, consola, generar, IA, ajustes, cola, resultados, biblioteca, diálogos, notificaciones, sin sincronización, actualización, onboarding, unidades, licencia, guardián Zero-Waste, notificaciones remotas, sincronización, guía de prompts H3.
+- **UI reactiva**: `STATE_CN`, `REASON_CN`, `STAGE_CN`, `KIND_CN` actualizan al cambiar idioma (proxies).
+- **I18n vinculado**: `fmtTime()` y `updCount0()` usan el idioma actual.
+
+### Correcciones y mejoras
+- - (Agregar entradas de correciones específicas aquí)
+
+
+## v1.21.2
+
+## v1.21.1
+..."
+
+
+## v1.21.2
+- 补齐 Qwen-Image、H3 等官方工作流配置的使用入口：AI 页展示已部署模型，生成页展示当前配置的工作流、打开 ComfyUI 和下载工作流入口，无需为寻找入口重复开机。完整工作流在 ComfyUI 内使用，导出 API JSON 后可接入本程序任务队列。
+- 已绑定启动配置的模板与当前 GPU 配置不一致时，提交前明确提示；旧 Chroma 模板不再误送到 Qwen 环境。
+- 模型缺失提示列出当前实际识别到的模型名，便于核对文件名或路径差异。
+
+## v1.21.1
+- 生图就绪状态增加实际模型检查：启动后校验文件及 ComfyUI 加载器列表，提交 AI 生图任务前再次核对；缺模型时明确提示，避免仅凭 GPU 启动成功就允许生成。AI 生图模板绑定启动配置，保留模型子目录名。
+- 统一切换模式、停止 GPU、删除、退出登录、模板命名等确认和输入提示为应用内弹窗，移除浏览器 IP 标题；支持取消、键盘操作和浅深色主题。提示词骨架明确区分取消、插入和替换。
+- 本地开机的余额提示改为应用内弹窗，适配浅深色主题，不再显示本机 IP 标题；余额不足时可更换 GPU 或打开 Colab 算力购买页。
+- 本地 G4 启动前按至少预留 10 CU 检查余额，余额不足时提示充值或更换 GPU，界面与后台均拦截申请；G4 默认耗速估计更新为 10 CU/小时。此门槛是针对用户反馈增加的本地保护。
+- GPU 申请增加总计 3 分钟的等待上限（包括重试），超时退出申请状态并提示检查 Colab 运行时，避免长时间卡住。
+- 修复本地模式 CU 余额误报：缺失、空响应和读取失败不再当成 0；重新登录、退出登录会清除旧余额，手动查询同步刷新控制台。开机前重新核对余额，无法读取时明确提示未知，真实低余额仍提醒。
+- 修复新手引导以虚构余额替代查询失败，以及取消开机后仍将引导标记为完成的问题；支持重试余额查询。
+- 加强启动状态保护：避免重复唤醒同时申请 GPU；主动停止导致的请求取消不再覆盖为“启动失败”，分配重试等待可立即取消。网络层取消与主动停止显示不同原因，便于排查。
+- 本次不将尚未复现的单次唤醒 `context canceled` 报告标记为已根治，仍需实际环境复测。
+
+## v1.21.0
+- 新增：首次使用引导。第一次打开时自动弹出，默认三步启动 Colab：「用 Google 账号开始」→ 粘贴授权码（自动识别剪贴板）→「启动 Colab」（RealVisXL · L4），然后在 AI 页直接试生成；开机时右下角小窗显示进度，就绪后有 3 个功能提示。
+- 有网关的用户可走完整引导：检查网络、选择连接方式、登录或连接网关、基本设置、第一次试用、功能导览。右上角「?」菜单和「设置 → 重新运行新手引导」可以随时再打开；已配置过的老用户不会自动弹出。
+- 控制台新增「入门清单」（检查网络、登录、第一次唤醒、第一次生成、停止 GPU），按实际操作自动打勾，全部完成后消失；唤醒按钮旁显示「预计每小时约 X CU」（用过一次后按 Colab 实际值）。生成、队列、结果页为空时给出下一步按钮。新增新手指南 docs/GETTING_STARTED.md。
+- 修复（自定义模型）：不再能保存无法运行的配置。非 GGUF 的对话模型（如 transformers 格式的 Kimi-K3.1-Pro）会提示不支持并列出找到的 GGUF 版本；超过 96 GB 显存的模型不能保存，会给出放得下的较小量化；识别不出类型时必须先选类型；「ComfyUI 模型」类型必须关联模板，文件每次开机都会下载，在 AI 页显示为「通用」卡片。已有的坏配置会标红「无法使用」并阻止唤醒，避免白扣 CU。
+- 合规：不再附带 MiniMax 官方的 H3 提示词指南（其社区许可限制分发地区）。「AI 写提示词」默认使用内置的通用写法说明；需要官方指南的可以在「设置 → 大模型 API」里导入自己获取的文件。
+- 网关用户需要重新运行 `python3 gate-ai.py /opt/comfy-colab-kit` 并重建容器（`docker compose -f deploy/docker-compose.yml up -d --force-recreate`），自定义模型的新校验和「只下载 core 模型」才会生效。
+
+## v1.20.0
+- 新增：自动备份和恢复 ComfyUI 用户数据。在 ComfyUI 网页里保存的工作流、设置、子图等会备份到这台电脑（GPU 就绪时每 5 分钟增量备份一次，点「停止」前再备份一次，最多等 20 秒），下次开机自动传回去，启动日志里会显示「已恢复 N 个工作流/设置文件」。
+- 恢复时以本地为准；但你从没改过的文件会保留新机器上的版本，不会用旧版覆盖启动配置带来的新官方工作流。
+- 远端删掉的文件，本地先移到回收站（保留 30 天）再删；单个超过 20 MB 或总量超过 200 MB 的部分不备份，并会提示。
+- 控制台显示「工作流备份：上次 HH:MM · N 个文件」，可「立即备份」「打开文件夹」；设置里可关闭。文件只存在本机。
+- 网关模式不需要更新网关；备份请求会被网关算作活动，可能稍微推迟网关的空闲停机。网关自己空闲停机时，只能依靠每 5 分钟的定时备份。
+
+## v1.19.0
+- 新增「自定义添加模型」：在 AI 页点「＋ 添加模型」或在「设置 → 自定义模型」里粘贴 Hugging Face 链接，自动识别类型（GGUF 对话大模型、SDXL 检查点、Chroma 生图、任意 ComfyUI 模型）、文件大小、许可证，推荐 GPU 和参数，保存后直接出现在唤醒选项和 AI 页。
+- GGUF 仓库列出全部量化版本，默认 Q4_K_M，显存够时选 Q8_0；忽略 mmproj 和分片文件。
+- 「任意 ComfyUI 模型」可添加多个文件、选择存放目录，并关联「生成」页的模板（排队时自动用它唤醒）。
+- 本地模式可在设置里填 Hugging Face 令牌，用于下载需申请访问（gated）的模型；令牌只存在本机，不写进日志或启动配置。
+- 启动配置支持更多 ComfyUI 模型目录（style_models、ipadapter、ultralytics 等）。
+- 网关模式需要更新网关补丁：在 VPS 上重新运行 `python3 gate-ai.py /opt/comfy-colab-kit`，再重建容器（`docker compose -f deploy/docker-compose.yml up -d --force-recreate`）；未更新时软件会提示「网关需要更新 gate-ai.py」。
+
+## v1.18.1
+- 大模型唤醒时「注册模型到 Ollama」一步每 10 秒输出一次进度（已用时间、已写入大小、Ollama 状态），不再看起来像卡住。
+- 发版工作流升级到 actions/checkout@v7、actions/setup-go@v7（Node 24）。
+
+## v1.18.0
+- 发布到 GitHub；自动更新改为从 GitHub Releases 下载。
+
+## v1.17.1
+- 修复：Qwen 对话配置唤醒时 Ollama 安装失败（不再依赖官方安装脚本和系统包管理器）。
+
+## v1.17.0
+- 改名 Wakeloom（唤织）；设置自动从旧目录迁移。
+- AI 页新增 Chroma1-HD 生图。
+- 修复：大模型唤醒时「requirements.txt 不存在」导致安装依赖失败。
+
+## v1.16.0
+- 新增「AI」页：Qwen3.8 27B 对话（Ollama）、RealVisXL V5.0 生图。
+
+## v1.15.0
+- 唤醒时可选择 GPU。

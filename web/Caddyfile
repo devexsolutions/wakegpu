@@ -1,0 +1,23 @@
+# Configuración de Caddy para WakeGPU (VPS con SSL automático de Let's Encrypt)
+# Archivo: /etc/caddy/Caddyfile
+
+wakegpu.com, www.wakegpu.com {
+    root * /var/www/wakegpu/html
+    file_server
+    encode zstd gzip
+
+    # Redirigir www a apex
+    @www header_regexp host www\.(.*)
+    handle @www {
+        redir https://wakegpu.com{uri} permanent
+    }
+
+    # Cabeceras de seguridad
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    try_files {path} {path}.html {path}/ =404
+}

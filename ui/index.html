@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WakeGPU">
+<meta name="theme-color" content="#141210">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.png">
+<title>WakeGPU</title>
+<script>try { var t = localStorage.getItem("ckwb.theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script>try { var l = localStorage.getItem("ckwb.lang"); if (l) document.documentElement.lang = l; } catch (e) {}</script>
+<script>try { var e = localStorage.getItem("ckwb.expMode"); document.documentElement.dataset.exp = (e === "advanced" ? "advanced" : "simple"); } catch (e) {}</script>
+<script src="/i18n.js"></script>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="side-top">
+      <div class="brand">
+        <span class="logo"><svg viewBox="0 0 24 24"><path d="M8 6.5v11l9-5.5z"/></svg></span>
+        <div class="theme-toggle" role="group" data-i18n-aria="theme_group">
+          <button type="button" data-theme-set="light" data-i18n-title="theme_light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+          <button type="button" data-theme-set="dark" data-i18n-title="theme_dark"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+        </div>
+        <div class="lang-toggle" role="group" data-i18n-aria="lang_group" style="margin-top:6px">
+          <button type="button" data-lang-set="es" title="Español">ES</button>
+          <button type="button" data-lang-set="en" title="English">EN</button>
+        </div>
+      </div>
+      <h1 class="tagline" data-i18n="app_name">WakeGPU</h1>
+      <p class="tagline-sub" data-i18n="tagline">Despierta GPUs en la nube bajo demanda para generar vídeo, imágenes y chat con IA.</p>
+      <div class="side-tier">
+        <span class="pill sm" id="sideTierPill" data-i18n="side_tier_free">Plan Free</span>
+        <button type="button" class="btn-upgrade-side" id="btnSideUpgrade" data-i18n="side_upgrade_pro" data-i18n-title="side_upgrade_title">⚡ Mejorar a Pro</button>
+      </div>
+    </div>
+
+    <div class="side-label" data-i18n="side_label_nav">Navegación</div>
+    <nav>
+      <button data-page="console" class="on"><span class="n">01</span><span data-i18n="nav_console">Consola</span></button>
+      <button data-page="gen"><span class="n">02</span><span data-i18n="nav_gen">Generar</span></button>
+      <button data-page="ai"><span class="n">03</span><span data-i18n="nav_ai">IA</span></button>
+      <button data-page="queue"><span class="n">04</span><span data-i18n="nav_queue">Cola</span> <em id="qBadge"></em></button>
+      <button data-page="results"><span class="n">05</span><span data-i18n="nav_results">Resultados</span></button>
+      <button data-page="lib"><span class="n">06</span><span data-i18n="nav_lib">Biblioteca</span></button>
+      <button data-page="settings"><span class="n">07</span><span data-i18n="nav_settings">Ajustes</span></button>
+    </nav>
+
+    <div class="side-foot" id="sideState">
+      <span class="dot" id="dot"></span><span id="sideStateText" data-i18n="side_state_disconnected">Desconectado</span>
+      <span class="ver" id="verText">WakeGPU</span>
+    </div>
+  </aside>
+
+  <main>
+    <header class="top">
+      <div class="top-l">
+        <div class="seg mode-seg" id="modeSeg" data-i18n-title="title_connection_mode"><button type="button" data-m="gateway" data-i18n="mode_gateway">Pasarela</button><button type="button" data-m="local" data-i18n="mode_local">Local</button></div>
+        <div class="seg exp-seg" id="expSeg" data-i18n-title="title_exp_mode"><button type="button" data-exp="simple" class="on" data-i18n="exp_simple">✦ Sencillo</button><button type="button" data-exp="advanced" data-i18n="exp_advanced">⚡ Avanzado</button></div>
+        <span class="chip" id="stateChip">—</span>
+        <span class="top-info" id="topInfo"></span>
+      </div>
+      <div class="top-r">
+        <button class="btn xs upd-btn" id="btnUpd" hidden></button>
+        <button type="button" class="btn ghost xs mob-top-btn" id="btnMobileTop" data-i18n="btn_mobile_top" title="Conectar y usar WakeGPU desde tu móvil (iOS / Android)">📱 Móvil</button>
+        <div class="help-wrap"><button class="btn ghost xs help-btn" id="btnHelp" data-i18n-title="btn_help">?</button>
+          <div class="help-menu" id="helpMenu" hidden>
+            <button id="helpGuide" data-i18n="help_guide">Guía inicial</button><button id="helpReadme" data-i18n="help_readme">Documentación (GitHub README)</button><button id="helpNet" data-i18n="help_net">Comprobar red</button></div></div>
+        <button class="btn primary sm" id="btnWakeTop" data-i18n="btn_wake_gpu">Despertar GPU</button>
+        <button class="btn danger sm" id="btnStopTop" data-i18n="btn_stop">Detener</button>
+      </div>
+    </header>
+
+    <!-- Consola -->
+    <section class="page on" id="page-console">
+      <div class="card ob-check" id="obChecklist" hidden></div>
+      <div class="console">
+        <div class="col">
+          <div class="sec-h"><span class="n">01</span><b data-i18n="console_gpu_session">Sesión de GPU</b><span class="d" data-i18n="console_gpu_session_desc">Arranque, temporizador y cómputo</span></div>
+          <div class="card sess">
+            <div class="sess-head">
+              <div class="sess-state">
+                <span class="ring" id="dotBig"></span>
+                <div>
+                  <div class="sess-label" id="stateBig">—</div>
+                  <div class="sess-sub" id="stateSub"></div>
+                </div>
+              </div>
+              <div class="timer" id="timerBox">
+                <div class="timer-v" id="timerV">--:--</div>
+                <div class="timer-l" id="timerL" data-i18n="timer_boot">Tiempo de arranque</div>
+              </div>
+            </div>
+
+            <ol class="steps" id="steps"></ol>
+
+            <div class="dl" id="dlBox" hidden>
+              <div class="row between small"><span id="dlText"></span><span class="muted mono" id="dlEta"></span></div>
+              <div class="bar"><div id="dlBar"></div></div>
+            </div>
+
+            <div class="tiles" id="tiles"></div>
+
+            <div class="wake-opts" id="wakeOpts">
+              <div class="row gap wrap">
+                <label class="fld grow"><span data-i18n="wake_start_profile">Perfil de inicio · Profile</span><select id="wakeProfile"></select></label>
+                <label class="fld" id="accWrap" hidden><span data-i18n="wake_gpu">GPU</span><select id="wakeAcc"><option>T4</option><option>L4</option><option>G4</option><option>A100</option><option>H100</option></select></label>
+              </div>
+              <div id="wfBox" class="wf"></div>
+              <div id="extrasBox" class="extras" hidden></div>
+              <p class="hint" id="localHint" hidden></p>
+            </div>
+
+            <div class="actions">
+              <button class="btn primary" id="btnWake" data-i18n="wake_btn_wake">Despertar GPU</button>
+              <span class="muted small wake-cost" id="wakeCost"></span>
+              <button class="btn" id="btnOpenComfy" data-i18n="wake_btn_open_comfy">Abrir ComfyUI ↗</button>
+              <button class="btn" id="btnExtend" data-i18n="wake_btn_extend">Extender sesión</button>
+              <span class="grow"></span>
+              <button class="btn danger" id="btnStop" data-i18n="wake_btn_stop">Detener y liberar</button>
+            </div>
+            <div class="who" id="who"></div>
+            <p class="err" id="consoleErr"></p>
+          </div>
+          <div class="ud-line" id="udLine">
+            <span class="ud-dot" id="udDot"></span><span id="udText" data-i18n="console_userdata">Copia de flujos: —</span><span class="grow"></span>
+            <button class="btn ghost xs" id="btnUdBackup" data-i18n="console_userdata_backup_now" data-i18n-title="console_userdata_title" title="Respaldar en este Mac los flujos de trabajo y ajustes guardados en ComfyUI">Respaldar ahora</button>
+            <button class="btn ghost xs" id="btnUdOpen" data-i18n="console_userdata_open_folder">Abrir carpeta</button>
+          </div>
+
+          <div class="sec-h"><span class="n">03</span><b data-i18n="console_resources">Carga de recursos</b><span class="d" id="loadSub" data-i18n="console_resources_desc">GPU · VRAM · RAM</span><span class="grow"></span>
+            <label class="seg-chk" data-i18n-title="console_load_live_title" title="Actualiza cada pocos segundos cuando está activo. En modo pasarela cuenta como actividad y evita el apagado por inactividad"><input type="checkbox" id="loadLive" checked><span data-i18n="console_load_live">En vivo</span></label>
+          </div>
+          <div class="card load-card" id="loadCard"><div class="load-empty" data-i18n="console_load_empty">La carga en tiempo real se mostrará cuando la GPU esté encendida</div></div>
+
+          <div class="sec-h"><span class="n">04</span><b data-i18n="console_usage_title">Tiempo y Consumo de CU</b><span class="d" data-i18n="console_usage_desc">Gasto estimado (~0,10 €/CU) y ahorro</span><span class="grow"></span>
+            <button type="button" class="btn ghost xs" id="btnUsageClear" data-i18n="console_usage_clear" title="Reiniciar historial de sesiones">Limpiar historial</button>
+          </div>
+          <div class="card usage-card" id="usageCard"></div>
+        </div>
+
+        <div class="col">
+          <div class="sec-h"><span class="n">02</span><b data-i18n="console_boot_log">Registro de arranque</b><span class="d" data-i18n="console_boot_log_desc">Salida en tiempo real</span>
+            <span class="grow"></span>
+            <label class="seg-chk"><input type="checkbox" id="rawLog"><span data-i18n="console_raw_log_filter">Sin filtro</span></label>
+            <button class="icon-btn" id="btnClearLog" data-i18n-title="console_clear_log" title="Limpiar"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>
+          </div>
+          <div class="card log-card"><div id="log" class="log"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Generar -->
+    <section class="page" id="page-gen">
+      <div class="simple-guide-banner" id="genSimpleBanner" hidden>
+        <div>
+          <b data-i18n="gen_simple_banner_title">✦ Estás en Modo Sencillo</b>
+          <span class="muted" data-i18n="gen_simple_banner_desc">Para crear imágenes, vídeos y chatear con IA en 1 clic sin lidiar con grafos ni configuraciones de nodos, visita el <strong>Estudio IA</strong>. Para editar este flujo JSON, cambia a Modo Avanzado.</span>
+        </div>
+        <button type="button" class="btn sm" id="btnGoAIStudio" data-i18n="gen_btn_go_ai">Ir a IA ↗</button>
+      </div>
+      <div id="profileWorkspace" hidden></div>
+      <div class="gen">
+        <div class="col">
+          <div class="sec-h"><span class="n">01</span><b data-i18n="gen_templates">Plantillas</b><span class="d" data-i18n="gen_templates_desc">Flujos ComfyUI API</span></div>
+          <div class="card tpl-card">
+            <div id="tplList" class="tpl-list"></div>
+            <label class="btn block"><span data-i18n="gen_import_json">＋ Importar JSON (API)</span><input type="file" id="tplFile" accept=".json,application/json" hidden></label>
+            <p class="hint" data-i18n-html="gen_import_hint">En ComfyUI: Menú → Archivo → <b>Exportar (API)</b>, e importa aquí el archivo JSON resultante.</p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="sec-h"><span class="n">02</span><b id="formTitle">Parámetros</b><span class="d" data-i18n="gen_parameters_desc">Prompts, medios y muestreo</span>
+            <span class="grow"></span>
+            <button type="button" class="btn ghost xs" id="btnResetForm" hidden data-i18n="gen_restore_defaults" data-i18n-title="gen_restore_defaults_title" title="Restaurar parámetros recomendados y el prompt original de la plantilla">Restaurar recomendados</button>
+            <button type="button" class="btn ghost xs" id="btnRename" hidden data-i18n="gen_rename">Renombrar</button>
+            <button type="button" class="btn ghost xs danger" id="btnDelTpl" hidden data-i18n="gen_delete_tpl">Eliminar plantilla</button>
+          </div>
+          <div class="card form-card">
+            <div id="formEmpty" class="empty" data-i18n="gen_select_tpl">Importa o selecciona primero una plantilla de flujo a la izquierda</div>
+            <form id="genForm" hidden>
+              <div class="h3bar">
+                <div class="h3-row">
+                  <span class="lbl" data-i18n="gen_h3_mode">Modo H3</span>
+                  <div class="seg" id="h3ModeSeg"></div>
+                  <select id="h3Mode" hidden>
+                    <option value="T2VA">T2VA</option><option value="I2VA">I2VA</option><option value="FL2VA">FL2VA</option><option value="L2VA">L2VA</option><option value="Ref2VA">Ref2VA</option>
+                  </select>
+                  <span class="lbl" data-i18n="gen_h3_duration">Duración</span>
+                  <input type="number" id="h3Dur" min="4" max="15" step="1" value="6" class="mini-num"><span class="lbl" data-i18n="gen_h3_seconds">s</span>
+                  <span class="grow"></span>
+                  <button type="button" class="btn xs" id="btnSkeleton" data-i18n="gen_btn_skeleton">Insertar estructura</button>
+                  <button type="button" class="btn primary xs" id="btnAI" data-i18n="gen_btn_ai_writer">✦ Redactar con IA</button>
+                </div>
+                <div class="snips" id="snips"></div>
+              </div>
+
+              <div id="primaryFields"></div>
+              <details class="adv"><summary><span data-i18n="gen_advanced_params">Parámetros avanzados</span> <span class="muted" id="advCount"></span></summary><div id="advFields"></div></details>
+
+              <div class="submit-bar">
+                <label class="fld"><span data-i18n="gen_field_title">Título de tarea</span><input id="jobTitle" data-i18n-placeholder="gen_field_title_placeholder" placeholder="Opcional, usado en el archivo"></label>
+                <label class="fld narrow" id="batchCountWrap" data-i18n-title="gen_batch_count_title" title="Generación de variantes por lote (Pro para > 1 copia)"><span data-i18n="gen_batch_count">Copias</span><span class="tag-pro-sm" data-i18n="gen_batch_count_pro">Pro</span><input type="number" id="jobCount" value="1" min="1" max="50"></label>
+                <label class="autohd-wrap" id="autoHiresWrap" data-i18n-title="gen_auto_hires_title" title="Encadena automáticamente la versión en Alta Resolución cuando termine el borrador">
+                  <input type="checkbox" id="chkAutoHires">
+                  <span><span data-i18n="gen_auto_hires">⚡ Auto-HD</span><span class="tag-pro-sm" data-i18n="gen_auto_hires_pro">Pro</span></span>
+                </label>
+                <div class="sb-actions">
+                  <button type="button" class="btn ghost" id="btnLoadPrompt" data-i18n="gen_btn_load_prompt">Prompts guardados</button>
+                  <button type="button" class="btn ghost" id="btnSavePrompt" data-i18n="gen_btn_save_prompt">Guardar</button>
+                  <button type="button" class="btn" id="btnDraft" data-i18n-title="gen_draft_title" title="Genera primero un borrador a menor resolución según los ajustes; luego podrás sacar la versión HD con un clic desde la cola"><span data-i18n="gen_btn_draft">Borrador</span> <span class="hint-in mono" id="draftHint"></span></button>
+                  <button type="submit" class="btn primary" data-i18n="gen_btn_add_queue">Añadir a la cola</button>
+                </div>
+              </div>
+              <p class="err" id="genErr"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- IA -->
+    <section class="page" id="page-ai">
+      <div class="sec-h"><span class="n">03</span><b data-i18n="ai_title">IA</b><span class="d" id="aiSub" data-i18n="ai_sub">Modelos de chat y generación de imágenes según el perfil activo</span><span class="grow"></span>
+        <span class="chip ai-chip" id="aiChip"><span class="dot"></span><span id="aiChipText">—</span></span>
+      </div>
+
+      <!-- no AI profile running: pick one -->
+      <div id="aiPick" class="ai-pick"></div>
+
+      <!-- chat -->
+      <div id="aiChat" class="ai-chat" hidden>
+        <div class="ai-convs card">
+          <button class="btn block ai-new" id="aiNew" data-i18n="ai_btn_new_conv">＋ Nueva conversación</button>
+          <div id="aiConvList" class="ai-conv-list"></div>
+        </div>
+        <div class="ai-main card">
+          <div class="ai-tools">
+            <label class="seg-chk" data-i18n-title="ai_thinking_title" title="Activado: razona antes de responder (más preciso pero más lento)"><input type="checkbox" id="aiThink"><span data-i18n="ai_thinking">Pensamiento profundo</span></label>
+            <label class="ai-temp"><span data-i18n="ai_temp">Temperatura</span> <input type="range" id="aiTemp" min="0" max="1.5" step="0.05"><b class="mono" id="aiTempV"></b></label>
+            <button class="btn ghost xs" id="aiSysBtn" data-i18n="ai_sys_prompt">Prompt del sistema</button>
+            <button class="btn ghost xs" id="aiApiBtn" title="Conectar con VS Code, Cursor o Continue">🔌 Conectar IDE</button>
+            <span class="grow"></span>
+            <span class="muted small mono" id="aiStats"></span>
+          </div>
+          <textarea id="aiSys" class="ai-sys" rows="3" data-i18n-placeholder="ai_sys_prompt_placeholder" placeholder="Prompt del sistema (opcional): define rol, tono, formato de respuesta…" hidden></textarea>
+          <div id="aiMsgs" class="ai-msgs"></div>
+          <div class="ai-input">
+            <textarea id="aiText" rows="2" data-i18n-placeholder="ai_placeholder" placeholder="Escribe un mensaje (Enter para enviar, Shift+Enter para nueva línea)"></textarea>
+            <button class="btn primary" id="aiSend" data-i18n="ai_send">Enviar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- text to image -->
+      <div id="aiImg" class="ai-img" hidden>
+        <div class="card ai-img-form">
+          <label class="fld"><span data-i18n="ai_prompt">Prompt</span><textarea id="aiPrompt" rows="5" data-i18n-placeholder="ai_placeholder_prompt" placeholder="Describe la imagen, por ejemplo: portrait of a young woman by the window, soft natural light, 85mm, film grain"></textarea></label>
+          <div class="quick-chips" id="aiQuickChips">
+            <span class="muted small" style="align-self:center;margin-right:2px" data-i18n="ai_quick_chips_title">Añadir detalles:</span>
+            <button type="button" class="chip-btn" data-add="cinematic soft natural light, 85mm portrait lens, shallow depth of field">+ 📸 Foto 85mm</button>
+            <button type="button" class="chip-btn" data-add="dramatic studio lighting, sharp focus, 8k uhd, photorealistic">+ 💡 Luz de estudio</button>
+            <button type="button" class="chip-btn" data-add="cyberpunk night aesthetic, glowing neon lights, rain reflections">+ 🌃 Neón Cyberpunk</button>
+            <button type="button" class="chip-btn" data-add="Studio Ghibli aesthetic, vibrant anime illustration, lush watercolor background">+ 🎨 Estilo Anime</button>
+            <button type="button" class="chip-btn" data-add="hyperdetailed skin texture, raw photo, film grain, Kodak Portra 400">+ 🎞 Grano analógico</button>
+          </div>
+          <div class="fld"><span data-i18n="ai_size">Proporción visual</span>
+            <div class="seg ai-size" id="aiSize">
+              <button type="button" data-s="832x1216" data-i18n="ai_size_vert">📱 Vert. 9:16</button>
+              <button type="button" data-s="1024x1024" data-i18n="ai_size_square">🟦 Cuad. 1:1</button>
+              <button type="button" data-s="1216x832" data-i18n="ai_size_horiz">🖥 Horiz. 16:9</button>
+              <button type="button" data-s="custom" data-i18n="ai_size_custom">Personalizado</button>
+            </div>
+          </div>
+          <details class="adv-params" id="aiAdvDetails">
+            <summary data-i18n="ai_adv_details_summary">⚙️ Parámetros avanzados (Pasos, CFG, Semilla, Negativo)</summary>
+            <div class="adv-params-body">
+              <div class="row gap ai-wh" id="aiWH" hidden>
+                <label class="fld narrow"><span data-i18n="ai_width">Ancho</span><input type="number" id="aiW" min="256" max="2048" step="64"></label>
+                <label class="fld narrow"><span data-i18n="ai_height">Alto</span><input type="number" id="aiH" min="256" max="2048" step="64"></label>
+              </div>
+              <label class="fld"><span data-i18n="ai_negative_prompt">Prompt negativo</span><textarea id="aiNeg" rows="3"></textarea></label>
+              <div class="row gap">
+                <label class="fld narrow"><span data-i18n="ai_steps">Pasos</span><input type="number" id="aiSteps" min="1" max="150"></label>
+                <label class="fld narrow"><span data-i18n="ai_cfg">CFG</span><input type="number" id="aiCfg" min="1" max="20" step="0.5"></label>
+                <label class="fld narrow"><span data-i18n="ai_count">Copias</span><input type="number" id="aiCount" min="1" max="20" value="1"></label>
+              </div>
+              <div class="row gap">
+                <label class="fld grow"><span data-i18n="ai_seed">Semilla</span><input type="number" id="aiSeed" data-i18n-placeholder="ai_seed_placeholder" placeholder="Vacío = aleatoria en cada imagen"></label>
+              </div>
+            </div>
+          </details>
+          <button class="btn primary lg" id="aiGen" data-i18n="ai_btn_generate">Generar</button>
+          <p class="err" id="aiErr"></p>
+          <p class="hint" id="aiImgHint"></p>
+        </div>
+        <div class="ai-gallery">
+          <div class="sec-h sub"><b data-i18n="ai_gallery_title">Generaciones recientes</b><span class="d" data-i18n="ai_gallery_sub">Los archivos completos están en «Resultados»</span></div>
+          <div id="aiGallery" class="ai-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cola -->
+    <section class="page" id="page-queue">
+      <div class="sec-h"><span class="n">04</span><b data-i18n="queue_title">Cola de tareas</b><span class="d" data-i18n="queue_title_sub">Ejecución secuencial y descarga automática</span><span class="grow"></span><button class="btn ghost xs" id="btnClearDone" data-i18n="btn_clear_done">Limpiar finalizadas</button></div>
+      <div id="jobList" class="jobs"></div>
+    </section>
+
+    <!-- Resultados -->
+    <section class="page" id="page-results">
+      <div class="sec-h"><span class="n">05</span><b data-i18n="results_local_title">Resultados locales</b><span class="d mono" id="outDirText"></span><span class="grow"></span>
+        <div class="seg" id="kindSeg"><button data-k="" class="on" data-i18n="filter_all">Todo</button><button data-k="video" data-i18n="gen_kind_video">Vídeo</button><button data-k="image" data-i18n="gen_kind_image">Imagen</button><button data-k="audio" data-i18n="gen_kind_audio">Audio</button></div>
+        <select id="kindFilter" hidden><option value="">Todo</option><option value="video">Vídeo</option><option value="image">Imagen</option><option value="audio">Audio</option></select>
+        <button class="btn ghost xs" id="btnRefreshFiles" data-i18n="btn_refresh">Actualizar</button>
+        <button class="btn xs" id="btnOpenOut" data-i18n="btn_open_finder">Abrir en Finder</button>
+      </div>
+      <div id="fileGrid" class="files"></div>
+    </section>
+
+    <!-- Biblioteca -->
+    <section class="page" id="page-lib">
+      <div class="sec-h"><span class="n">06</span><b data-i18n="lib_full_title">Biblioteca de nodos y modelos</b><span class="d" data-i18n="lib_page_desc">Guarda tu catálogo; instala bajo demanda en la GPU activa</span><span class="grow"></span>
+        <button class="btn xs" id="btnLibPreset" data-i18n="lib_btn_presets">Preajustes</button>
+        <button class="btn primary xs" id="btnLibAdd" data-i18n="lib_btn_add">＋ Añadir</button>
+      </div>
+      <div class="lib-note" id="libNote"></div>
+      <div id="libList" class="lib"></div>
+      <div class="lib-bar" id="libBar" hidden>
+        <span id="libSel"></span><span class="grow"></span>
+        <button class="btn ghost xs" id="btnLibClear" data-i18n="lib_btn_clear_sel">Cancelar selección</button>
+        <button class="btn primary sm" id="btnLibInstallSel" data-i18n="lib_btn_install_sel">Instalar selección en la GPU actual</button>
+      </div>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="page" id="page-settings">
+      <form id="setForm" class="settings">
+        <div class="sec-h"><span class="n">06</span><b data-i18n="set_gateway_title">Conexión por pasarela</b><span class="d" data-i18n="set_gateway_desc">Dirección y credenciales</span></div>
+        <div class="card">
+          <label class="fld"><span data-i18n="set_gateway_url">URL de pasarela</span><input name="gate_url" data-i18n-placeholder="set_gateway_url_ph" placeholder="https://comfy.tu-dominio.com"></label>
+          <label class="fld"><span data-i18n="set_gateway_token">Token de agente · Bearer</span>
+            <div class="row gap"><input name="token" type="password" class="grow" autocomplete="off"><button type="button" class="btn xs" id="btnShowTok" data-i18n="btn_show">Mostrar</button></div>
+          </label>
+          <div class="row gap wrap"><button type="button" class="btn sm" id="btnPair" data-i18n="set_pair_btn">Vincular desde el navegador</button><span class="muted small" id="pairMsg"></span></div>
+          <p class="hint" data-i18n-html="set_pair_hint">También puedes obtener el token desde el botón «Copy AI Agent Setup» en la web de la pasarela o en <code>secrets/agent_token</code> de tu VPS.</p>
+          <label class="fld"><span data-i18n="set_proxy">Proxy de red</span><input name="proxy" data-i18n-placeholder="set_proxy_ph" placeholder="Vacío = automático (usar el proxy del sistema de macOS)"></label>
+          <p class="hint" style="margin-top:-6px" data-i18n-html="set_proxy_hint">Si el navegador abre la pasarela pero WakeGPU no conecta, suele deberse al proxy. Puedes indicar <code>http://127.0.0.1:7890</code> (según el puerto de tu proxy) o escribir <code>direct</code> para conexión directa.</p>
+          <details class="sub"><summary data-i18n="set_cf_token">Token de servicio de Cloudflare Access</summary>
+            <p class="hint" data-i18n="set_cf_hint">Obligatorio si tu dominio público está protegido por Cloudflare Access.</p>
+            <label class="fld"><span>CF-Access-Client-Id</span><input name="cf_client_id" autocomplete="off"></label>
+            <label class="fld"><span>CF-Access-Client-Secret</span><input name="cf_client_secret" type="password" autocomplete="off"></label>
+          </details>
+        </div>
+
+        <div class="sec-h"><span class="n">07</span><b data-i18n="sec_tasks">Tareas</b><span class="d" data-i18n="sec_tasks_desc">Carpeta de salida y automatización</span></div>
+        <div class="card">
+          <label class="fld"><span data-i18n="sec_tasks_out_dir">Guardar resultados en</span><input name="out_dir"></label>
+          <label class="chk"><input type="checkbox" name="auto_wake"><span data-i18n="sec_tasks_auto_wake">Despertar GPU automáticamente si hay tareas en cola y está en reposo</span></label>
+          <label class="fld"><span data-i18n="sec_tasks_wake_profile">Perfil para despertar automático (vacío = predeterminado)</span><input name="wake_profile" data-i18n-placeholder="sec_tasks_wake_profile_placeholder" placeholder="p. ej. minimax-h3"></label>
+          <label class="chk"><input type="checkbox" name="userdata_sync"><span data-i18n="sec_tasks_userdata_sync">Respaldar y restaurar automáticamente flujos de trabajo y ajustes de ComfyUI</span></label>
+          <p class="hint" style="margin:-6px 0 12px 26px" data-i18n="sec_tasks_userdata_hint">Colab crea una máquina nueva en cada arranque. Con esta opción activa, los flujos y ajustes guardados en ComfyUI se respaldan en este Mac (cada 5 minutos y antes de apagar) y se restauran en el próximo arranque.</p>
+          <label class="chk"><input type="checkbox" name="auto_stop_when_queue_empty"><span data-i18n="sec_tasks_auto_stop">Detener GPU automáticamente 3 minutos después de vaciarse la cola (ahorra CU)</span></label>
+          <label class="fld narrow"><span data-i18n="sec_tasks_job_timeout">Tiempo límite por tarea (minutos)</span><input type="number" name="job_timeout_min" min="1" max="600"></label>
+        </div>
+
+        <div class="sec-h"><span class="n">08</span><b data-i18n="sec_draft">Borrador rápido</b><span class="d" data-i18n="sec_draft_desc">Previsualiza antes de renderizar en alta calidad</span></div>
+        <div class="card">
+          <div class="row gap wrap">
+            <label class="fld narrow"><span data-i18n="sec_draft_scale">Escala de resolución</span>
+              <select name="draft_scale"><option value="0.25">25%</option><option value="0.33">33%</option><option value="0.5">50%</option><option value="0.75">75%</option></select></label>
+            <label class="fld narrow"><span data-i18n="sec_draft_steps">Pasos (0 = sin cambio)</span><input type="number" name="draft_steps" min="0" max="200"></label>
+          </div>
+          <p class="hint" data-i18n="sec_draft_hint">Solo reduce el ancho/alto o megapíxeles (y opcionalmente los pasos); conserva el prompt, los archivos y la semilla. Al pulsar «Generar HD» usará exactamente la misma semilla a resolución completa.</p>
+        </div>
+
+        <div class="sec-h"><span class="n">09</span><b data-i18n="sec_llm">API de LLM externo</b><span class="d" data-i18n="sec_llm_desc">Usado por «Redactar con IA»; la clave se guarda solo en este Mac</span><span class="grow"></span><button type="button" class="btn primary xs" id="btnLLMAdd" data-i18n="sec_llm_add">＋ Añadir</button></div>
+        <div class="card llm-card"><div id="llmList" class="llm-list"></div>
+          <div class="guide-row">
+            <div class="grow"><b data-i18n="sec_h3_guide">Guía de prompts H3</b> <span class="muted small" id="guideState" data-i18n="common_loading">Cargando…</span>
+              <p class="hint" style="margin:4px 0 0" data-i18n-html="sec_h3_guide_desc">Por defecto se utiliza la guía integrada de WakeGPU. Si dispones de la guía oficial de prompts H3 de MiniMax, puedes importarla (.md o .txt) para que «Redactar con IA» la utilice. <b>Se almacena únicamente en este Mac.</b></p></div>
+            <input type="file" id="guideFile" accept=".md,.txt,text/markdown,text/plain" hidden>
+            <button type="button" class="btn sm" id="btnGuideImport" data-i18n="sec_h3_import">Importar guía H3</button>
+            <button type="button" class="btn ghost sm" id="btnGuideClear" hidden data-i18n="sec_h3_clear">Borrar</button>
+          </div>
+        </div>
+
+        <div class="sec-h"><span class="n">10</span><b data-i18n="sec_local">Modo local</b><span class="d" data-i18n="sec_local_desc">Sin VPS · WakeGPU controla directamente tu Google Colab</span></div>
+        <div class="card local-card">
+          <div class="row gap wrap"><span class="dot" id="gDot"></span><span id="gState" data-i18n="sec_local_not_signed">Sin sesión en Google</span><span class="grow"></span>
+            <button type="button" class="btn primary sm" id="btnGLogin" data-i18n="sec_local_btn_login">Iniciar sesión con Google</button>
+            <button type="button" class="btn ghost sm" id="btnGLogout" hidden data-i18n="sec_local_btn_logout">Cerrar sesión</button></div>
+          <div id="gCodeBox" class="g-code" hidden>
+            <p class="hint" style="margin:0 0 8px" data-i18n="sec_local_auth_opened">Se ha abierto la página de autorización de Google en tu navegador. Inicia sesión, pulsa «Permitir» y pega aquí el código de autorización:</p>
+            <div class="row gap"><input id="gCode" class="grow mono" data-i18n-placeholder="sec_local_auth_code_placeholder" placeholder="Pega el código de autorización" autocomplete="off"><button type="button" class="btn primary sm" id="btnGCode" data-i18n="sec_local_btn_confirm">Confirmar</button></div>
+            <p class="hint"><span data-i18n="sec_local_auth_not_opened">¿No se abrió el navegador?</span> <a href="#" id="gOpenAgain" data-i18n="sec_local_auth_open_again">Abrir de nuevo</a></p>
+          </div>
+          <div class="row gap wrap" style="margin-top:14px">
+            <label class="fld narrow"><span data-i18n="sec_local_default_gpu">GPU predeterminada</span><select name="local_accelerator"><option value="" data-i18n="sec_local_gpu_profile">Según el perfil</option><option>T4</option><option>L4</option><option>G4</option><option>A100</option><option>H100</option></select></label>
+            <label class="fld narrow"><span data-i18n="sec_local_idle">Apagado por inactividad (min)</span><input type="number" name="local_idle_min" min="5" max="600" placeholder="30"></label>
+            <label class="fld narrow"><span data-i18n="sec_local_max_hours">Sesión máxima (horas)</span><input type="number" name="local_max_hours" min="1" max="24" step="0.5" placeholder="6"></label>
+          </div>
+          <label class="fld"><span data-i18n="sec_local_hf_token">Token de Hugging Face (opcional)</span><input name="hf_token" type="password" autocomplete="off" data-i18n-placeholder="sec_local_hf_placeholder" placeholder="hf_…"></label>
+          <p class="hint" style="margin-top:-6px" data-i18n="sec_local_hf_hint">Solo es necesario para modelos con acceso restringido (gated). Se guarda únicamente en este Mac y se envía a la VM de Colab durante la descarga sin registrarse en logs.</p>
+          <div id="gTools" hidden>
+            <div class="row gap wrap" style="margin-top:14px"><button type="button" class="btn sm" id="btnGCCU" data-i18n="sec_local_ccu_btn">Consultar saldo de CU</button><span class="muted small mono" id="gCCU"></span></div>
+            <div class="row gap wrap" style="margin-top:10px">
+              <span class="small muted" data-i18n="sec_local_smoke_title">Prueba de arranque</span>
+              <select id="gAcc"><option>T4</option><option selected>L4</option><option>G4</option><option>A100</option><option>H100</option></select>
+              <button type="button" class="btn sm" id="btnGSmoke" data-i18n="sec_local_smoke_btn">Probar encendido de GPU (~1–2 min, se apaga al terminar)</button>
+            </div>
+            <pre class="g-log" id="gLog" hidden></pre>
+          </div>
+          <p class="err" id="gErr"></p>
+        </div>
+
+        <div class="sec-h"><span class="n">11</span><b data-i18n="sec_custom_models">Modelos personalizados</b><span class="d" data-i18n="sec_custom_models_desc">Perfiles de inicio creados a partir de enlaces de Hugging Face</span><span class="grow"></span><button type="button" class="btn primary xs" id="btnCMAdd" data-i18n="sec_custom_models_add">＋ Añadir modelo</button></div>
+        <div class="card cm-card"><div id="cmList" class="cm-list"><p class="muted small" data-i18n="common_loading">Cargando…</p></div>
+          <p class="hint" data-i18n="sec_custom_models_hint">Los perfiles integrados no se pueden modificar ni eliminar. Los modelos provienen de terceros; respeta sus licencias correspondientes.</p></div>
+
+        <div class="sec-h"><span class="n">12</span><b data-i18n="sec_license">Licencia y Plan</b><span class="d" id="licTierDesc">Plan Free</span><span class="grow"></span>
+          <div class="row gap">
+            <button type="button" class="btn primary xs" id="btnSubscribePro" data-i18n="set_btn_subscribe_pro">⭐ Suscribirse a Pro</button>
+            <button type="button" class="btn ghost xs" id="btnLicModal" data-i18n="sec_license_activate">Activar clave</button>
+          </div>
+        </div>
+        <div class="card" id="licCard">
+          <div class="row between wrap gap">
+            <div>
+              <div class="row gap center"><b data-i18n="sec_license_account">Estado de la cuenta:</b> <span class="pill sm" id="licPill">Free</span> <span id="licExpiresText" class="muted small"></span></div>
+              <div class="muted small" id="licEmailText" style="margin-top:4px"></div>
+              <div class="muted small" id="licVerifyText" style="margin-top:2px"></div>
+            </div>
+            <div class="row gap">
+              <button type="button" class="btn sm" id="btnLicDeactivate" hidden data-i18n="sec_license_deactivate">Desactivar clave</button>
+            </div>
+          </div>
+
+          <div class="pro-cta-banner" id="licCtaBanner">
+            <div>
+              <h4 data-i18n="lic_banner_title">⚡ Pasa a WakeGPU Pro</h4>
+              <p data-i18n="lic_banner_text">Evita el gasto innecesario de Compute Units con el Guardián Zero-Waste, genera por lotes y recibe avisos en tu móvil.</p>
+            </div>
+            <button type="button" class="btn primary sm" id="btnBannerUpgrade" data-i18n="btn_view_plans">Ver planes y precios ↗</button>
+          </div>
+
+          <div style="margin-top:14px">
+            <b class="small" data-i18n="lic_compare_title">Comparativa de planes:</b>
+            <table class="plan-comp-table">
+              <thead>
+                <tr>
+                  <th data-i18n="lic_th_feature">Funcionalidad</th>
+                  <th data-i18n="side_tier_free">Plan Free</th>
+                  <th data-i18n="lic_th_pro">Plan Pro</th>
+                </tr>
+              </thead>
+              <tbody id="planCompBody">
+                <tr>
+                  <td><b data-i18n="lic_comp_zw">Ahorro de saldo Colab (Zero-Waste)</b></td>
+                  <td data-i18n="lic_comp_free_zw">30 min inactividad obligatoria</td>
+                  <td data-i18n="lic_comp_pro_zw">⚡ Apagado agresivo al terminar cola</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="lic_comp_batch">Generación por lotes (Batch)</b></td>
+                  <td data-i18n="lic_comp_free_batch">1 tarea individual por envío</td>
+                  <td data-i18n="sec_license_pro_batches">⚡ Hasta 50 copias con semillas variables</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="sec_license_feature_auto_hd">Auto-HD Encadenado</b></td>
+                  <td data-i18n="sec_license_free_auto_hd">Manual desde la cola</td>
+                  <td data-i18n="lic_comp_pro_autohd">⚡ Automático (Borrador ➔ Alta resolución)</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="sec_license_feature_notifications">Notificaciones Push</b></td>
+                  <td data-i18n="sec_license_free_notifications">No disponible</td>
+                  <td data-i18n="lic_comp_pro_notify">⚡ Discord Webhook y Telegram Bot</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="lic_comp_sync">Copia de Seguridad y Sincronización</b></td>
+                  <td data-i18n="lic_comp_free_sync">Almacenamiento local</td>
+                  <td data-i18n="lic_comp_pro_sync">⚡ Exportación y Cloud Sync en 1 clic</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="sec-h"><span class="n">13</span><b data-i18n="set_zw_cost_title">Guardián de costes Zero-Waste</b><span class="pill sm zw" id="zwStatusPill">Pro</span><span class="d" data-i18n="set_zw_cost_desc">Protección automática contra consumo fantasma de saldo</span></div>
+        <div class="card">
+          <label class="chk switch-row">
+            <input type="checkbox" name="zero_waste_enabled" id="zwEnabled">
+            <span><b data-i18n="lic_zw_toggle">Activar Zero-Waste Watchdog</b> <span data-i18n="lic_zw_toggle_sub">(apaga la GPU de inmediato al terminar la cola)</span></span>
+          </label>
+          <div id="zwOptions" class="form-grid" style="margin-top:12px">
+            <label class="fld"><span data-i18n="lic_zw_idle">Inactividad tras vaciar la cola (segundos)</span><input type="number" name="zero_waste_idle_sec" id="zwIdleSec" min="30" max="1800" placeholder="120"></label>
+            <label class="fld"><span data-i18n="lic_zw_max_cu">Límite de gasto máximo por sesión (CU)</span><input type="number" step="any" name="zero_waste_max_cu" id="zwMaxCU" min="0" data-i18n-placeholder="lic_zw_no_limit" placeholder="0 = sin límite"></label>
+            <label class="fld"><span data-i18n="lic_zw_min_bal">Saldo mínimo de seguridad (CU)</span><input type="number" step="any" name="zero_waste_min_bal" id="zwMinBal" min="0" data-i18n-placeholder="lic_zw_no_limit" placeholder="0 = sin límite"></label>
+          </div>
+          <p class="hint" data-i18n="lic_zw_hint_full">Al activarse, la máquina no esperará los 30 minutos estándar de inactividad de Colab. En cuanto termine el último trabajo de la cola y transcurra el tiempo de gracia, se respaldarán los flujos y se apagará la máquina automáticamente, evitando gastar saldo innecesario.</p>
+        </div>
+
+        <div class="sec-h"><span class="n">14</span><b data-i18n="sec_notify">Notificaciones remotas</b><span class="pill sm pro">Pro</span><span class="d" data-i18n="sec_notify_desc">Avisos automáticos en tu móvil (Discord / Telegram)</span></div>
+        <div class="card">
+          <div class="form-grid">
+            <label class="fld"><span data-i18n="sec_notify_discord">Webhook de Discord (URL)</span><input name="notify_discord_url" id="notifyDiscordURL" data-i18n-placeholder="sec_notify_discord_placeholder" placeholder="https://discord.com/api/webhooks/..."></label>
+            <label class="fld"><span data-i18n="sec_notify_tg_token">Token de Bot de Telegram</span><input name="notify_telegram_token" id="notifyTgToken" data-i18n-placeholder="sec_notify_tg_token_placeholder" placeholder="123456789:ABCdefGHI..."></label>
+            <label class="fld"><span data-i18n="sec_notify_tg_chat">Chat ID de Telegram</span><input name="notify_telegram_chat" id="notifyTgChat" data-i18n-placeholder="sec_notify_tg_chat_placeholder" placeholder="-100123456789 o ID de usuario"></label>
+          </div>
+          <div class="row gap wrap" style="margin-top:10px">
+            <label class="chk"><input type="checkbox" name="notify_on_job_done" id="notifyJobDone"> <span data-i18n="sec_notify_on_done">Al terminar tarea con éxito</span></label>
+            <label class="chk"><input type="checkbox" name="notify_on_job_failed" id="notifyJobFailed"> <span data-i18n="sec_notify_on_failed">Si una tarea falla</span></label>
+            <label class="chk"><input type="checkbox" name="notify_on_gpu_stop" id="notifyGpuStop"> <span data-i18n="sec_notify_on_stop">Al apagar GPU / Guardián Zero-Waste</span></label>
+          </div>
+          <div class="row gap wrap" style="margin-top:12px">
+            <button type="button" class="btn sm" id="btnNotifyTest" data-i18n="sec_notify_btn_test">Probar notificación</button>
+            <span class="muted small" id="notifyTestMsg"></span>
+          </div>
+          <p class="hint" data-i18n="sec_notify_hint">Recibe alertas instantáneas en tu canal de Discord o chat de Telegram sin tener que estar frente a la pantalla observando el renderizado o esperando a que la GPU se apague.</p>
+        </div>
+
+        <div class="sec-h"><span class="n">15</span><b data-i18n="sec_sync">Sincronización y Respaldo (Cloud Sync)</b><span class="pill sm pro">Pro</span><span class="d" data-i18n="sec_sync_desc">Exportación e importación rápida de biblioteca de prompts y flujos</span></div>
+        <div class="card">
+          <div class="row gap wrap">
+            <button type="button" class="btn sm primary" id="btnSyncExport" data-i18n="sec_sync_export">⬇ Exportar copia de seguridad (.json)</button>
+            <label class="btn sm" id="btnSyncImportLabel"><span data-i18n="sec_sync_import">⬆ Importar copia de seguridad</span><input type="file" id="syncImportFile" accept=".json,application/json" hidden></label>
+            <span class="muted small" id="syncMsg"></span>
+          </div>
+          <p class="hint" data-i18n="sec_sync_hint">Exporta todas tus plantillas personalizadas y biblioteca de prompts en un archivo único de respaldo para migrar a otro equipo Mac/PC o sincronizar tus configuraciones de forma segura.</p>
+        </div>
+
+        <div class="sec-h"><span class="n">16</span><b data-i18n="sec_update">Actualización de software</b><span class="d" id="updCur"></span></div>
+        <div class="card">
+          <label class="fld"><span data-i18n="sec_update_url">URL de actualización (latest.json)</span><input name="update_url" id="updUrl" placeholder=""></label>
+          <div class="row gap wrap"><button type="button" class="btn sm" id="btnUpdCheck" data-i18n="sec_update_btn_check">Buscar actualizaciones</button><span class="muted small" id="updMsg"></span></div>
+          <div class="row gap wrap" style="margin-top:12px"><button type="button" class="btn sm" id="btnRerunGuide" data-i18n="sec_update_btn_rerun">Repetir guía inicial</button><span class="muted small" data-i18n="sec_update_rerun_desc">Volver a recorrer la configuración de red, modo de conexión, inicio de sesión y primera prueba</span></div>
+        </div>
+
+        <div class="save-bar"><button class="btn primary" type="submit" data-i18n="settings_save">Guardar</button><button type="button" class="btn" id="btnTest" data-i18n="settings_test">Probar conexión</button><span id="setMsg" class="muted small"></span><span class="grow"></span><span class="muted small mono" id="dataDirText"></span></div>
+      </form>
+    </section>
+  </main>
+</div>
+
+<!-- Barra de navegación inferior táctil para iOS / Android PWA -->
+<nav class="mob-nav" id="mobNav" aria-label="Navegación móvil">
+  <button type="button" data-page="console" class="on"><i>🖥</i><span data-i18n="nav_console">Consola</span></button>
+  <button type="button" data-page="ai"><i>✦</i><span data-i18n="nav_ai">IA</span></button>
+  <button type="button" data-page="gen"><i>🎬</i><span data-i18n="nav_gen">Generar</span></button>
+  <button type="button" data-page="queue"><i>📋</i><span data-i18n="nav_queue">Cola</span></button>
+  <button type="button" data-page="results"><i>🖼</i><span data-i18n="nav_results">Resultados</span></button>
+  <button type="button" data-page="settings"><i>⚙</i><span data-i18n="nav_settings">Ajustes</span></button>
+</nav>
+
+<div class="modal" id="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+<div class="ob" id="ob" hidden></div>
+<div class="ob-mini" id="obMini" hidden></div>
+<div class="ob-coach" id="obCoach" hidden></div>
+<script src="/app.js"></script>
+<script src="/ai.js"></script>
+<script src="/models.js"></script>
+<script src="/userdata.js"></script>
+<script src="/onboarding.js"></script>
+<script src="/profile-workflows.js"></script>
+</body>
+</html>

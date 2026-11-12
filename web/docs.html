@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WakeGPU · Guía de uso y Documentación</title>
+<meta name="description" content="Guía paso a paso para instalar, configurar y utilizar WakeGPU en macOS y Windows: conexión con Google Colab, generación en ComfyUI, ahorro de CU y funciones Pro.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://wakegpu.com/docs.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="WakeGPU">
+<meta property="og:url" content="https://wakegpu.com/docs.html">
+<meta property="og:title" content="WakeGPU · Guía de uso y Documentación">
+<meta property="og:description" content="Guía paso a paso para instalar, configurar y utilizar WakeGPU en macOS y Windows: conexión con Google Colab, generación en ComfyUI, ahorro de CU y funciones Pro.">
+<meta property="og:image" content="https://wakegpu.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#090a0f">
+<style>
+:root{--bg:#090a0f;--card:#12151e;--card2:#171b28;--line:rgba(255,255,255,.08);--text:#f1f5f9;--muted:#94a3b8;--acc:#f59e0b;--ok:#34d399;--err:#f87171}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(30, 41, 59, 0.45), transparent 70%);color:var(--text);line-height:1.65}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(9,10,15,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+.brand{font-weight:700;letter-spacing:-.2px;font-size:18px;color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px}
+.badge-doc{background:rgba(245,158,11,.12);color:var(--acc);border:1px solid rgba(245,158,11,.35);font-size:11px;padding:2px 8px;border-radius:99px;font-weight:700}
+.nav-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.nav-link{color:var(--muted);text-decoration:none;font-size:14px;transition:color .12s}
+.nav-link:hover,.nav-link.active{color:#fff}
+.lang button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:4px 10px;cursor:pointer;margin-left:4px;font-size:12px;font-weight:600}
+.lang button.on{color:var(--text);border-color:var(--acc);background:rgba(245,158,11,.12)}
+.doc-layout{display:grid;grid-template-columns:250px 1fr;gap:36px;padding:40px 0 64px;align-items:start}
+.toc{position:sticky;top:84px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.toc-title{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:0 0 10px;font-weight:700}
+.toc a{display:block;color:var(--muted);text-decoration:none;font-size:14px;padding:6px 8px;border-radius:6px;transition:color .12s,background .12s}
+.toc a:hover{color:var(--text);background:var(--card2)}
+.doc-main{min-width:0}
+.doc-hero{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.doc-hero h1{font-size:clamp(26px,4vw,36px);margin:0 0 10px;line-height:1.2}
+.doc-hero p{color:var(--muted);font-size:17px;margin:0}
+.doc-sec{margin-bottom:44px;scroll-margin-top:84px}
+.doc-sec h2{font-size:22px;margin:0 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line);color:var(--acc)}
+.doc-sec h3{font-size:17px;margin:22px 0 8px;color:var(--text)}
+.doc-sec p{margin:0 0 12px;color:var(--text)}
+.doc-sec ul,.doc-sec ol{margin:0 0 16px;padding-left:22px}
+.doc-sec li{margin-bottom:8px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+.info-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.info-card h4{margin:0 0 8px;font-size:15px;color:var(--acc)}
+.info-card p{margin:0;font-size:14px;color:var(--muted)}
+.callout{background:var(--card);border-left:4px solid var(--acc);border-radius:8px;padding:14px 18px;margin:16px 0;font-size:14px;color:var(--muted)}
+.callout strong{color:var(--text)}
+.callout.pro{border-left-color:var(--ok);background:rgba(126,201,126,.07)}
+code,kbd{background:var(--card2);border:1px solid var(--line);padding:2px 6px;border-radius:5px;font-family:ui-monospace,monospace;font-size:13px;color:var(--acc)}
+pre{background:#100e0c;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:13px;color:var(--text)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:14px;margin:14px 0}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:var(--card2);color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:none}
+.tag-pro{display:inline-block;background:rgba(232,179,75,.18);color:var(--acc);border:1px solid rgba(232,179,75,.4);font-size:11px;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:6px;vertical-align:middle}
+footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer a{color:var(--muted)}
+@media(max-width:820px){
+  .doc-layout{grid-template-columns:1fr}
+  .toc{position:static}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html">◆ WakeGPU <span class="badge-doc" data-es="Documentación" data-en="Documentation">Documentación</span></a>
+    <div class="nav-right">
+      <a class="nav-link" href="index.html" data-es="Inicio y Precios" data-en="Home &amp; Pricing">Inicio y Precios</a>
+      <a class="nav-link active" href="docs.html" data-es="Guía de uso" data-en="User Guide">Guía de uso</a>
+      <a class="nav-link" href="recover.html" data-es="Recuperar clave" data-en="Recover key">Recuperar clave</a>
+      <span class="lang">
+        <button id="btnEs" class="on" type="button">🇪🇸 ES</button>
+        <button id="btnEn" type="button">🇬🇧 EN</button>
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap doc-layout">
+  <!-- ===== ÍNDICE LATERAL ===== -->
+  <aside class="toc" aria-label="Índice">
+    <div class="toc-title" data-es="En esta guía" data-en="On this page">En esta guía</div>
+    <a href="#requisitos" data-es="1. Qué necesitas" data-en="1. What you need">1. Qué necesitas</a>
+    <a href="#instalacion" data-es="2. Instalación (macOS y Windows)" data-en="2. Installation (macOS &amp; Windows)">2. Instalación (macOS y Windows)</a>
+    <a href="#conexion" data-es="3. Conectar con Google Colab" data-en="3. Connecting to Google Colab">3. Conectar con Google Colab</a>
+    <a href="#pantallas" data-es="4. Cómo usar cada sección" data-en="4. Using each workspace">4. Cómo usar cada sección</a>
+    <a href="#pro" data-es="5. Activar y usar funciones Pro" data-en="5. Activating &amp; using Pro features">5. Activar y usar funciones Pro</a>
+    <a href="#ahorro-cu" data-es="6. Consejos para ahorrar CU" data-en="6. Tips to save Compute Units">6. Consejos para ahorrar CU</a>
+    <a href="#faq-tecnico" data-es="7. Solución de problemas" data-en="7. Troubleshooting">7. Solución de problemas</a>
+    <a href="#faceless-n8n" data-es="8. Canales Faceless (n8n)" data-en="8. Faceless Channels (n8n)">8. Canales Faceless (n8n)</a>
+  </aside>
+
+  <!-- ===== CONTENIDO PRINCIPAL ===== -->
+  <main class="doc-main">
+    <div class="doc-hero">
+      <h1 data-es="Guía de uso de WakeGPU" data-en="WakeGPU User Guide">Guía de uso de WakeGPU</h1>
+      <p data-es="De cero a tu primera imagen, vídeo o chat con IA en unos minutos. Aprende a conectar tu cuenta de Google Colab, ejecutar flujos de ComfyUI y exprimir al máximo tus unidades de cómputo (CU)."
+         data-en="From zero to your first AI image, video or chat in minutes. Learn how to connect your Google Colab account, run ComfyUI workflows and get the most out of your compute units (CU).">De cero a tu primera imagen, vídeo o chat con IA en unos minutos. Aprende a conectar tu cuenta de Google Colab, ejecutar flujos de ComfyUI y exprimir al máximo tus unidades de cómputo (CU).</p>
+    </div>
+
+    <!-- 1. REQUISITOS -->
+    <section class="doc-sec" id="requisitos">
+      <h2 data-es="1. Qué necesitas antes de empezar" data-en="1. What you need before starting">1. Qué necesitas antes de empezar</h2>
+      <table>
+        <thead>
+          <tr>
+            <th data-es="Elemento" data-en="Requirement">Elemento</th>
+            <th data-es="Detalle" data-en="Details">Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>macOS / Windows</strong></td>
+            <td data-es="macOS 12+ (Apple Silicon o Intel) o Windows 10/11 (64 bits con WebView2 integrado)."
+                data-en="macOS 12+ (Apple Silicon or Intel) or Windows 10/11 (64-bit with built-in WebView2).">macOS 12+ (Apple Silicon o Intel) o Windows 10/11 (64 bits con WebView2 integrado).</td>
+          </tr>
+          <tr>
+            <td><strong>Google Colab + Saldo CU</strong></td>
+            <td data-es="Una cuenta de Google con unidades de cómputo (Pay As You Go o Colab Pro/Pro+). Las GPUs potentes como L4, G4 o A100 requieren saldo de CU positivo."
+                data-en="A Google account with compute units (Pay As You Go or Colab Pro/Pro+). Powerful GPUs like L4, G4 or A100 require a positive CU balance.">Una cuenta de Google con unidades de cómputo (Pay As You Go o Colab Pro/Pro+). Las GPUs potentes como L4, G4 o A100 requieren saldo de CU positivo.</td>
+          </tr>
+          <tr>
+            <td data-es="<strong>Conexión a Internet</strong>" data-en="<strong>Internet Connection</strong>"><strong>Conexión a Internet</strong></td>
+            <td data-es="Acceso a Google, Hugging Face y GitHub. Los modelos pesados (7–25 GB) se descargan directamente en la nube de Colab, no consumen tu ancho de banda local."
+                data-en="Access to Google, Hugging Face and GitHub. Heavy models (7–25 GB) download directly inside Google Colab's cloud, not over your local bandwidth.">Acceso a Google, Hugging Face y GitHub. Los modelos pesados (7–25 GB) se descargan directamente en la nube de Colab, no consumen tu ancho de banda local.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 2. INSTALACIÓN -->
+    <section class="doc-sec" id="instalacion">
+      <h2 data-es="2. Instalación y primer arranque" data-en="2. Installation &amp; first launch">2. Instalación y primer arranque</h2>
+      <div class="card-grid">
+        <div class="info-card">
+          <h4>🍎 macOS (.zip / WakeGPU.app)</h4>
+          <p data-es="1. Descarga el archivo .zip desde Releases y descomprímelo.<br>2. Arrastra <code>WakeGPU.app</code> a tu carpeta <strong>Aplicaciones</strong>.<br>3. La primera vez, haz <strong>clic derecho → Abrir</strong> (o ve a <em>Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente</em>)."
+             data-en="1. Download the .zip archive from Releases and unzip it.<br>2. Drag <code>WakeGPU.app</code> into your <strong>Applications</strong> folder.<br>3. On first launch, <strong>Right-click → Open</strong> (or go to <em>System Settings → Privacy &amp; Security → Open Anyway</em>).">1. Descarga el archivo .zip desde Releases y descomprímelo.<br>2. Arrastra <code>WakeGPU.app</code> a tu carpeta <strong>Aplicaciones</strong>.<br>3. La primera vez, haz <strong>clic derecho → Abrir</strong> (o ve a <em>Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente</em>).</p>
+        </div>
+        <div class="info-card">
+          <h4>🪟 Windows (WakeGPU.exe)</h4>
+          <p data-es="1. Descarga el ejecutable portátil <code>WakeGPU-x.y.z.exe</code>.<br>2. Haz doble clic para abrirlo (no requiere instalador).<br>3. Si aparece el aviso de SmartScreen («Windows protegió su PC»), pulsa en <strong>Más información</strong> y luego en <strong>Ejecutar de todas formas</strong>."
+             data-en="1. Download the portable executable <code>WakeGPU-x.y.z.exe</code>.<br>2. Double-click to run (no installer needed).<br>3. If Windows SmartScreen appears ('Windows protected your PC'), click <strong>More info</strong> and then <strong>Run anyway</strong>.">1. Descarga el ejecutable portátil <code>WakeGPU-x.y.z.exe</code>.<br>2. Haz doble clic para abrirlo (no requiere instalador).<br>3. Si aparece el aviso de SmartScreen («Windows protegió su PC»), pulsa en <strong>Más información</strong> y luego en <strong>Ejecutar de todas formas</strong>.</p>
+        </div>
+      </div>
+      <div class="callout" data-es="<strong>Asistente de bienvenida integrado:</strong> Al abrir WakeGPU por primera vez se iniciará automáticamente el asistente paso a paso. Puedes volver a abrirlo cuando quieras desde el botón <code>?</code> de la esquina superior derecha."
+           data-en="<strong>Built-in Onboarding Wizard:</strong> When you open WakeGPU for the first time, the step-by-step wizard launches automatically. You can reopen it anytime from the top-right <code>?</code> button.">
+        <strong>Asistente de bienvenida integrado:</strong> Al abrir WakeGPU por primera vez se iniciará automáticamente el asistente paso a paso. Puedes volver a abrirlo cuando quieras desde el botón <code>?</code> de la esquina superior derecha.
+      </div>
+    </section>
+
+    <!-- 3. CONEXIÓN -->
+    <section class="doc-sec" id="conexion">
+      <h2 data-es="3. Conectar con Google Colab (2 modos)" data-en="3. Connecting to Google Colab (2 modes)">3. Conectar con Google Colab (2 modos)</h2>
+      <p data-es="WakeGPU ofrece dos formas de despertar y controlar tus GPUs en Google Colab:"
+         data-en="WakeGPU offers two ways to wake and control your Google Colab GPUs:">WakeGPU ofrece dos formas de despertar y controlar tus GPUs en Google Colab:</p>
+
+      <h3 data-es="Opción A: Modo Local Directo (El más rápido, sin servidores)" data-en="Option A: Direct Local Mode (Fastest, no server required)">Opción A: Modo Local Directo (El más rápido, sin servidores)</h3>
+      <ol>
+        <li data-es="En el asistente inicial (o en <strong>Ajustes → Conexión</strong>), selecciona <strong>Modo Local</strong> y pulsa <strong>Iniciar sesión con Google</strong>."
+            data-en="In the onboarding wizard (or <strong>Settings → Connection</strong>), select <strong>Local Mode</strong> and click <strong>Sign in with Google</strong>.">En el asistente inicial (o en <strong>Ajustes → Conexión</strong>), selecciona <strong>Modo Local</strong> y pulsa <strong>Iniciar sesión con Google</strong>.</li>
+        <li data-es="Se abrirá tu navegador. Autoriza el acceso y copia el código que muestra Google."
+            data-en="Your browser will open. Grant access and copy the authorization code shown by Google.">Se abrirá tu navegador. Autoriza el acceso y copia el código que muestra Google.</li>
+        <li data-es="Vuelve a WakeGPU: la app detecta el código del portapapeles automáticamente y te mostrará tu <strong>saldo de unidades de cómputo (CU)</strong> en tiempo real."
+            data-en="Return to WakeGPU: the app detects the code from your clipboard automatically and displays your real-time <strong>Compute Units (CU) balance</strong>.">Vuelve a WakeGPU: la app detecta el código del portapapeles automáticamente y te mostrará tu <strong>saldo de unidades de cómputo (CU)</strong> en tiempo real.</li>
+        <li data-es="Elige el perfil inicial (p. ej. <em>RealVisXL · L4</em>) y pulsa <strong>Despertar GPU</strong>. El primer arranque tarda entre 5 y 8 minutos mientras Colab descarga los modelos."
+            data-en="Pick a starter profile (e.g., <em>RealVisXL · L4</em>) and click <strong>Wake GPU</strong>. The first boot takes 5–8 minutes while Colab downloads the models.">Elige el perfil inicial (p. ej. <em>RealVisXL · L4</em>) y pulsa <strong>Despertar GPU</strong>. El primer arranque tarda entre 5 y 8 minutos mientras Colab descarga los modelos.</li>
+      </ol>
+
+      <h3 data-es="Opción B: Modo Pasarela VPS (comfy-colab-kit)" data-en="Option B: VPS Gateway Mode (comfy-colab-kit)">Opción B: Modo Pasarela VPS (comfy-colab-kit)</h3>
+      <p data-es="Ideal si tienes un VPS propio ejecutando <code>comfy-colab-kit</code> y quieres compartir el entorno o mantener sesiones desacopladas de tu ordenador:"
+         data-en="Ideal if you run your own VPS with <code>comfy-colab-kit</code> and want to share the environment or keep sessions decoupled from your desktop:">Ideal si tienes un VPS propio ejecutando <code>comfy-colab-kit</code> y quieres compartir el entorno o mantener sesiones desacopladas de tu ordenador:</p>
+      <ul>
+        <li data-es="Ve a <strong>Ajustes → Conexión</strong> y elige <strong>Modo Pasarela (VPS)</strong>."
+            data-en="Go to <strong>Settings → Connection</strong> and choose <strong>Gateway Mode (VPS)</strong>.">Ve a <strong>Ajustes → Conexión</strong> y elige <strong>Modo Pasarela (VPS)</strong>.</li>
+        <li data-es="Introduce la <strong>URL de tu pasarela</strong> y el <strong>Token de Agente</strong> ( más los encabezados de Cloudflare Access si usas Zero Trust)."
+            data-en="Enter your <strong>Gateway URL</strong> and <strong>Agent Token</strong> (plus Cloudflare Access headers if you use Zero Trust).">Introduce la <strong>URL de tu pasarela</strong> y el <strong>Token de Agente</strong> (más los encabezados de Cloudflare Access si usas Zero Trust).</li>
+        <li data-es="Pulsa <strong>Probar conexión</strong> y guarda los ajustes."
+            data-en="Click <strong>Test connection</strong> and save settings.">Pulsa <strong>Probar conexión</strong> y guarda los ajustes.</li>
+      </ul>
+    </section>
+
+    <!-- 4. PANTALLAS DE LA APP -->
+    <section class="doc-sec" id="pantallas">
+      <h2 data-es="4. Cómo usar cada sección de la aplicación" data-en="4. How to use each workspace in the app">4. Cómo usar cada sección de la aplicación</h2>
+      <div class="card-grid">
+        <div class="info-card">
+          <h4 data-es="✦ Modo Sencillo vs ⚡ Modo Avanzado" data-en="✦ Simple Mode vs ⚡ Advanced Mode">✦ Modo Sencillo vs ⚡ Modo Avanzado</h4>
+          <p data-es="Alterna en cualquier momento desde el selector superior: el <strong>Modo Sencillo</strong> ofrece objetivos preseleccionados (Foto Realista, Arte FLUX, Vídeo H3 y Chat Qwen) con sugerencias de prompts y proporciones visuales (9:16, 1:1, 16:9) en 1 clic; el <strong>Modo Avanzado</strong> desbloquea el control de nodos ComfyUI, edición de API JSON, samplers, steps, LoRAs y modelos Hugging Face."
+             data-en="Switch anytime from the top bar: <strong>Simple Mode</strong> offers 1-click goals (Photorealism, FLUX Art, H3 Video, Qwen Chat) with prompt suggestions and aspect ratios (9:16, 1:1, 16:9); <strong>Advanced Mode</strong> unlocks full ComfyUI node graphs, API JSON editing, samplers, steps, LoRAs, and Hugging Face models.">Alterna en cualquier momento desde el selector superior: el <strong>Modo Sencillo</strong> ofrece objetivos preseleccionados (Foto Realista, Arte FLUX, Vídeo H3 y Chat Qwen) con sugerencias de prompts y proporciones visuales (9:16, 1:1, 16:9) en 1 clic; el <strong>Modo Avanzado</strong> desbloquea el control de nodos ComfyUI, edición de API JSON, samplers, steps, LoRAs y modelos Hugging Face.</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="🖥 Consola y Panel de Consumo CU (€)" data-en="🖥 Console &amp; CU Cost Panel (€)">🖥 Consola y Panel de Consumo CU (€)</h4>
+          <p data-es="Muestra el estado de tu GPU, el registro de arranque en vivo y el nuevo <strong>Panel de Tiempo y Consumo de CU</strong>: consulta en tiempo real cuántas CU y euros (≈ 0,10 €/CU) llevas gastados en la sesión actual, hoy, en los últimos 7 y 30 días, y cuánto te ha ahorrado el Guardián Zero-Waste."
+             data-en="Shows your GPU state, live boot logs, and the <strong>Time &amp; CU Cost Panel</strong>: track in real time how many CUs and euros (≈ €0.10/CU) you have spent in the current session, today, over 7 and 30 days, plus total savings from Zero-Waste Guardian.">Muestra el estado de tu GPU, el registro de arranque en vivo y el nuevo <strong>Panel de Tiempo y Consumo de CU</strong>: consulta en tiempo real cuántas CU y euros (≈ 0,10 €/CU) llevas gastados en la sesión actual, hoy, en los últimos 7 y 30 días, y cuánto te ha ahorrado el Guardián Zero-Waste.</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="✦ Estudio IA (Imagen, Chat y Modelos)" data-en="✦ AI Studio (Image, Chat &amp; Models)">✦ Estudio IA (Imagen, Chat y Modelos)</h4>
+          <p data-es="Modo simplificado sin nodos: genera imágenes con <strong>RealVisXL</strong> o <strong>Chroma1-HD</strong>, conversa con el LLM local <strong>Qwen 27B</strong> corriendo en tu GPU o pulsa <strong>«+ Añadir modelo»</strong> pegando cualquier enlace de Hugging Face para que WakeGPU cree el perfil automáticamente."
+             data-en="Node-free studio: generate images with <strong>RealVisXL</strong> or <strong>Chroma1-HD</strong>, chat with the <strong>Qwen 27B</strong> LLM running on your GPU, or click <strong>'+ Add model'</strong> and paste any Hugging Face URL for WakeGPU to auto-build a profile.">Modo simplificado sin nodos: genera imágenes con <strong>RealVisXL</strong> o <strong>Chroma1-HD</strong>, conversa con el LLM local <strong>Qwen 27B</strong> corriendo en tu GPU o pulsa <strong>«+ Añadir modelo»</strong> pegando cualquier enlace de Hugging Face para que WakeGPU cree el perfil automáticamente.</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="🎬 Generar (Flujos ComfyUI)" data-en="🎬 Generate (ComfyUI Workflows)">🎬 Generar (Flujos ComfyUI)</h4>
+          <p data-es="Importa cualquier flujo de ComfyUI exportado en formato <code>Export (API)</code>. WakeGPU detecta automáticamente los campos de prompt, semilla, resolución, pasos e imagen de entrada. Incluye asistente para redactar prompts con IA y modo Borrador rápido."
+             data-en="Import any ComfyUI workflow exported via <code>Export (API)</code>. WakeGPU automatically detects prompt, seed, resolution, steps and input image fields. Includes an AI prompt drafter and fast Draft mode.">Importa cualquier flujo de ComfyUI exportado en formato <code>Export (API)</code>. WakeGPU detecta automáticamente los campos de prompt, semilla, resolución, pasos e imagen de entrada. Incluye asistente para redactar prompts con IA y modo Borrador rápido.</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="📋 Cola, Resultados y Biblioteca" data-en="📋 Queue, Results &amp; Library">📋 Cola, Resultados y Biblioteca</h4>
+          <p data-es="Las tareas se ejecutan en orden y, al terminar, los vídeos e imágenes se descargan solos a tu carpeta local. En <strong>Biblioteca</strong> puedes guardar tus mejores prompts y plantillas para reutilizarlos en cualquier sesión."
+             data-en="Jobs run sequentially and, upon completion, videos and images download automatically to your local folder. In <strong>Library</strong> you can save your favorite prompts and templates to reuse anytime.">Las tareas se ejecutan en orden y, al terminar, los vídeos e imágenes se descargan solos a tu carpeta local. En <strong>Biblioteca</strong> puedes guardar tus mejores prompts y plantillas para reutilizarlos en cualquier sesión.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. FUNCIONES PRO -->
+    <section class="doc-sec" id="pro">
+      <h2 data-es="5. Cómo activar y utilizar las funciones Pro ⭐" data-en="5. How to activate &amp; use Pro features ⭐">5. Cómo activar y utilizar las funciones Pro ⭐</h2>
+      <div class="callout pro" data-es="<strong>Activación en la app:</strong> Ve a <code>Ajustes → 12. Licencia y Plan</code> (o pulsa el botón <code>⚡ Mejorar a Pro</code> de la barra lateral izquierda), pega tu clave <code>WLPRO-…</code> y haz clic en <strong>Activar Pro</strong>."
+           data-en="<strong>In-app activation:</strong> Go to <code>Settings → 12. License &amp; Plan</code> (or click the <code>⚡ Upgrade to Pro</code> button in the left sidebar), paste your <code>WLPRO-…</code> key and click <strong>Activate Pro</strong>.">
+        <strong>Activación en la app:</strong> Ve a <code>Ajustes → 12. Licencia y Plan</code> (o pulsa el botón <code>⚡ Mejorar a Pro</code> de la barra lateral izquierda), pega tu clave <code>WLPRO-…</code> y haz clic en <strong>Activar Pro</strong>.
+      </div>
+
+      <ul>
+        <li data-es="<strong>Guardián Zero-Waste</strong> <span class='tag-pro'>PRO</span>: En <code>Ajustes → 13. Guardián Zero-Waste</code>, activa el interruptor y define los segundos de espera tras vaciarse la cola (p. ej. 60 s), el gasto máximo de CU por sesión y el saldo mínimo de seguridad. Cuando termina tu última tarea, WakeGPU apaga y libera la GPU automáticamente."
+            data-en="<strong>Zero-Waste Guardian</strong> <span class='tag-pro'>PRO</span>: In <code>Settings → 13. Zero-Waste Guardian</code>, enable the toggle and set the idle seconds after the queue empties (e.g., 60 s), max CU burn per session, and minimum safety balance. Once your last job finishes, WakeGPU shuts down and releases the GPU automatically."><strong>Guardián Zero-Waste</strong> <span class="tag-pro">PRO</span>: En <code>Ajustes → 13. Guardián Zero-Waste</code>, activa el interruptor y define los segundos de espera tras vaciarse la cola (p. ej. 60 s), el gasto máximo de CU por sesión y el saldo mínimo de seguridad. Cuando termina tu última tarea, WakeGPU apaga y libera la GPU automáticamente.</li>
+        <li data-es="<strong>Generación por Lotes (hasta 50 copias)</strong> <span class='tag-pro'>PRO</span>: En la pestaña <strong>Generar</strong>, cambia el campo <code>Copias</code> de 1 a cualquier número hasta 50. WakeGPU encolará cada variante con una semilla aleatoria distinta y las numerará como <code>(1/N)</code>, <code>(2/N)</code>…"
+            data-en="<strong>Batch Generation (up to 50 copies)</strong> <span class='tag-pro'>PRO</span>: In the <strong>Generate</strong> tab, set the <code>Copies</code> field from 1 up to 50. WakeGPU queues each variant with a fresh random seed and numbers them <code>(1/N)</code>, <code>(2/N)</code>…"><strong>Generación por Lotes (hasta 50 copias)</strong> <span class="tag-pro">PRO</span>: En la pestaña <strong>Generar</strong>, cambia el campo <code>Copias</code> de 1 a cualquier número hasta 50. WakeGPU encolará cada variante con una semilla aleatoria distinta y las numerará como <code>(1/N)</code>, <code>(2/N)</code>…</li>
+        <li data-es="<strong>Pipeline Auto-HD encadenado</strong> <span class='tag-pro'>PRO</span>: En la pestaña <strong>Generar</strong>, marca la casilla <code>⚡ Auto-HD</code> antes de pulsar <strong>Borrador rápido</strong>. WakeGPU generará primero el borrador ligero y, en cuanto se descargue, encolará automáticamente la versión en resolución completa con la misma semilla."
+            data-en="<strong>Chained Auto-HD Pipeline</strong> <span class='tag-pro'>PRO</span>: In the <strong>Generate</strong> tab, check <code>⚡ Auto-HD</code> before clicking <strong>Fast Draft</strong>. WakeGPU renders the lightweight draft first and, as soon as it downloads, automatically queues the full-resolution render with the exact same seed."><strong>Pipeline Auto-HD encadenado</strong> <span class="tag-pro">PRO</span>: En la pestaña <strong>Generar</strong>, marca la casilla <code>⚡ Auto-HD</code> antes de pulsar <strong>Borrador rápido</strong>. WakeGPU generará primero el borrador ligero y, en cuanto se descargue, encolará automáticamente la versión en resolución completa con la misma semilla.</li>
+        <li data-es="<strong>Alertas Remotas en Discord y Telegram</strong> <span class='tag-pro'>PRO</span>: En <code>Ajustes → 15. Notificaciones remotas</code>, pega tu URL de Webhook de Discord o el Token + Chat ID de tu Bot de Telegram y pulsa <strong>Enviar mensaje de prueba</strong>. Recibirás avisos en el móvil cuando termine un vídeo o si ocurre un error."
+            data-en="<strong>Discord &amp; Telegram Remote Alerts</strong> <span class='tag-pro'>PRO</span>: In <code>Settings → 15. Remote Notifications</code>, paste your Discord Webhook URL or Telegram Bot Token + Chat ID and click <strong>Send test message</strong>. You'll get mobile pings when a video finishes or if an error occurs."><strong>Alertas Remotas en Discord y Telegram</strong> <span class="tag-pro">PRO</span>: En <code>Ajustes → 15. Notificaciones remotas</code>, pega tu URL de Webhook de Discord o el Token + Chat ID de tu Bot de Telegram y pulsa <strong>Enviar mensaje de prueba</strong>. Recibirás avisos en el móvil cuando termine un vídeo o si ocurre un error.</li>
+        <li data-es="<strong>Cloud Sync y Copia de Seguridad</strong> <span class='tag-pro'>PRO</span>: En <code>Ajustes → 16. Sincronización Cloud</code>, exporta en 1 clic un paquete JSON con todos tus prompts, plantillas y perfiles personalizados para respaldarlos o importarlos en otro Mac/PC."
+            data-en="<strong>Cloud Sync &amp; Backup</strong> <span class='tag-pro'>PRO</span>: In <code>Settings → 16. Cloud Sync</code>, export a single JSON bundle with all your prompts, templates and custom profiles in one click to back them up or import them on another Mac/PC."><strong>Cloud Sync y Copia de Seguridad</strong> <span class="tag-pro">PRO</span>: En <code>Ajustes → 16. Sincronización Cloud</code>, exporta en 1 clic un paquete JSON con todos tus prompts, plantillas y perfiles personalizados para respaldarlos o importarlos en otro Mac/PC.</li>
+      </ul>
+    </section>
+
+    <!-- 6. AHORRO DE CU -->
+    <section class="doc-sec" id="ahorro-cu">
+      <h2 data-es="6. Consejos prácticos para ahorrar Unidades de Cómputo (CU)" data-en="6. Practical tips to save Compute Units (CU)">6. Consejos prácticos para ahorrar Unidades de Cómputo (CU)</h2>
+      <ul>
+        <li data-es="<strong>Elige la GPU adecuada para cada modelo:</strong> Para modelos SDXL (como RealVisXL) una GPU <code>L4</code> es rápida y consume muchas menos CU por hora. Reserva la GPU <code>G4</code> o <code>A100</code> para modelos pesados como Chroma1-HD, vídeo H3 o LLMs de 27B."
+            data-en="<strong>Pick the right GPU for each model:</strong> For SDXL models (like RealVisXL), an <code>L4</code> GPU is fast and burns far fewer CUs per hour. Save <code>G4</code> or <code>A100</code> GPUs for heavy models like Chroma1-HD, H3 video or 27B LLMs."><strong>Elige la GPU adecuada para cada modelo:</strong> Para modelos SDXL (como RealVisXL) una GPU <code>L4</code> es rápida y consume muchas menos CU por hora. Reserva la GPU <code>G4</code> o <code>A100</code> para modelos pesados como Chroma1-HD, vídeo H3 o LLMs de 27B.</li>
+        <li data-es="<strong>Prepara tus prompts antes de despertar la GPU:</strong> Puedes redactar prompts con IA, organizar tu biblioteca e importar plantillas mientras la GPU está apagada (0 CU/h)."
+            data-en="<strong>Prepare your prompts before waking the GPU:</strong> You can draft prompts with AI, organize your library and import templates while the GPU is sleeping (0 CU/h)."><strong>Prepara tus prompts antes de despertar la GPU:</strong> Puedes redactar prompts con IA, organizar tu biblioteca e importar plantillas mientras la GPU está apagada (0 CU/h).</li>
+        <li data-es="<strong>Activa siempre el Guardián Zero-Waste (Pro) o el apagado tras cola:</strong> Nunca dejes una GPU encendida sin tareas; Colab cobra por tiempo de máquina asignada aunque no esté renderizando."
+            data-en="<strong>Always enable Zero-Waste Guardian (Pro) or post-queue shutdown:</strong> Never leave a GPU running with an empty queue; Colab bills for allocated machine time even when idle."><strong>Activa siempre el Guardián Zero-Waste (Pro) o el apagado tras cola:</strong> Nunca dejes una GPU encendida sin tareas; Colab cobra por tiempo de máquina asignada aunque no esté renderizando.</li>
+      </ul>
+    </section>
+
+    <!-- 7. SOLUCIÓN DE PROBLEMAS -->
+    <section class="doc-sec" id="faq-tecnico">
+      <h2 data-es="7. Solución de problemas frecuentes" data-en="7. Troubleshooting">7. Solución de problemas frecuentes</h2>
+      <div class="card-grid">
+        <div class="info-card">
+          <h4 data-es="⏳ Se queda en «Asignando máquina» o no hay GPU" data-en="⏳ Stuck on 'Allocating machine' or GPU unavailable">⏳ Se queda en «Asignando máquina» o no hay GPU</h4>
+          <p data-es="En horas punta Google Colab puede quedarse sin GPUs de un tipo concreto (por ejemplo <code>H100</code> o <code>G4</code>). Cambia a <code>L4</code> o <code>G4</code> en el selector y comprueba que tu saldo de CU sea suficiente (al menos 10 CU para G4)."
+             data-en="During peak hours Google Colab may run out of a specific GPU tier (such as <code>H100</code> or <code>G4</code>). Switch to <code>L4</code> or <code>G4</code> in the selector and verify your CU balance is sufficient (at least 10 CU for G4).">En horas punta Google Colab puede quedarse sin GPUs de un tipo concreto (por ejemplo <code>H100</code> o <code>G4</code>). Cambia a <code>L4</code> o <code>G4</code> en el selector y comprueba que tu saldo de CU sea suficiente (al menos 10 CU para G4).</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="💥 Error de memoria insuficiente (Out of Memory)" data-en="💥 Out of Memory (OOM) error">💥 Error de memoria insuficiente (Out of Memory)</h4>
+          <p data-es="Si un modelo grande supera la VRAM de una T4/L4, cambia a una GPU <code>G4</code> (96 GB VRAM), reduce la resolución de salida o usa el botón de <strong>Borrador rápido</strong>."
+             data-en="If a large model exceeds the VRAM of a T4/L4, switch to a <code>G4</code> GPU (96 GB VRAM), lower the output resolution, or use the <strong>Fast Draft</strong> button.">Si un modelo grande supera la VRAM de una T4/L4, cambia a una GPU <code>G4</code> (96 GB VRAM), reduce la resolución de salida o usa el botón de <strong>Borrador rápido</strong>.</p>
+        </div>
+        <div class="info-card">
+          <h4 data-es="🔄 ¿Mis flujos de ComfyUI se pierden al apagar la GPU?" data-en="🔄 Are my ComfyUI workflows lost when the GPU stops?">🔄 ¿Mis flujos de ComfyUI se pierden al apagar la GPU?</h4>
+          <p data-es="No. WakeGPU sincroniza y respalda automáticamente tus flujos y ajustes de ComfyUI en tu ordenador cada 5 minutos y antes de apagar la GPU, restaurándolos en el siguiente arranque."
+             data-en="No. WakeGPU automatically syncs and backs up your ComfyUI workflows and settings to your computer every 5 minutes and before shutting down, restoring them on the next boot.">No. WakeGPU sincroniza y respalda automáticamente tus flujos y ajustes de ComfyUI en tu ordenador cada 5 minutos y antes de apagar la GPU, restaurándolos en el siguiente arranque.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECCIÓN 8: FACELESS + N8N ===== -->
+    <section class="doc-sec" id="faceless-n8n">
+      <h2 data-es="8. Automatización de Canales «Faceless» con n8n y WakeGPU" data-en="8. Automated Faceless Channels with n8n & WakeGPU">8. Automatización de Canales «Faceless» con n8n y WakeGPU</h2>
+      <p data-es="Cómo construir un canal de Shorts y TikTok 100% automatizado, desatendido y por una fracción del coste de herramientas SaaS cerradas."
+         data-en="How to build a 100% automated, unattended Shorts & TikTok channel at a fraction of closed SaaS tool costs.">Cómo construir un canal de Shorts y TikTok 100% automatizado, desatendido y por una fracción del coste de herramientas SaaS cerradas.</p>
+
+      <div class="callout pro">
+        <strong data-es="💡 Por qué WakeGPU para canales Faceless:" data-en="💡 Why WakeGPU for Faceless Channels:">💡 Por qué WakeGPU para canales Faceless:</strong>
+        <span data-es="Generar 30 vídeos al mes en plataformas SaaS cuesta entre 90 € y 180 €/mes en créditos que caducan. Con WakeGPU, n8n envía los prompts en lote a Colab, los clips verticales se renderizan a precio de coste (~0,05 €/clip) y el Guardián Zero-Waste apaga la GPU en cuanto se completa la cola."
+              data-en="Rendering 30 videos/mo on SaaS platforms costs $90-$180/mo in expiring credits. With WakeGPU, n8n queues batch prompts to Colab, vertical clips render at cost price (~€0.05/clip), and Zero-Waste Guardian sleeps the GPU as soon as the queue empties.">Generar 30 vídeos al mes en plataformas SaaS cuesta entre 90 € y 180 €/mes en créditos que caducan. Con WakeGPU, n8n envía los prompts en lote a Colab, los clips verticales se renderizan a precio de coste (~0,05 €/clip) y el Guardián Zero-Waste apaga la GPU en cuanto se completa la cola.</span>
+      </div>
+
+      <h3 data-es="Arquitectura del flujo paso a paso" data-en="Step-by-step pipeline architecture">Arquitectura del flujo paso a paso</h3>
+      <ol>
+        <li><strong data-es="1. Guion y desglose de escenas (LLM):" data-en="1. Script & Scene Breakdown (LLM):">1. Guion y desglose de escenas (LLM):</strong> Un nodo en n8n pide a un LLM (OpenAI, DeepSeek o el Qwen Coder de WakeGPU) un guion de 30-50 segundos con hook inicial y 4 descripciones visuales para los planos en formato vertical 9:16.</li>
+        <li><strong data-es="2. Generación de voz (TTS):" data-en="2. Voiceover (TTS):">2. Generación de voz (TTS):</strong> Kokoro TTS (gratuito open source) o ElevenLabs genera la locución en audio `.mp3`.</li>
+        <li><strong data-es="3. Renderizado en Colab con WakeGPU API:" data-en="3. Colab Video Render with WakeGPU API:">3. Renderizado en Colab con WakeGPU API:</strong> n8n envía los prompts mediante `POST http://127.0.0.1:8188/api/jobs/enqueue`. WakeGPU despierta la GPU si está dormida, procesa los clips y los guarda en la carpeta local.</li>
+        <li><strong data-es="4. Montaje y subtítulos automáticos (FFmpeg):" data-en="4. Assembly & Dynamic Subtitles (FFmpeg):">4. Montaje y subtítulos automáticos (FFmpeg):</strong> Une los vídeos, añade música de fondo suave y genera subtítulos dinámicos palabra por palabra con Whisper.</li>
+        <li><strong data-es="5. Aprobación y publicación:" data-en="5. Approval & Publishing:">5. Aprobación y publicación:</strong> n8n envía el vídeo resultante a un canal privado de Telegram con botones `[Aprobar]` y `[Descartar]` antes de publicar automáticamente en YouTube Shorts o TikTok.</li>
+      </ol>
+
+      <h3 data-es="Ejemplo de comando FFmpeg para montaje automático" data-en="Example FFmpeg command for automated assembly">Ejemplo de comando FFmpeg para montaje automático</h3>
+      <pre><code>ffmpeg -i video_concatenado.mp4 -i locucion.mp3 -i musica_fondo.mp3 \
+  -filter_complex "[2:a]volume=0.15[bg];[1:a][bg]amix=inputs=2[audio];[0:v]subtitles=subtitulos.srt:force_style='FontName=Montserrat,FontSize=20,PrimaryColour=&amp;H0000FFFF,OutlineColour=&amp;H00000000,BorderStyle=3'[v]" \
+  -map "[v]" -map "[audio]" -c:v libx264 -c:a aac -shortest short_final.mp4</code></pre>
+    </section>
+  </main>
+</div>
+
+<footer class="wrap">
+  <span>© 2026 WakeGPU · <span data-es="Proyecto Open Source (Licencia MIT)" data-en="Open Source Project (MIT License)">Proyecto Open Source (Licencia MIT)</span></span>
+  <span>
+    <a href="index.html" data-es="Inicio y Descargas" data-en="Home &amp; Downloads">Inicio y Descargas</a> ·
+    <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener">GitHub</a> ·
+    <a href="#faceless-n8n" data-es="Canales Faceless" data-en="Faceless Channels">Canales Faceless</a>
+  </span>
+</footer>
+
+<script>
+function setLang(l){
+  document.querySelectorAll("[data-es]").forEach(el=>{
+    const v = el.dataset[l];
+    if(v) el.innerHTML = v;
+  });
+  document.documentElement.lang = l;
+  btnEs.classList.toggle("on", l==="es");
+  btnEn.classList.toggle("on", l==="en");
+  try{localStorage.setItem("wl.lang",l)}catch(e){}
+}
+btnEs.onclick=()=>setLang("es");
+btnEn.onclick=()=>setLang("en");
+let initial="es";
+try{
+  const s=localStorage.getItem("wl.lang");
+  if(s==="en" || s==="es") initial=s;
+  else if((navigator.language||"").toLowerCase().startsWith("en")) initial="en";
+}catch(e){}
+setLang(initial);
+</script>
+</body>
+</html>
+

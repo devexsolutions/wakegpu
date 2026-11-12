@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WakeGPU · Despierta GPUs en Google Colab bajo demanda (100% Open Source)</title>
+<meta name="description" content="WakeGPU conecta Google Colab en tu estudio de generación de vídeo, imagen y LLMs para código (Cursor / VS Code). Cero gasto fantasma en reposo con Guardián Zero-Waste.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://wakegpu.com/">
+
+<!-- Open Graph / Facebook / WhatsApp / Telegram -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="WakeGPU">
+<meta property="og:url" content="https://wakegpu.com/">
+<meta property="og:title" content="WakeGPU · Despierta GPUs en la nube solo cuando las necesitas">
+<meta property="og:description" content="Convierte Google Colab en tu estudio privado de generación de vídeo, imagen y LLMs de código (VS Code / Cursor). Guardián Zero-Waste con apagado automático en reposo.">
+<meta property="og:image" content="https://wakegpu.com/og-image.png">
+<meta property="og:image:secure_url" content="https://wakegpu.com/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="WakeGPU - Control de GPUs de Google Colab y Guardián Zero-Waste">
+<meta property="og:locale" content="es_ES">
+
+<!-- Twitter / X / Discord Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://wakegpu.com/">
+<meta name="twitter:title" content="WakeGPU · Despierta GPUs en la nube solo cuando las necesitas">
+<meta name="twitter:description" content="Convierte Google Colab en tu estudio de vídeo, imagen y LLMs (VS Code / Cursor). Guardián Zero-Waste con apagado automático sin cuotas mensuales.">
+<meta name="twitter:image" content="https://wakegpu.com/og-image.png">
+<meta name="twitter:image:alt" content="WakeGPU Preview">
+
+<meta name="theme-color" content="#090a0f">
+<style>
+:root {
+  --bg: #090a0f;
+  --bg-card: #12151e;
+  --bg-card-hover: #171b28;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --gold: #f59e0b;
+  --gold-light: #fbbf24;
+  --gold-glow: rgba(245, 158, 11, 0.22);
+  --emerald: #10b981;
+  --emerald-light: #34d399;
+  --emerald-bg: rgba(16, 185, 129, 0.12);
+  --cyan: #06b6d4;
+  --cyan-light: #38bdf8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(30, 41, 59, 0.45), transparent 70%);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+/* HEADER */
+header{
+  position:sticky;
+  top:0;
+  background:rgba(9, 10, 15, 0.88);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  z-index:50;
+}
+.nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 0;
+  gap:16px;
+  flex-wrap:nowrap;
+}
+.brand{
+  font-weight:700;
+  font-size:19px;
+  display:flex;
+  align-items:center;
+  color:#fff;
+  text-decoration:none;
+  letter-spacing:-0.2px;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.nav-links{
+  display:flex;
+  align-items:center;
+  gap:clamp(10px, 1.4vw, 18px);
+  white-space:nowrap;
+  flex-shrink:1;
+}
+.nav-link{
+  color:var(--text-muted);
+  text-decoration:none;
+  font-size:13.5px;
+  font-weight:500;
+  white-space:nowrap;
+  transition:color .15s ease;
+}
+.nav-link:hover{color:#fff}
+.nav-right{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+  white-space:nowrap;
+}
+.btn-nav-pro{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--gold);
+  color:#090a0f;
+  font-weight:700;
+  font-size:13px;
+  padding:8px 16px;
+  border-radius:8px;
+  text-decoration:none;
+  white-space:nowrap;
+  flex-shrink:0;
+  transition:transform .12s,filter .12s;
+}
+.btn-nav-pro:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.lang{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  white-space:nowrap;
+}
+.lang button{
+  background:none;
+  border:1px solid var(--line);
+  color:var(--text-muted);
+  border-radius:6px;
+  padding:4px 9px;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:600;
+  white-space:nowrap;
+}
+.lang button.on{
+  color:#fff;
+  border-color:var(--gold);
+  background:rgba(245, 158, 11, 0.12);
+}
+
+/* SECTIONS */
+section{
+  padding:84px 0;
+  border-top:1px solid var(--line);
+}
+.sec-header{
+  text-align:center;
+  max-width:760px;
+  margin:0 auto 48px;
+}
+.sec-tag{
+  display:inline-block;
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--gold);
+  background:rgba(245, 158, 11, 0.1);
+  border:1px solid rgba(245, 158, 11, 0.25);
+  padding:4px 12px;
+  border-radius:99px;
+  margin-bottom:14px;
+}
+.sec-header h2{
+  font-size:clamp(26px, 3.8vw, 36px);
+  margin:0 0 12px;
+  font-weight:700;
+  letter-spacing:-0.6px;
+  line-height:1.2;
+}
+.sec-header p{
+  color:var(--text-muted);
+  font-size:16px;
+  margin:0;
+  line-height:1.5;
+}
+
+/* HERO */
+.hero{
+  text-align:center;
+  padding:72px 0 32px;
+  border-top:none;
+}
+.hero-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:11.5px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.8px;
+  color:var(--text-muted);
+  background:rgba(255, 255, 255, 0.04);
+  border:1px solid var(--line);
+  padding:6px 16px;
+  border-radius:99px;
+  margin-bottom:24px;
+}
+.hero-pill span.dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--emerald-light);
+  box-shadow:0 0 8px var(--emerald-light);
+}
+.hero h1{
+  font-size:clamp(32px, 5.5vw, 52px);
+  margin:0 auto 20px;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:-1px;
+  max-width:880px;
+}
+.hl-gold{color:var(--gold-light)}
+.hl-gradient{
+  background:linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hero-desc{
+  color:var(--text-muted);
+  font-size:17.5px;
+  max-width:720px;
+  margin:0 auto 32px;
+  line-height:1.6;
+}
+.cta-gold{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:var(--gold);
+  color:#090a0f;
+  font-weight:800;
+  font-size:16px;
+  padding:15px 34px;
+  border-radius:12px;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  box-shadow:0 6px 28px var(--gold-glow);
+  transition:transform .15s,filter .15s;
+}
+.cta-gold:hover{
+  filter:brightness(1.1);
+  transform:translateY(-2px);
+}
+.hero-sub{
+  font-size:13px;
+  color:var(--text-dim);
+  margin-top:14px;
+}
+.platform-badges{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  margin-top:24px;
+  font-size:12px;
+  color:var(--text-muted);
+  flex-wrap:wrap;
+}
+.platform-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:rgba(255, 255, 255, 0.04);
+  border:1px solid var(--line);
+  padding:5px 12px;
+  border-radius:6px;
+}
+
+/* HERO CONSOLE MOCKUP */
+.hero-console{
+  max-width:840px;
+  margin:46px auto 0;
+  background:linear-gradient(180deg, #131722 0%, #0d1017 100%);
+  border:1px solid rgba(255, 255, 255, 0.12);
+  border-radius:16px;
+  padding:16px 20px 20px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.04);
+  text-align:left;
+}
+.console-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--line);
+  margin-bottom:16px;
+}
+.console-dots{display:flex;gap:6px}
+.console-dot{width:10px;height:10px;border-radius:50%}
+.dot-red{background:#ef4444}
+.dot-yellow{background:#eab308}
+.dot-green{background:#22c55e}
+.console-title{font-size:12px;color:var(--text-muted);font-weight:600}
+.console-status{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:11px;
+  color:var(--emerald-light);
+  background:var(--emerald-bg);
+  border:1px solid rgba(16, 185, 129, 0.3);
+  padding:3px 10px;
+  border-radius:99px;
+  font-weight:600;
+}
+.console-metrics{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+  gap:14px;
+}
+.metric-box{
+  background:rgba(255, 255, 255, 0.03);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px 16px;
+}
+.metric-lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;font-weight:700}
+.metric-val{font-size:22px;font-weight:800;color:#fff;line-height:1.2}
+.metric-val.green{color:var(--emerald-light)}
+.metric-val.cyan{color:var(--cyan-light)}
+.metric-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.meter-bar{
+  height:5px;
+  background:rgba(255,255,255,0.1);
+  border-radius:99px;
+  margin:8px 0 4px;
+  overflow:hidden;
+}
+.meter-fill{
+  height:100%;
+  width:14%;
+  background:linear-gradient(90deg, var(--emerald), var(--cyan));
+  border-radius:99px;
+}
+
+/* BENTO FEATURES */
+.feats-bento{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+.feat-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:26px 24px;
+  transition:border-color .15s,transform .15s;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.feat-card:hover{
+  border-color:var(--line-strong);
+  transform:translateY(-2px);
+  background:var(--bg-card-hover);
+}
+.feat-card.wide{grid-column:span 2}
+.feat-card.full{grid-column:span 3}
+.feat-icon{
+  width:36px;
+  height:36px;
+  border-radius:8px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  margin-bottom:14px;
+  background:rgba(245, 158, 11, 0.1);
+  border:1px solid rgba(245, 158, 11, 0.25);
+}
+.feat-icon.green{
+  background:rgba(16, 185, 129, 0.1);
+  border-color:rgba(16, 185, 129, 0.25);
+}
+.feat-icon.cyan{
+  background:rgba(6, 182, 212, 0.1);
+  border-color:rgba(6, 182, 212, 0.25);
+}
+.feat-card h3{
+  font-size:17px;
+  margin:0 0 8px;
+  font-weight:700;
+  color:#fff;
+}
+.feat-card p{
+  font-size:14px;
+  color:var(--text-muted);
+  margin:0 0 16px;
+  line-height:1.55;
+}
+.feat-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11.5px;
+  font-weight:600;
+  padding:4px 10px;
+  border-radius:6px;
+  background:rgba(255, 255, 255, 0.04);
+  border:1px solid var(--line);
+  color:var(--text-muted);
+  width:fit-content;
+}
+.feat-pill.highlight{
+  background:rgba(16, 185, 129, 0.08);
+  border-color:rgba(16, 185, 129, 0.3);
+  color:var(--emerald-light);
+}
+
+/* COMPARISON TABLES */
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--bg-card);
+  box-shadow:0 12px 36px rgba(0,0,0,0.3);
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  text-align:left;
+  font-size:14px;
+}
+th, td{
+  padding:16px 20px;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+}
+th{
+  background:rgba(255, 255, 255, 0.02);
+  color:var(--text-dim);
+  font-weight:700;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
+}
+tr:last-child td{border-bottom:none}
+td.pro-col, th.pro-col{
+  background:rgba(16, 185, 129, 0.05);
+  border-left:1px solid rgba(16, 185, 129, 0.2);
+  border-right:1px solid rgba(16, 185, 129, 0.2);
+  color:var(--emerald-light);
+  font-weight:600;
+}
+th.pro-col{
+  color:var(--emerald-light);
+  background:rgba(16, 185, 129, 0.1);
+}
+td.dim{color:var(--text-muted)}
+
+/* 3 STEPS */
+.steps-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:20px;
+}
+.step-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:28px 24px;
+  position:relative;
+}
+.step-num{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:var(--gold);
+  color:#090a0f;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  margin-bottom:16px;
+}
+.step-card h3{
+  font-size:17px;
+  margin:0 0 10px;
+  color:#fff;
+}
+.step-card p{
+  font-size:14px;
+  color:var(--text-muted);
+  margin:0;
+  line-height:1.55;
+}
+
+/* PRICING CARD */
+.pricing-center{
+  max-width:540px;
+  margin:0 auto;
+  background:radial-gradient(ellipse 100% 80% at 50% 0%, rgba(245, 158, 11, 0.12), #12151e 65%);
+  border:1px solid rgba(245, 158, 11, 0.35);
+  border-radius:20px;
+  padding:42px 36px;
+  text-align:center;
+  box-shadow:0 18px 50px rgba(0,0,0,0.6), 0 0 30px rgba(245, 158, 11, 0.1);
+}
+.price-pill{
+  display:inline-block;
+  background:rgba(245, 158, 11, 0.15);
+  border:1px solid rgba(245, 158, 11, 0.4);
+  color:var(--gold-light);
+  font-size:11px;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:99px;
+  letter-spacing:0.8px;
+  margin-bottom:18px;
+}
+.pricing-title{font-size:22px;font-weight:700;margin:0 0 8px;color:#fff}
+.price-big{
+  font-size:52px;
+  font-weight:800;
+  color:#fff;
+  line-height:1;
+  margin:16px 0 6px;
+}
+.price-big span{font-size:18px;font-weight:500;color:var(--text-muted)}
+.price-equiv{font-size:12px;color:var(--text-dim);margin-bottom:24px;text-transform:uppercase;letter-spacing:0.5px}
+.price-features{
+  text-align:left;
+  margin:28px 0;
+  border-top:1px solid var(--line);
+  padding-top:24px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.price-feat-item{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  font-size:14px;
+  color:var(--text-muted);
+}
+.price-feat-item span.chk{color:var(--gold-light);font-weight:800}
+.recovery-link{font-size:13px;color:var(--gold);text-decoration:none;margin-top:20px;display:inline-block}
+.recovery-link:hover{text-decoration:underline}
+
+/* FAQ ACCORDION */
+.faq-list{
+  max-width:820px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+details{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:16px 20px;
+  transition:border-color .15s;
+}
+details[open]{border-color:var(--line-strong)}
+summary{
+  cursor:pointer;
+  font-weight:600;
+  font-size:15.5px;
+  color:#fff;
+  list-style:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{
+  content:'↓';
+  font-size:14px;
+  color:var(--text-dim);
+  transition:transform .2s;
+}
+details[open] summary::after{transform:rotate(180deg);color:var(--gold)}
+details p{
+  margin:14px 0 0;
+  font-size:14px;
+  color:var(--text-muted);
+  line-height:1.6;
+}
+
+/* PREFOOTER BANNER */
+.prefooter-cta{
+  background:linear-gradient(135deg, #131724 0%, #171d2e 100%);
+  border:1px solid var(--line-strong);
+  border-radius:18px;
+  padding:42px 48px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-top:30px;
+}
+.prefooter-text h3{font-size:24px;font-weight:700;margin:0 0 6px;color:#fff}
+.prefooter-text p{margin:0;color:var(--text-muted);font-size:15px}
+.prefooter-actions{display:flex;gap:14px;align-items:center;flex-shrink:0}
+.btn-sec-outline{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--line-strong);
+  text-decoration:none;
+  padding:14px 22px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  transition:border-color .15s;
+}
+.btn-sec-outline:hover{border-color:var(--gold)}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--line);
+  padding:36px 0;
+  font-size:13px;
+  color:var(--text-dim);
+}
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+.footer-links a{
+  color:var(--text-muted);
+  text-decoration:none;
+  margin-left:16px;
+  transition:color .12s;
+}
+.footer-links a:hover{color:var(--gold)}
+
+/* POST-CHECKOUT MODAL */
+#postCheckoutBox{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(8px);
+  z-index:999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+#postCheckoutBox.show{display:flex}
+.modal-card{
+  background:#131722;
+  border:1px solid var(--gold);
+  border-radius:16px;
+  padding:32px;
+  max-width:500px;
+  width:100%;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.9);
+}
+.key-box{
+  background:#090a0f;
+  border:1px dashed var(--gold);
+  border-radius:8px;
+  padding:14px;
+  font-family:monospace;
+  font-size:16px;
+  color:var(--gold-light);
+  margin:18px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+/* RESPONSIVE */
+@media(max-width:1080px){
+  .nav-link{font-size:12.5px}
+  .nav-links{gap:10px}
+}
+@media(max-width:900px){
+  .feats-bento{grid-template-columns:1fr}
+  .feat-card.wide,.feat-card.full{grid-column:span 1}
+  .steps-grid{grid-template-columns:1fr}
+  .prefooter-cta{flex-direction:column;text-align:center;padding:32px 24px}
+  .prefooter-actions{flex-direction:column;width:100%}
+  .prefooter-actions a{width:100%;justify-content:center}
+}
+@media(max-width:880px){
+  .nav-links{display:none}
+}
+@media(max-width:640px){
+  section{padding:56px 0}
+  .hero{padding:48px 0 20px}
+  .pricing-center{padding:30px 20px}
+}
+</style>
+<script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="wrap nav">
+    <a href="#" class="brand">
+      <span>⚡ WakeGPU</span>
+    </a>
+    <div class="nav-links">
+      <a href="#funcionalidades" class="nav-link" data-es="Funcionalidades" data-en="Features">Funcionalidades</a>
+      <a href="#comparativa" class="nav-link" data-es="Comparativa" data-en="Comparison">Comparativa</a>
+      <a href="#costes-cu" class="nav-link" data-es="Costes CU" data-en="CU Costs">Costes CU</a>
+      <a href="#faceless" class="nav-link" data-es="Canales Faceless" data-en="Faceless Channels">Canales Faceless</a>
+      <a href="#como-funciona" class="nav-link" data-es="Cómo Funciona" data-en="How it Works">Cómo Funciona</a>
+      <a href="#descargar" class="nav-link" data-es="Descargar" data-en="Download">Descargar</a>
+      <a href="#faq" class="nav-link" data-es="FAQ" data-en="FAQ">FAQ</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang">
+        <button id="btnEs" class="on">ES</button>
+        <button id="btnEn">EN</button>
+      </div>
+      <a href="#descargar" class="btn-nav-pro" data-es="Descargar Gratis ⬇" data-en="Download Free ⬇">Descargar Gratis ⬇</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero wrap">
+  <div class="hero-pill">
+    <span class="dot"></span>
+    <span data-es="100% GRATUITO Y OPEN SOURCE · ACCESO DIRECTO A GOOGLE COLAB · SIN CUOTAS NI SUSCRIPCIONES" data-en="100% FREE & OPEN SOURCE · DIRECT GOOGLE COLAB ACCESS · NO MONTHLY FEES">100% GRATUITO Y OPEN SOURCE · ACCESO DIRECTO A GOOGLE COLAB · SIN CUOTAS NI SUSCRIPCIONES</span>
+  </div>
+
+  <h1 data-es="Despierta GPUs en la nube <span class='hl-gold'>solo</span><br><span class='hl-gradient'>cuando las necesitas</span>" data-en="Wake cloud GPUs <span class='hl-gold'>only</span><br><span class='hl-gradient'>when you actually need them</span>">
+    Despierta GPUs en la nube <span class="hl-gold">solo</span><br><span class="hl-gradient">cuando las necesitas</span>
+  </h1>
+
+  <p class="hero-desc" data-es="WakeGPU conecta Google Colab en tu estudio de generación de vídeo e imágenes: sin cuotas de 30-90$/mes de plataformas SaaS, pagas solo los segundos de GPU que usas en Google y se apaga sola cuando no hay trabajo." data-en="WakeGPU turns Google Colab into your video & image generation studio: without $30-90/mo SaaS subscriptions, paying only for the exact GPU seconds you use on Google, auto-sleeping when idle.">
+    WakeGPU conecta Google Colab en tu estudio de generación de vídeo e imágenes: sin cuotas de 30-90$/mes de plataformas SaaS, pagas solo los segundos de GPU que usas en Google y se apaga sola cuando no hay trabajo.
+  </p>
+
+  <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:28px 0 16px;">
+    <a href="#descargar" class="cta-gold" style="margin:0;" data-es="⚡ Descargar Gratis para macOS y Windows" data-en="⚡ Download Free for macOS & Windows">
+      ⚡ Descargar Gratis para macOS y Windows
+    </a>
+    <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener" class="btn-sec-outline" style="padding:14px 22px;font-size:15px;display:inline-flex;align-items:center;gap:8px;" data-es="★ Ver en GitHub" data-en="★ Star on GitHub">
+      ★ Ver en GitHub
+    </a>
+  </div>
+
+  <div class="hero-sub" data-es="Código Abierto (Licencia MIT) · Todas las funciones avanzadas incluidas sin coste · Sin tarjetas ni registros" data-en="Open Source (MIT License) · All advanced capabilities included for free · No credit cards or signups">
+    Código Abierto (Licencia MIT) · Todas las funciones avanzadas incluidas sin coste · Sin tarjetas ni registros
+  </div>
+
+  <div class="platform-badges">
+    <span style="font-weight:700;color:var(--text-dim);" data-es="DISPONIBLE PARA:" data-en="AVAILABLE FOR:">DISPONIBLE PARA:</span>
+    <span class="platform-badge"> macOS (Apple Silicon & Intel)</span>
+    <span class="platform-badge">⊞ Windows 10/11 x64</span>
+  </div>
+
+  <!-- HERO CONSOLE MOCKUP -->
+  <div class="hero-console">
+    <div class="console-bar">
+      <div class="console-dots">
+        <div class="console-dot dot-red"></div>
+        <div class="console-dot dot-yellow"></div>
+        <div class="console-dot dot-green"></div>
+      </div>
+      <div class="console-title">WakeGPU Desktop (Control de GPU)</div>
+      <div class="console-status">
+        <span>●</span> <span data-es="EN VIVO (SINCRONIZADO)" data-en="LIVE (SYNCED)">EN VIVO (SINCRONIZADO)</span> · A100 / T4 STANDARD
+      </div>
+    </div>
+    <div class="console-metrics">
+      <div class="metric-box">
+        <div class="metric-lbl" data-es="Guardián Zero-Waste" data-en="Zero-Waste Guardian">Guardián Zero-Waste</div>
+        <div class="metric-val green">70% Reducción CU</div>
+        <div class="metric-sub" data-es="Apagado programado: 0 min idle" data-en="Scheduled shutdown: 0 min idle">Apagado programado: 0 min idle</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-lbl" data-es="Estado de la Conexión" data-en="Connection State">Estado de la Conexión</div>
+        <div class="metric-val">14 / 100 CU/H</div>
+        <div class="meter-bar"><div class="meter-fill"></div></div>
+        <div class="metric-sub" data-es="Sesión en uso activa" data-en="Active session in progress">Sesión en uso activa</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-lbl" data-es="Cola de GPU en Colab" data-en="Colab GPU Queue">Cola de GPU en Colab</div>
+        <div class="metric-val cyan">0 en cola / 0 idle</div>
+        <div class="metric-sub" data-es="0.00 € gastados sin render" data-en="€0.00 wasted on idle">0.00 € gastados sin render</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FUNCIONALIDADES BENTO -->
+<section id="funcionalidades">
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="CAPACIDADES DEL SISTEMA" data-en="SYSTEM CAPABILITIES">CAPACIDADES DEL SISTEMA</span>
+      <h2 data-es="Todas las funcionalidades de WakeGPU" data-en="All WakeGPU Features">Todas las funcionalidades de WakeGPU</h2>
+      <p data-es="Diseñado para creadores de IA que quieren tener control total de su infraestructura sin complicarse la vida con servidores." data-en="Designed for AI creators who want full control over their infrastructure without the complexity of managing servers.">
+        Diseñado para creadores de IA que quieren tener control total de su infraestructura sin complicarse la vida con servidores.
+      </p>
+    </div>
+
+    <div class="feats-bento">
+      <!-- Wide Guardian -->
+      <div class="feat-card wide">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div class="feat-icon green">⏱️</div>
+            <span class="feat-pill highlight" data-es="PRO EXCLUSIVO" data-en="PRO EXCLUSIVE">PRO EXCLUSIVO</span>
+          </div>
+          <h3 data-es="Guardián Zero-Waste" data-en="Zero-Waste Guardian">Guardián Zero-Waste</h3>
+          <p data-es="Apaga automáticamente la GPU en cuanto la cola se vacía. Evita gastar decenas de Compute Units (CU) por olvido mientras duermes o no estás frente al ordenador." data-en="Automatically shuts down the GPU as soon as your render queue empties. Never waste precious Compute Units (CU) while asleep or away from your desk.">
+            Apaga automáticamente la GPU en cuanto la cola se vacía. Evita gastar decenas de Compute Units (CU) por olvido mientras duermes o no estás frente al ordenador.
+          </p>
+        </div>
+        <div class="feat-pill highlight" data-es="✔ Ahorro medio comprobado de más del 70% de gasto fantasma" data-en="✔ Proven average savings of over 70% on idle costs">
+          ✔ Ahorro medio comprobado de más del 70% de gasto fantasma
+        </div>
+      </div>
+
+      <!-- Panel Consumo -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon">⚡</div>
+          <h3 data-es="Panel de Tiempo y Consumo CU (€)" data-en="Time & CU Cost Tracker (€)">Panel de Tiempo y Consumo CU (€)</h3>
+          <p data-es="Control en tiempo real de minutos de GPU, balance de créditos restantes y coste estimado en euros. Avisos visuales al llegar al 80% y al 95% de consumo para evitar cortes imprevistos." data-en="Real-time tracking of GPU minutes, remaining credits balance and estimated cost in euros. Visual alerts at 80% and 95% limit to avoid surprises.">
+            Control en tiempo real de minutos de GPU, balance de créditos restantes y coste estimado en euros. Avisos visuales al llegar al 80% y al 95% de consumo para evitar cortes imprevistos.
+          </p>
+        </div>
+        <div class="feat-pill" data-es="0% sorpresas en tu factura" data-en="Zero billing surprises">0% sorpresas en tu factura</div>
+      </div>
+
+      <!-- Control Móvil -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon green">📱</div>
+          <h3 data-es="Control Móvil Remoto (PWA Móvil)" data-en="Remote Mobile Control (PWA)">Control Móvil Remoto (PWA Móvil)</h3>
+          <p data-es="Escanea el código QR desde tu teléfono o tablet y comprueba el progreso de tus renders, balance de CU en tiempo real y detén la GPU desde cualquier lugar de tu red local o internet." data-en="Scan the QR code from your phone or tablet to inspect render progress, check live CU balance, and pause the GPU from anywhere.">
+            Escanea el código QR desde tu teléfono o tablet y comprueba el progreso de tus renders, balance de CU en tiempo real y detén la GPU desde cualquier lugar de tu red local o internet.
+          </p>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <span class="feat-pill">ANDROID</span>
+          <span class="feat-pill">IOS COMPATIBLE</span>
+        </div>
+      </div>
+
+      <!-- Modo Sencillo -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon">🎨</div>
+          <h3 data-es="Modo Sencillo (1-Clic Preajustado)" data-en="Simple Mode (1-Click Presets)">Modo Sencillo (1-Clic Preajustado)</h3>
+          <p data-es="Sin pantallas complejas ni nodos. Selecciona estilo de vídeo (Anime, Hiperrealista, Cinemático, 3D), sube tu imagen de referencia y genera con 1 solo clic. Ideal para creadores no técnicos." data-en="No complex node spaghetti. Pick a visual style (Anime, Realistic, Cinematic, 3D), upload your source frame and render with 1 single click.">
+            Sin pantallas complejas ni nodos. Selecciona estilo de vídeo (Anime, Hiperrealista, Cinemático, 3D), sube tu imagen de referencia y genera con 1 solo clic. Ideal para creadores no técnicos.
+          </p>
+        </div>
+        <div class="feat-pill" data-es="Enfoque en la creatividad" data-en="Focus on creativity">Enfoque en la creatividad</div>
+      </div>
+
+      <!-- Modo Avanzado -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon cyan">⚙️</div>
+          <h3 data-es="Modo Avanzado (ComfyUI Profesional)" data-en="Advanced Mode (Pro ComfyUI)">Modo Avanzado (ComfyUI Profesional)</h3>
+          <p data-es="Acceso completo al lienzo nativo de ComfyUI. Instala nodos personalizados, crea workflows complejos con ControlNet, LoRAs y modelos de última generación (Wan2.1, Hunyuan, CogVideoX)." data-en="Full native ComfyUI canvas access. Install custom nodes, craft complex workflows with ControlNet, LoRAs and state-of-the-art models (Wan2.1, Hunyuan, CogVideoX).">
+            Acceso completo al lienzo nativo de ComfyUI. Instala nodos personalizados, crea workflows complejos con ControlNet, LoRAs y modelos de última generación (Wan2.1, Hunyuan, CogVideoX).
+          </p>
+        </div>
+        <div class="feat-pill" data-es="Potencia profesional sin límites" data-en="Limitless professional power">Potencia profesional sin límites</div>
+      </div>
+
+      <!-- Lotes -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon">📑</div>
+          <h3 data-es="Generación por Lotes" data-en="Batch Generation Queue">Generación por Lotes</h3>
+          <p data-es="Encola 10 o 50 prompts de golpe con distintas semillas y parámetros. La GPU los procesa de forma continua y automatizada sin esperas entre un trabajo y el siguiente." data-en="Queue 10 to 50 prompts at once with different seeds and parameters. The GPU processes them continuously without dead time between tasks.">
+            Encola 10 o 50 prompts de golpe con distintas semillas y parámetros. La GPU los procesa de forma continua y automatizada sin esperas entre un trabajo y el siguiente.
+          </p>
+        </div>
+        <div class="feat-pill" data-es="Renders continuos desatendidos" data-en="Continuous unattended renders">Renders continuos desatendidos</div>
+      </div>
+
+      <!-- Auto-HD -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon cyan">🎬</div>
+          <h3 data-es="Auto-HD Upscale Integrado" data-en="Integrated Auto-HD Upscaling">Auto-HD Upscale Integrado</h3>
+          <p data-es="Aumenta la resolución y nitidez de tus vídeos generados automáticamente mediante modelos de escalado espacial y temporal sin pasos manuales adicionales." data-en="Boost resolution and clarity of your generated videos automatically using spatial and temporal upscaling models without extra manual steps.">
+            Aumenta la resolución y nitidez de tus vídeos generados automáticamente mediante modelos de escalado espacial y temporal sin pasos manuales adicionales.
+          </p>
+        </div>
+        <div class="feat-pill" data-es="Escalado 2x y 4x con modelos reales" data-en="2x & 4x upscale with real models">Escalado 2x y 4x con modelos reales</div>
+      </div>
+
+      <!-- Alertas -->
+      <div class="feat-card">
+        <div>
+          <div class="feat-icon">🔔</div>
+          <h3 data-es="Alertas y Notificaciones" data-en="Alerts & Notifications">Alertas y Notificaciones</h3>
+          <p data-es="Recibe notificaciones en tu escritorio o en tu móvil vía Telegram / Webhooks cuando un vídeo largo haya finalizado su renderizado o si la sesión de GPU se apaga." data-en="Receive push notifications on desktop or mobile via Telegram/Webhooks whenever a lengthy render completes or your GPU session shuts down.">
+            Recibe notificaciones en tu escritorio o en tu móvil vía Telegram / Webhooks cuando un vídeo largo haya finalizado su renderizado o si la sesión de GPU se apaga.
+          </p>
+        </div>
+        <div class="feat-pill" data-es="Información en tiempo real" data-en="Real-time status updates">Información en tiempo real</div>
+      </div>
+
+      <!-- Full Strip: Local + VPS -->
+      <div class="feat-card full">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <span class="feat-icon green" style="margin:0;">🌐</span>
+              <h3 style="margin:0;" data-es="Modo Local Directo + Pasarela VPS Dedicada" data-en="Direct Local Mode + Dedicated VPS Gateway">Modo Local Directo + Pasarela VPS Dedicada</h3>
+            </div>
+            <p style="margin:0;" data-es="Elige cómo conectarte: Conexión local ultrarrápida directa a tu Colab sin intermediarios, o a través de nuestra pasarela ligera en VPS (WireGuard / Cloudflare Tunnel) para saltarte restricciones de red." data-en="Choose how you connect: ultra-fast direct local connection to your Colab without middlemen, or through our lightweight VPS gateway (WireGuard / Cloudflare) to bypass strict firewalls.">
+              Elige cómo conectarte: Conexión local ultrarrápida directa a tu Colab sin intermediarios, o a través de nuestra pasarela ligera en VPS (WireGuard / Cloudflare Tunnel) para saltarte restricciones de red.
+            </p>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <span class="feat-pill highlight">SIN CONFIGURACIÓN COMPLEJA</span>
+            <span class="feat-pill highlight">PLUG & PLAY</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVA FREE VS PRO -->
+<section id="comparativa">
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="TODO INCLUIDO EN LA COMUNIDAD" data-en="ALL INCLUDED IN COMMUNITY">TODO INCLUIDO EN LA COMUNIDAD</span>
+      <h2 data-es="Todas las funciones avanzadas, 100% abiertas" data-en="All advanced features, 100% open source">Todas las funciones avanzadas, 100% abiertas</h2>
+      <p data-es="WakeGPU incluye el Guardián Zero-Waste, la generación por lotes, el proxy OpenAI para Cursor/VS Code y el escalado Auto-HD de forma completamente gratuita bajo licencia MIT." data-en="WakeGPU includes the Zero-Waste Guardian, batch queues, OpenAI proxy for Cursor/VS Code, and Auto-HD upscaling completely free under the MIT license.">
+        WakeGPU incluye el Guardián Zero-Waste, la generación por lotes, el proxy OpenAI para Cursor/VS Code y el escalado Auto-HD de forma completamente gratuita bajo licencia MIT.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-es="CAPACIDAD" data-en="CAPABILITY">CAPACIDAD</th>
+            <th data-es="HERRAMIENTAS ESTÁNDAR" data-en="STANDARD TOOLS">HERRAMIENTAS ESTÁNDAR</th>
+            <th class="pro-col" data-es="WAKEGPU COMPLETO (GRATIS) ⚡" data-en="WAKEGPU FULL (FREE) ⚡">WAKEGPU COMPLETO (GRATIS) ⚡</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-es="Conexión a Colab y generación de vídeo/imagen" data-en="Colab connection & video/image generation">Conexión a Colab y generación de vídeo/imagen</td>
+            <td class="dim" data-es="Configuración manual de túneles" data-en="Manual tunnel config">Configuración manual de túneles</td>
+            <td class="pro-col" data-es="Incluido (Local directo + Pasarela VPS)" data-en="Included (Direct Local + VPS Gateway)">Incluido (Local directo + Pasarela VPS)</td>
+          </tr>
+          <tr>
+            <td data-es="Modo Sencillo (1-Clic) y Modo Avanzado" data-en="Simple Mode (1-Click) & Advanced Mode">Modo Sencillo (1-Clic) y Modo Avanzado</td>
+            <td class="dim" data-es="Interfaces complejas y dispersas" data-en="Scattered complex interfaces">Interfaces complejas y dispersas</td>
+            <td class="pro-col" data-es="Incluido (Presets avanzados + ComfyUI directo)" data-en="Included (Advanced presets + direct ComfyUI)">Incluido (Presets avanzados + ComfyUI directo)</td>
+          </tr>
+          <tr>
+            <td data-es="Panel de Tiempo y Consumo de CU" data-en="Time & CU Cost Tracker">Panel de Tiempo y Consumo de CU</td>
+            <td class="dim" data-es="Básico o inexistente" data-en="Basic or non-existent">Básico o inexistente</td>
+            <td class="pro-col" data-es="Estimación en vivo en € y avisos de consumo" data-en="Live cost estimation in € + limit warnings">Estimación en vivo en € y avisos de consumo</td>
+          </tr>
+          <tr>
+            <td data-es="Guardián Zero-Waste (Auto-apagado)" data-en="Zero-Waste Guardian (Auto-shutdown)">Guardián Zero-Waste (Auto-apagado)</td>
+            <td class="dim" data-es="Apagado manual o por inactividad fija larga" data-en="Manual shutdown or long fixed timeout">Apagado manual o por inactividad fija larga</td>
+            <td class="pro-col" data-es="Auto-apagado inteligente en 0-3 min tras la cola (Ahorro ~70% CU)" data-en="Smart auto-shutdown 0-3 min after queue empties (~70% CU savings)">Auto-apagado inteligente en 0-3 min tras la cola (Ahorro ~70% CU)</td>
+          </tr>
+          <tr>
+            <td data-es="Generación por Lotes (Batch)" data-en="Batch Generation">Generación por Lotes (Batch)</td>
+            <td class="dim" data-es="1 render a la vez o tanda reducida" data-en="1 render at a time or small batch">1 render a la vez o tanda reducida</td>
+            <td class="pro-col" data-es="Ilimitado (Cola infinita desatendida)" data-en="Unlimited (Infinite unattended queue)">Ilimitado (Cola infinita desatendida)</td>
+          </tr>
+          <tr>
+            <td data-es="Auto-HD Upscale Integrado" data-en="Integrated Auto-HD Upscale">Auto-HD Upscale Integrado</td>
+            <td class="dim" data-es="Escalado manual externo" data-en="External manual upscaling">Escalado manual externo</td>
+            <td class="pro-col" data-es="Desatendido 2x / 4x con modelos reales" data-en="Unattended 2x / 4x with real models">Desatendido 2x / 4x con modelos reales</td>
+          </tr>
+          <tr>
+            <td data-es="Proxy OpenAI para Cursor y VS Code" data-en="OpenAI Proxy for Cursor & VS Code">Proxy OpenAI para Cursor y VS Code</td>
+            <td class="dim">—</td>
+            <td class="pro-col" data-es="Endpoint local /v1 compatible con Qwen 2.5 y DeepSeek" data-en="Local /v1 endpoint compatible with Qwen 2.5 & DeepSeek">Endpoint local /v1 compatible con Qwen 2.5 y DeepSeek</td>
+          </tr>
+          <tr>
+            <td data-es="Control Remoto PWA Móvil" data-en="Mobile Remote PWA">Control Remoto PWA Móvil</td>
+            <td class="dim">—</td>
+            <td class="pro-col" data-es="Escaneo QR instantáneo para iPhone / Android" data-en="Instant QR scan for iPhone / Android">Escaneo QR instantáneo para iPhone / Android</td>
+          </tr>
+          <tr>
+            <td data-es="Licencia y Código Fuente" data-en="License & Source Code">Licencia y Código Fuente</td>
+            <td class="dim" data-es="Suscripciones de pago o código cerrado" data-en="Paid subs or closed source">Suscripciones de pago o código cerrado</td>
+            <td class="pro-col" data-es="100% Open Source (Licencia MIT libre)" data-en="100% Open Source (Free MIT License)">100% Open Source (Licencia MIT libre)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVA VS SAAS DE CRÉDITOS -->
+<section>
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="AHORRO REAL FRENTE A SAAS" data-en="REAL SAVINGS VS SAAS">AHORRO REAL FRENTE A SAAS</span>
+      <h2 data-es="¿Por qué WakeGPU + Colab frente a plataformas de créditos (Higgsfield, Runway, Kling...)?" data-en="Why WakeGPU + Colab vs Credit Platforms (Higgsfield, Runway, Kling...)?">¿Por qué WakeGPU + Colab frente a plataformas de créditos (Higgsfield, Runway, Kling...)?</h2>
+      <p data-es="Las plataformas comerciales cobran entre 30$ y 90$/mes por un cupo de créditos muy limitado. WakeGPU es 100% gratuito y de código abierto (0 €): pagas la GPU directamente a Google a precio de coste (0.10€ - 0.35€ por vídeo generado) solo cuando estés renderizando." data-en="Commercial SaaS platforms charge $30-$90/mo for tight credit limits. WakeGPU is 100% free and open source (€0): you pay GPU costs directly to Google at wholesale rates (€0.10-€0.35 per video) only while rendering.">
+        Las plataformas comerciales cobran entre 30$ y 90$/mes por un cupo de créditos muy limitado. WakeGPU es 100% gratuito y de código abierto (0 €): pagas la GPU directamente a Google a precio de coste (0.10€ - 0.35€ por vídeo generado) solo cuando estés renderizando.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-es="CRITERIO" data-en="CRITERIA">CRITERIO</th>
+            <th data-es="PLATAFORMAS DE CRÉDITOS (SAAS)" data-en="CREDIT PLATFORMS (SAAS)">PLATAFORMAS DE CRÉDITOS (SAAS)</th>
+            <th class="pro-col" data-es="WAKEGPU + GOOGLE COLAB 🚀" data-en="WAKEGPU + GOOGLE COLAB 🚀">WAKEGPU + GOOGLE COLAB 🚀</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-es="Coste de software" data-en="Software Cost">Coste de software</td>
+            <td class="dim" data-es="30 € a 95 € / mes (360 € a 1.140 € al año)" data-en="€30 to €95 / mo (€360 to €1,140 / yr)">30 € a 95 € / mes (360 € a 1.140 € al año)</td>
+            <td class="pro-col" data-es="0 € (Software 100% Libre y Gratuito · Licencia MIT)" data-en="€0 (100% Free & Open Source · MIT License)">0 € (Software 100% Libre y Gratuito · Licencia MIT)</td>
+          </tr>
+          <tr>
+            <td data-es="Coste por render o vídeo generado" data-en="Cost per render">Coste por render o vídeo generado</td>
+            <td class="dim" data-es="Consumes paquetes de créditos caros (~1 € a 3 € por render)" data-en="Consumes expensive credit packs (~€1 to €3 per video)">Consumes paquetes de créditos caros (~1 € a 3 € por render)</td>
+            <td class="pro-col" data-es="Pagas solo la GPU en Google (~0.12 € a 0.28 € por render). Hasta un 85% más económico" data-en="Pay GPU costs directly on Google (~€0.12 to €0.28 per video). Up to 85% cheaper">Pagas solo la GPU en Google (~0.12 € a 0.28 € por render). Hasta un 85% más económico</td>
+          </tr>
+          <tr>
+            <td data-es="Caducidad de créditos" data-en="Credit Expiration">Caducidad de créditos</td>
+            <td class="dim" data-es="Los créditos no gastados caducan cada mes (se pierden)" data-en="Unused credits expire monthly (lost forever)">Los créditos no gastados caducan cada mes (se pierden)</td>
+            <td class="pro-col" data-es="Tus créditos de Colab no caducan mientras tengas la suscripción activa de Google" data-en="Colab credits don't expire while Google subscription is active">Tus créditos de Colab no caducan mientras tengas la suscripción activa de Google</td>
+          </tr>
+          <tr>
+            <td data-es="Modelos y personalización" data-en="Models & Customization">Modelos y personalización</td>
+            <td class="dim" data-es="Catálogo cerrado, sin opción a meter tus propios LoRAs ni modelos abiertos" data-en="Closed catalog, zero ability to run custom LoRAs or open models">Catálogo cerrado, sin opción a meter tus propios LoRAs ni modelos abiertos</td>
+            <td class="pro-col" data-es="Cualquier modelo de Hugging Face / Civitai (Wan 2.1, Hunyuan, Flux, SDXL, LoRAs propios)" data-en="Any model from Hugging Face / Civitai (Wan 2.1, Hunyuan, Flux, custom LoRAs)">Cualquier modelo de Hugging Face / Civitai (Wan 2.1, Hunyuan, Flux, SDXL, LoRAs propios)</td>
+          </tr>
+          <tr>
+            <td data-es="Colas de espera y censura" data-en="Queues & Censorship">Colas de espera y censura</td>
+            <td class="dim" data-es="Largas colas en horas punta y filtros de contenido muy restrictivos" data-en="Long peak-hour queues and heavy moderation filters">Largas colas en horas punta y filtros de contenido muy restrictivos</td>
+            <td class="pro-col" data-es="Tu GPU dedicada sin colas compartidas ni tiempos de espera artificiales" data-en="Your dedicated GPU with zero shared queues or artificial throttling">Tu GPU dedicada sin colas compartidas ni tiempos de espera artificiales</td>
+          </tr>
+          <tr>
+            <td data-es="Propiedad y privacidad" data-en="Ownership & Privacy">Propiedad y privacidad</td>
+            <td class="dim" data-es="Tus prompts y creaciones pueden usarse para reentrenar sus modelos" data-en="Prompts and outputs may be used for internal model training">Tus prompts y creaciones pueden usarse para reentrenar sus modelos</td>
+            <td class="pro-col" data-es="Tus datos y flujos se ejecutan en tu entorno privado de Colab y se guardan en tu equipo" data-en="Your data and pipelines run in your private Colab and save directly to disk">Tus datos y flujos se ejecutan en tu entorno privado de Colab y se guardan en tu equipo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- TABLA DE COSTES CU: MINUTO, HORA Y DÍA VS APIS LLM -->
+<section id="costes-cu">
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="COSTE REAL DE GPU EN COLAB" data-en="REAL COLAB GPU COST">COSTE REAL DE GPU EN COLAB</span>
+      <h2 data-es="Coste de Compute Units (CU): Por minuto, hora y día" data-en="Compute Units (CU) Cost: Per minute, hour and day">Coste de Compute Units (CU): Por minuto, hora y día</h2>
+      <p data-es="En Google Colab Pro 100 CU cuestan ~10 € (~0.10 € por CU). Con WakeGPU tienes tokens y renders ilimitados a precio de coste directo de Google, sin pagar por token ni cuotas abusivas de APIs externas." data-en="On Google Colab Pro 100 CUs cost ~€10 (~€0.10 per CU). With WakeGPU you get unlimited tokens and renders at wholesale Google cost, without paying per-token API markups.">
+        En Google Colab Pro 100 CU cuestan ~10 € (~0.10 € por CU). Con WakeGPU tienes tokens y renders ilimitados a precio de coste directo de Google, sin pagar por token ni cuotas abusivas de APIs externas.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-es="GPU EN COLAB" data-en="COLAB GPU">GPU EN COLAB</th>
+            <th data-es="VRAM Y MODELOS RECOMENDADOS" data-en="VRAM & RECOMMENDED MODELS">VRAM Y MODELOS RECOMENDADOS</th>
+            <th data-es="CONSUMO CU" data-en="CU CONSUMPTION">CONSUMO CU</th>
+            <th data-es="COSTE / MINUTO" data-en="COST / MINUTE">COSTE / MINUTO</th>
+            <th data-es="COSTE / HORA" data-en="COST / HOUR">COSTE / HORA</th>
+            <th data-es="24 HORAS SEGUIDAS*" data-en="24 HOURS CONTINUOUS*">24 HORAS SEGUIDAS*</th>
+            <th class="pro-col" data-es="VENTAJA FRENTE A APIS EXTERNAS (LLMS)" data-en="ADVANTAGE VS EXTERNAL APIS (LLMS)">VENTAJA FRENTE A APIS EXTERNAS (LLMS)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b style="color:var(--text);">Nvidia T4</b></td>
+            <td class="dim" data-es="16 GB VRAM · Qwen 2.5 Coder 7B, SD 1.5, DeepSeek Coder 6.7B" data-en="16 GB VRAM · Qwen 2.5 Coder 7B, SD 1.5, DeepSeek Coder 6.7B">16 GB VRAM · Qwen 2.5 Coder 7B, SD 1.5, DeepSeek Coder 6.7B</td>
+            <td class="dim">~1.8 a 2.0 CU/h</td>
+            <td class="dim"><b style="color:var(--emerald-light);">~0.003 €</b></td>
+            <td class="dim"><b style="color:var(--emerald-light);">~0.18 €</b></td>
+            <td class="dim">~4.32 €</td>
+            <td class="pro-col" data-es="Tokens ilimitados. Una sesión entera de programación cuesta < 0.20 €, frente a 3$-8$ por tokens en OpenAI/Claude." data-en="Unlimited tokens. A full coding session costs < €0.20, vs $3-$8 on per-token OpenAI/Claude APIs.">Tokens ilimitados. Una sesión entera de programación cuesta &lt; 0.20 €, frente a 3$-8$ por tokens en OpenAI/Claude.</td>
+          </tr>
+          <tr>
+            <td><b style="color:var(--text);">Nvidia L4</b></td>
+            <td class="dim" data-es="24 GB VRAM · Qwen 2.5 Coder 14B, SDXL (RealVisXL), Flux Schnell, Wan2.1 1.3B" data-en="24 GB VRAM · Qwen 2.5 Coder 14B, SDXL (RealVisXL), Flux Schnell, Wan2.1 1.3B">24 GB VRAM · Qwen 2.5 Coder 14B, SDXL (RealVisXL), Flux Schnell, Wan2.1 1.3B</td>
+            <td class="dim">~4.5 a 4.8 CU/h</td>
+            <td class="dim"><b style="color:var(--emerald-light);">~0.008 €</b></td>
+            <td class="dim"><b style="color:var(--emerald-light);">~0.48 €</b></td>
+            <td class="dim">~11.50 €</td>
+            <td class="pro-col" data-es="Qwen 14B compite con GPT-4o y Claude Sonnet sin cobrar por archivo abierto ni límites de contexto en tu IDE." data-en="Qwen 14B rivals GPT-4o and Claude Sonnet without per-file fees or token throttles in your IDE.">Qwen 14B compite con GPT-4o y Claude Sonnet sin cobrar por archivo abierto ni límites de contexto en tu IDE.</td>
+          </tr>
+          <tr>
+            <td><b style="color:var(--text);">Nvidia A100</b></td>
+            <td class="dim" data-es="40 / 80 GB VRAM · Qwen 2.5 Coder 32B, DeepSeek R1 32B, Wan 2.1 14B, Hunyuan Video" data-en="40 / 80 GB VRAM · Qwen 2.5 Coder 32B, DeepSeek R1 32B, Wan 2.1 14B, Hunyuan Video">40 / 80 GB VRAM · Qwen 2.5 Coder 32B, DeepSeek R1 32B, Wan 2.1 14B, Hunyuan Video</td>
+            <td class="dim">~11.8 a 13.0 CU/h</td>
+            <td class="dim"><b style="color:var(--emerald-light);">~0.020 €</b></td>
+            <td class="dim"><b style="color:var(--emerald-light);">~1.25 €</b></td>
+            <td class="dim">~30.00 €</td>
+            <td class="pro-col" data-es="Modelos de 32B con razonamiento profundo. Refactorizar módulos enteros de código durante 1 hora cuesta solo 1.25 €." data-en="32B reasoning models. 1 hour of massive full-codebase refactoring costs only €1.25.">Modelos de 32B con razonamiento profundo. Refactorizar módulos enteros de código durante 1 hora cuesta solo 1.25 €.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3 CARDS DE VALOR CLAVE -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:24px;">
+      <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">♾️</div>
+        <h4 style="margin:0 0 8px;font-size:16px;color:#fff;" data-es="Tokens Ilimitados sin Taxímetro" data-en="Unlimited Tokens without Metering">Tokens Ilimitados sin Taxímetro</h4>
+        <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.55;" data-es="Las APIs comerciales (OpenAI, Claude) cobran por cada token de entrada y salida. En proyectos con cientos de líneas de contexto los costes se disparan a 5-15 $/día. En Colab la GPU es tuya: generas millones de tokens sin coste adicional." data-en="Commercial APIs charge per input/output token. In projects with extensive context, costs easily reach $5-$15/day. In Colab the GPU is yours: generate millions of tokens without extra fees.">
+          Las APIs comerciales (OpenAI, Claude) cobran por cada token de entrada y salida. En proyectos con cientos de líneas de contexto los costes se disparan a 5-15 $/día. En Colab la GPU es tuya: generas millones de tokens sin coste adicional.
+        </p>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">⏱️</div>
+        <h4 style="margin:0 0 8px;font-size:16px;color:#fff;" data-es="*El Guardián te ahorra las 24 horas" data-en="*Zero-Waste Guardian saves the 24 hours">*El Guardián te ahorra las 24 horas</h4>
+        <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.55;" data-es="Nadie programa ni renderiza 24 horas ininterrumpidas. El Guardián Zero-Waste apaga la sesión de GPU en cuanto terminas una tarea o dejas de consultar, por lo que una jornada de trabajo real suele costar entre 0.30 € y 1.20 € en total." data-en="Nobody codes or renders 24 hours non-stop. Zero-Waste Guardian sleeps your GPU as soon as jobs finish or you pause, meaning a full productive day typically costs between €0.30 and €1.20.">
+          Nadie programa ni renderiza 24 horas ininterrumpidas. El Guardián Zero-Waste apaga la sesión de GPU en cuanto terminas una tarea o dejas de consultar, por lo que una jornada de trabajo real suele costar entre 0.30 € y 1.20 € en total.
+        </p>
+      </div>
+
+      <div style="background:var(--bg-card);border:1px solid var(--line);border-radius:12px;padding:20px;">
+        <div style="font-size:20px;margin-bottom:8px;">🔒</div>
+        <h4 style="margin:0 0 8px;font-size:16px;color:#fff;" data-es="Privacidad Absoluta para tu Código" data-en="Absolute Privacy for your Code">Privacidad Absoluta para tu Código</h4>
+        <p style="margin:0;font-size:13.5px;color:var(--text-muted);line-height:1.55;" data-es="Tus archivos confidenciales, credenciales y código propietario se ejecutan en tu entorno privado y aislado de Google Cloud. Tus datos nunca se comparten con terceros ni se utilizan para reentrenar modelos comerciales." data-en="Your confidential code and proprietary assets run in your private, isolated Google Cloud VM. Your data is never shared with third parties or used to retrain commercial models.">
+          Tus archivos confidenciales, credenciales y código propietario se ejecutan en tu entorno privado y aislado de Google Cloud. Tus datos nunca se comparten con terceros ni se utilizan para reentrenar modelos comerciales.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CANALES FACELESS Y AUTOMATIZACIÓN CON N8N -->
+<section id="faceless">
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="CASO DE USO · AUTOMATIZACIÓN TOTAL" data-en="USE CASE · FULL AUTOMATION">CASO DE USO · AUTOMATIZACIÓN TOTAL</span>
+      <h2 data-es="Automatiza canales «Faceless» de Shorts y TikTok con WakeGPU + n8n" data-en="Automate Faceless Shorts & TikTok Channels with WakeGPU + n8n">Automatiza canales «Faceless» de Shorts y TikTok con WakeGPU + n8n</h2>
+      <p data-es="Genera, edita y publica decenas de vídeos verticales al mes sin tocar código y por menos de 0,25 € por vídeo completo, gracias a la API de WakeGPU y el Guardián Zero-Waste en Google Colab." data-en="Generate, render and publish dozens of vertical videos per month hands-free for under €0.25 per full video, powered by WakeGPU's API and Colab's Zero-Waste Guardian.">
+        Genera, edita y publica decenas de vídeos verticales al mes sin tocar código y por menos de 0,25 € por vídeo completo, gracias a la API de WakeGPU y el Guardián Zero-Waste en Google Colab.
+      </p>
+    </div>
+
+    <!-- PIPELINE DE 4 PASOS -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-bottom:28px;">
+      <div class="feat-card" style="padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="feat-icon" style="margin:0;">📝</div>
+          <span style="font-size:11px;font-weight:700;color:var(--gold-light);background:rgba(245,158,11,0.12);padding:2px 8px;border-radius:99px;">PASO 1</span>
+        </div>
+        <h3 style="font-size:16px;margin:0 0 4px;" data-es="Guion Viral con IA" data-en="Viral AI Scriptwriting">Guion Viral con IA</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">LLM (DeepSeek / Qwen Coder)</div>
+        <p style="font-size:13.5px;color:var(--text-muted);margin:0 0 14px;" data-es="n8n genera ganchos de alta retención de 30-50 segundos, desglosando la narración en 4 o 5 escenas visuales con prompts cinematográficos." data-en="n8n generates 30-50s high-retention hooks, splitting the narrative into 4-5 visual scenes with cinematic prompts.">
+          n8n genera ganchos de alta retención de 30-50 segundos, desglosando la narración en 4 o 5 escenas visuales con prompts cinematográficos.
+        </p>
+        <span class="feat-pill" data-es="Céntimos o gratis con LLM local" data-en="Cents or free with local LLM">Céntimos o gratis con LLM local</span>
+      </div>
+
+      <div class="feat-card" style="padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="feat-icon green" style="margin:0;">🎙️</div>
+          <span style="font-size:11px;font-weight:700;color:var(--emerald-light);background:rgba(16,185,129,0.12);padding:2px 8px;border-radius:99px;">PASO 2</span>
+        </div>
+        <h3 style="font-size:16px;margin:0 0 4px;" data-es="Voz en Off Natural" data-en="Natural Voiceover">Voz en Off Natural</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">Kokoro TTS / ElevenLabs</div>
+        <p style="font-size:13.5px;color:var(--text-muted);margin:0 0 14px;" data-es="Transforma el guion en locución fluida con audio sincronizado. n8n calcula la duración exacta de cada bloque para ajustar los planos de vídeo." data-en="Turns the script into smooth narration. n8n calculates exact timestamps to align visual video cuts perfectly.">
+          Transforma el guion en locución fluida con audio sincronizado. n8n calcula la duración exacta de cada bloque para ajustar los planos de vídeo.
+        </p>
+        <span class="feat-pill" data-es="Audio ultra-realista" data-en="Ultra-realistic audio">Audio ultra-realista</span>
+      </div>
+
+      <div class="feat-card" style="padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="feat-icon cyan" style="margin:0;">🎬</div>
+          <span style="font-size:11px;font-weight:700;color:var(--cyan-light);background:rgba(6,182,212,0.12);padding:2px 8px;border-radius:99px;">PASO 3</span>
+        </div>
+        <h3 style="font-size:16px;margin:0 0 4px;" data-es="Vídeo 9:16 en WakeGPU" data-en="9:16 Video via WakeGPU">Vídeo 9:16 en WakeGPU</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">GPU Colab (Wan 2.1 / MiniMax)</div>
+        <p style="font-size:13.5px;color:var(--text-muted);margin:0 0 14px;" data-es="n8n llama a la API de WakeGPU. Colab despierta, renderiza los clips verticales en lote con Auto-HD y el Guardián Zero-Waste apaga la GPU al terminar." data-en="n8n triggers WakeGPU's API. Colab wakes, batch-renders vertical clips with Auto-HD, and Zero-Waste Guardian sleeps the GPU when done.">
+          n8n llama a la API de WakeGPU. Colab despierta, renderiza los clips verticales en lote con Auto-HD y el Guardián Zero-Waste apaga la GPU al terminar.
+        </p>
+        <span class="feat-pill highlight" data-es="Autoapagado Zero-Waste" data-en="Zero-Waste Auto-shutdown">Autoapagado Zero-Waste</span>
+      </div>
+
+      <div class="feat-card" style="padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div class="feat-icon" style="margin:0;">🚀</div>
+          <span style="font-size:11px;font-weight:700;color:var(--gold-light);background:rgba(245,158,11,0.12);padding:2px 8px;border-radius:99px;">PASO 4</span>
+        </div>
+        <h3 style="font-size:16px;margin:0 0 4px;" data-es="Montaje y Publicación" data-en="Assembly & Publishing">Montaje y Publicación</h3>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;font-weight:600;">FFmpeg / Telegram / YouTube</div>
+        <p style="font-size:13.5px;color:var(--text-muted);margin:0 0 14px;" data-es="FFmpeg ensambla los clips, añade música y subtítulos dinámicos palabra por palabra. Se envía a Telegram para aprobación o se sube directo a Shorts." data-en="FFmpeg stitches clips, adds music and dynamic word-by-word subtitles. Sends to Telegram for approval or uploads to Shorts.">
+          FFmpeg ensambla los clips, añade música y subtítulos dinámicos palabra por palabra. Se envía a Telegram para aprobación o se sube directo a Shorts.
+        </p>
+        <span class="feat-pill" data-es="Aprobación en 1 clic" data-en="1-Click Approval">Aprobación en 1 clic</span>
+      </div>
+    </div>
+
+    <!-- COMPARATIVA DE COSTES MENSUALES (30 VÍDEOS) -->
+    <div style="background:linear-gradient(135deg, #131724 0%, #171d2e 100%);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:30px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+      <div style="max-width:620px;">
+        <div style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--emerald-light);background:var(--emerald-bg);border:1px solid rgba(16,185,129,0.3);padding:3px 10px;border-radius:99px;margin-bottom:10px;">
+          AHORRO DE MÁS DEL 85% EN COSTES DE PRODUCCIÓN
+        </div>
+        <h3 style="margin:0 0 8px;font-size:22px;color:#fff;" data-es="Coste mensual para producir 30 Shorts/TikToks al mes" data-en="Monthly cost to produce 30 Shorts/TikToks per month">Coste mensual para producir 30 Shorts/TikToks al mes</h3>
+        <p style="margin:0;font-size:14px;color:var(--text-muted);line-height:1.6;" data-es="Las herramientas SaaS tradicionales (InVideo, Runway, Fliki) cobran entre 90 € y 180 € al mes por créditos limitados. Con WakeGPU + n8n pagas la GPU de Google solo durante el render: <b>unos 8 € a 14 € al mes en total</b>." data-en="Traditional SaaS tools (InVideo, Runway, Fliki) charge $90-$180/mo for tight credit limits. With WakeGPU + n8n you pay Google GPU compute only while rendering: <b>around €8 to €14 per month in total</b>.">
+          Las herramientas SaaS tradicionales (InVideo, Runway, Fliki) cobran entre 90 € y 180 € al mes por créditos limitados. Con WakeGPU + n8n pagas la GPU de Google solo durante el render: <b>unos 8 € a 14 € al mes en total</b>.
+        </p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+        <a href="docs.html#faceless-n8n" class="cta-gold" style="padding:12px 24px;font-size:14px;" data-es="Ver tutorial paso a paso →" data-en="View Step-by-Step Tutorial →">Ver tutorial paso a paso →</a>
+        <span style="font-size:12px;color:var(--text-dim);" data-es="Incluye plantilla JSON para n8n y comandos FFmpeg" data-en="Includes n8n JSON template and FFmpeg commands">Incluye plantilla JSON para n8n y comandos FFmpeg</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO UTILIZAR EN 3 PASOS -->
+<section id="como-funciona">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:44px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <span class="sec-tag" data-es="GUÍA DE INICIO RÁPIDO" data-en="QUICK START GUIDE">GUÍA DE INICIO RÁPIDO</span>
+        <h2 style="margin:0;font-size:32px;font-weight:700;" data-es="Cómo utilizar la aplicación en 3 pasos" data-en="How to use the app in 3 steps">Cómo utilizar la aplicación en 3 pasos</h2>
+      </div>
+      <a href="docs.html" style="color:var(--gold);text-decoration:none;font-size:14px;font-weight:600;" data-es="Ver documentación completa →" data-en="View full docs →">Ver documentación completa →</a>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3 data-es="Conecta tu Google Colab" data-en="Connect Google Colab">Conecta tu Google Colab</h3>
+        <p data-es="Abre el notebook oficial de WakeGPU en Colab con un clic y pega tu token. Si usas nuestra pasarela VPS no necesitas configurar puertos ni DNS." data-en="Open the official WakeGPU Colab notebook in 1 click and enter your token. No port forwarding or DNS hassle required.">
+          Abre el notebook oficial de WakeGPU en Colab con un clic y pega tu token. Si usas nuestra pasarela VPS no necesitas configurar puertos ni DNS.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3 data-es="Despierta la GPU y elige tu modo" data-en="Wake GPU & pick your mode">Despierta la GPU y elige tu modo</h3>
+        <p data-es="Selecciona entre el Modo Sencillo (para generar con 1 clic sin complicaciones) o el Modo Avanzado (ComfyUI completo en la nube)." data-en="Choose between Simple Mode (for 1-click renders) or Advanced Mode (full native ComfyUI in the cloud).">
+          Selecciona entre el Modo Sencillo (para generar con 1 clic sin complicaciones) o el Modo Avanzado (ComfyUI completo en la nube).
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3 data-es="Genera, descarga y ahorra CU" data-en="Render, download & save CU">Genera, descarga y ahorra CU</h3>
+        <p data-es="Crea tus vídeos e imágenes en alta resolución. Al terminar, el Guardián Zero-Waste apaga la sesión de GPU para que no pagues ni un céntimo de más." data-en="Create videos and high-res images. Once finished, Zero-Waste Guardian sleeps your GPU so you never waste a single cent.">
+          Crea tus vídeos e imágenes en alta resolución. Al terminar, el Guardián Zero-Waste apaga la sesión de GPU para que no pagues ni un céntimo de más.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PUESTA EN MARCHA EN 30 SEGUNDOS -->
+<section>
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="LISTO AL INSTANTE" data-en="INSTANT SETUP">LISTO AL INSTANTE</span>
+      <h2 data-es="Puesta en marcha en 30 segundos" data-en="Get started in 30 seconds">Puesta en marcha en 30 segundos</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3 data-es="Descarga la aplicación gratis" data-en="Download the app free">Descarga la aplicación gratis</h3>
+        <p data-es="Descarga la versión nativa para macOS (Apple Silicon o Intel) o Windows x64. Sin instaladores pesados ni adware." data-en="Download the native version for macOS (Apple Silicon or Intel) or Windows x64. No heavy installers or bloatware.">
+          Descarga la versión nativa para macOS (Apple Silicon o Intel) o Windows x64. Sin instaladores pesados ni adware.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3 data-es="Abre el notebook en Colab" data-en="Open Colab notebook">Abre el notebook en Colab</h3>
+        <p data-es="Haz clic en el enlace al notebook oficial de WakeGPU y dale a 'Conectar GPU'. No necesitas configurar puertos ni DNS." data-en="Click the link to the official WakeGPU notebook and hit 'Connect GPU'. No port forwarding or DNS config needed.">
+          Haz clic en el enlace al notebook oficial de WakeGPU y dale a 'Conectar GPU'. No necesitas configurar puertos ni DNS.
+        </p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3 data-es="Todo desbloqueado de serie" data-en="Everything unlocked out of the box">Todo desbloqueado de serie</h3>
+        <p data-es="Abre WakeGPU y verás el Guardián Zero-Waste, la cola por lotes y el proxy para Cursor activos sin claves ni registros." data-en="Launch WakeGPU to find Zero-Waste Guardian, batch queues, and Cursor proxy fully active without any keys or signups.">
+          Abre WakeGPU y verás el Guardián Zero-Waste, la cola por lotes y el proxy para Cursor activos sin claves ni registros.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING & DOWNLOAD SHOWCASE -->
+<section id="descargar">
+  <div id="precios" style="position:relative;top:-90px;height:0;overflow:hidden;"></div>
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="100% GRATUITO Y OPEN SOURCE" data-en="100% FREE & OPEN SOURCE">100% GRATUITO Y OPEN SOURCE</span>
+      <h2 data-es="Todas las funciones Pro, libres para todos" data-en="All Pro features, free for everyone">Todas las funciones Pro, libres para todos</h2>
+      <p data-es="Sin cuotas, sin tarjetas de crédito y sin muros de pago. WakeGPU es software libre bajo licencia MIT listo para acelerar tus proyectos de IA." data-en="No fees, no credit cards, no paywalls. WakeGPU is free software under the MIT license, ready to supercharge your AI pipeline.">
+        Sin cuotas, sin tarjetas de crédito y sin muros de pago. WakeGPU es software libre bajo licencia MIT listo para acelerar tus proyectos de IA.
+      </p>
+    </div>
+
+    <div class="pricing-center">
+      <span class="price-pill" data-es="★ EDICIÓN COMPLETA DESBLOQUEADA" data-en="★ FULL UNLOCKED EDITION">★ EDICIÓN COMPLETA DESBLOQUEADA</span>
+      <h3 class="pricing-title">WakeGPU Desktop</h3>
+      <div class="price-big">
+        0 € <span data-es="para siempre" data-en="forever">para siempre</span>
+      </div>
+      <div class="price-equiv" data-es="(CÓDIGO ABIERTO · LICENCIA MIT · TODAS LAS CARACTERÍSTICAS INCLUIDAS)" data-en="(OPEN SOURCE · MIT LICENSE · ALL FEATURES INCLUDED)">
+        (CÓDIGO ABIERTO · LICENCIA MIT · TODAS LAS CARACTERÍSTICAS INCLUIDAS)
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%;margin:24px 0 16px;">
+        <a href="https://github.com/devexsolutions/wakegpu/releases/latest" class="cta-gold" style="width:100%;display:flex;justify-content:center;align-items:center;gap:8px;font-size:16px;padding:16px 24px;" data-es="⬇ Descargar para macOS (Apple Silicon / Intel)" data-en="⬇ Download for macOS (Apple Silicon / Intel)">
+          ⬇ Descargar para macOS (Apple Silicon / Intel)
+        </a>
+        <a href="https://github.com/devexsolutions/wakegpu/releases/latest" class="btn-sec-outline" style="width:100%;display:flex;justify-content:center;align-items:center;gap:8px;font-size:14px;padding:12px 20px;" data-es="⊞ Descargar para Windows x64" data-en="⊞ Download for Windows x64">
+          ⊞ Descargar para Windows x64
+        </a>
+        <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener" style="color:var(--text-muted);font-size:13.5px;text-decoration:none;margin-top:6px;display:inline-flex;align-items:center;justify-content:center;gap:6px;" data-es="★ Ver código fuente y novedades en GitHub →" data-en="★ View source code & releases on GitHub →">
+          ★ Ver código fuente y novedades en GitHub →
+        </a>
+      </div>
+
+      <div class="price-features">
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Guardián Zero-Waste con apagado inteligente automático" data-en="Zero-Waste Guardian with smart automatic shutdown">Guardián Zero-Waste con apagado inteligente automático</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Panel de estimación de costes en tiempo real (€ y CU/hora)" data-en="Real-time cost & consumption tracker (€ and CU/hour)">Panel de estimación de costes en tiempo real (€ y CU/hora)</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Generación por lotes ilimitada y sin colas de espera" data-en="Unlimited batch generation with zero waiting queues">Generación por lotes ilimitada y sin colas de espera</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Auto-HD Upscaling (2x / 4x) integrado en el flujo de render" data-en="Auto-HD Upscaling (2x / 4x) integrated in render pipeline">Auto-HD Upscaling (2x / 4x) integrado en el flujo de render</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Proxy OpenAI local para conectar Cursor, Continue.dev y VS Code" data-en="Local OpenAI proxy for Cursor, Continue.dev & VS Code">Proxy OpenAI local para conectar Cursor, Continue.dev y VS Code</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="Control remoto desde móvil PWA con escaneo de código QR" data-en="Mobile remote PWA with QR code scan">Control remoto desde móvil PWA con escaneo de código QR</span>
+        </div>
+        <div class="price-feat-item">
+          <span class="chk">✔</span>
+          <span data-es="100% Open Source (Licencia MIT) para uso personal y comercial" data-en="100% Open Source (MIT License) for personal & commercial use">100% Open Source (Licencia MIT) para uso personal y comercial</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-header">
+      <span class="sec-tag" data-es="CUALQUIER DUDA" data-en="COMMON QUESTIONS">CUALQUIER DUDA</span>
+      <h2 data-es="Preguntas frecuentes" data-en="Frequently Asked Questions">Preguntas frecuentes</h2>
+      <p data-es="Todo lo que necesitas saber antes de empezar. Si tienes otra duda, contáctanos." data-en="Everything you need to know before starting. If you have questions, reach out.">
+        Todo lo que necesitas saber antes de empezar. Si tienes otra duda, contáctanos.
+      </p>
+    </div>
+
+    <div class="faq-list">
+      <details>
+        <summary data-es="¿Qué hace el Guardián Zero-Waste exactamente?" data-en="What does the Zero-Waste Guardian do?">¿Qué hace el Guardián Zero-Waste exactamente?</summary>
+        <p data-es="Monitoriza activamente la cola de generación de tu Colab. En el instante en que termina el último render de tu lista (o tras unos minutos de inactividad que tú elijas), desconecta y apaga la máquina virtual en Google Cloud, evitando que Colab siga consumiendo Compute Units mientras no estás usándolo." data-en="It monitors your render queue in real time. The moment the last job finishes (or after a configurable idle grace period), it shuts down the VM on Google Cloud, ensuring no idle Compute Units are ever wasted.">
+          Monitoriza activamente la cola de generación de tu Colab. En el instante en que termina el último render de tu lista (o tras unos minutos de inactividad que tú elijas), desconecta y apaga la máquina virtual en Google Cloud, evitando que Colab siga consumiendo Compute Units mientras no estás usándolo.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Por qué es mucho más barato que Runway, Kling o Higgsfield?" data-en="Why is this cheaper than Runway, Kling, or Higgsfield?">¿Por qué es mucho más barato que Runway, Kling o Higgsfield?</summary>
+        <p data-es="Las plataformas de créditos cobran márgenes de beneficio de más del 500% sobre el coste real de GPU. Con WakeGPU, pagas a Google directamente el coste neto de la GPU en Colab Pro (unos 10 € por 100 CU, lo que da para decenas o cientos de vídeos) y amortizas la licencia Pro con los primeros 2 o 3 proyectos." data-en="SaaS platforms charge 500%+ markups on raw GPU compute. With WakeGPU, you pay Google directly for Colab Pro compute at wholesale rates (~€10 for 100 CU, yielding dozens or hundreds of generations), breaking even within your first few projects.">
+          Las plataformas de créditos cobran márgenes de beneficio de más del 500% sobre el coste real de GPU. Con WakeGPU, pagas a Google directamente el coste neto de la GPU en Colab Pro (unos 10 € por 100 CU, lo que da para decenas o cientos de vídeos) y amortizas la licencia Pro con los primeros 2 o 3 proyectos.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Puedo usar WakeGPU desde mi móvil o tablet?" data-en="Can I use WakeGPU from my mobile or tablet?">¿Puedo usar WakeGPU desde mi móvil o tablet?</summary>
+        <p data-es="¡Sí! WakeGPU incluye una PWA móvil ligera. Escaneas el código QR desde tu iPhone, iPad o dispositivo Android y puedes monitorear el progreso del render, ver el balance de créditos y pausar o apagar la GPU desde tu sofá o fuera de casa." data-en="Yes! WakeGPU features a lightweight mobile PWA. Scan the QR code from your phone or tablet to track render progress, check live balance, and shut down the GPU on the go.">
+          ¡Sí! WakeGPU incluye una PWA móvil ligera. Escaneas el código QR desde tu iPhone, iPad o dispositivo Android y puedes monitorear el progreso del render, ver el balance de créditos y pausar o apagar la GPU desde tu sofá o fuera de casa.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Necesito una cuenta de pago de Google Colab?" data-en="Do I need a paid Google Colab account?">¿Necesito una cuenta de pago de Google Colab?</summary>
+        <p data-es="Para modelos de vídeo exigentes (Wan 2.1, Hunyuan) se recomienda Google Colab Pro o comprar paquetes de Compute Units sueltos de Google (desde ~10 €). Para modelos ligeros o pruebas puntuales puedes usar la versión gratuita de Colab." data-en="For demanding video models (Wan 2.1, Hunyuan) Colab Pro or pay-as-you-go CU packages (~€10) are recommended. Light models can run on free Colab tier.">
+          Para modelos de vídeo exigentes (Wan 2.1, Hunyuan) se recomienda Google Colab Pro o comprar paquetes de Compute Units sueltos de Google (desde ~10 €). Para modelos ligeros o pruebas puntuales puedes usar la versión gratuita de Colab.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Qué modelos puedo utilizar con WakeGPU?" data-en="What AI models can I run?">¿Qué modelos puedo utilizar con WakeGPU?</summary>
+        <p data-es="Todos los modelos de código abierto compatibles con ComfyUI: Wan 2.1 (T2V e I2V), Hunyuan Video, CogVideoX, Flux.1, SDXL, Stable Video Diffusion, además de cualquier LoRA, checkpoint o embedding de Hugging Face o Civitai." data-en="All open-source models supported by ComfyUI: Wan 2.1 (T2V & I2V), Hunyuan Video, CogVideoX, Flux.1, SDXL, Stable Video Diffusion, and any LoRA or checkpoint from Hugging Face or Civitai.">
+          Todos los modelos de código abierto compatibles con ComfyUI: Wan 2.1 (T2V e I2V), Hunyuan Video, CogVideoX, Flux.1, SDXL, Stable Video Diffusion, además de cualquier LoRA, checkpoint o embedding de Hugging Face o Civitai.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Es realmente 100% gratuito y de código abierto?" data-en="Is it truly 100% free and open source?">¿Es realmente 100% gratuito y de código abierto?</summary>
+        <p data-es="Sí. WakeGPU es software libre publicado bajo Licencia MIT. Todas las características profesionales (Guardián Zero-Waste, generación por lotes, proxy OpenAI para Cursor, escalado Auto-HD) vienen incluidas de forma gratuita sin límites ni suscripciones." data-en="Yes. WakeGPU is free software published under the MIT License. All pro features (Zero-Waste Guardian, batch queues, OpenAI proxy for Cursor, Auto-HD upscaling) are included for free without caps or subscriptions.">
+          Sí. WakeGPU es software libre publicado bajo Licencia MIT. Todas las características profesionales (Guardián Zero-Waste, generación por lotes, proxy OpenAI para Cursor, escalado Auto-HD) vienen incluidas de forma gratuita sin límites ni suscripciones.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Puedo instalarlo en varios ordenadores?" data-en="Can I install it on multiple computers?">¿Puedo instalarlo en varios ordenadores?</summary>
+        <p data-es="Sí, puedes descargarlo e instalarlo sin restricciones tanto en tus Macs (Apple Silicon e Intel) como en tus PCs con Windows 10/11." data-en="Yes, you can install it without restrictions on your Macs (Apple Silicon and Intel) as well as Windows 10/11 PCs.">
+          Sí, puedes descargarlo e instalarlo sin restricciones tanto en tus Macs (Apple Silicon e Intel) como en tus PCs con Windows 10/11.
+        </p>
+      </details>
+
+      <details>
+        <summary data-es="¿Tiene algún coste de mantenimiento o renovación?" data-en="Are there any maintenance or renewal fees?">¿Tiene algún coste de mantenimiento o renovación?</summary>
+        <p data-es="Cero euros. No hay cuotas ocultas. Lo único que pagas son los Compute Units que tú decidas consumir en tu propia cuenta de Google Colab al generar contenido." data-en="Zero. There are no hidden fees. The only thing you pay for are the Compute Units you consume directly on your own Google Colab account when rendering.">
+          Cero euros. No hay cuotas ocultas. Lo único que pagas son los Compute Units que tú decidas consumir en tu propia cuenta de Google Colab al generar contenido.
+        </p>
+      </details>
+    </div>
+
+    <!-- PREFOOTER BANNER -->
+    <div class="prefooter-cta">
+      <div class="prefooter-text">
+        <h3 data-es="Empieza a generar sin pagar de más" data-en="Start rendering without overpaying">Empieza a generar sin pagar de más</h3>
+        <p data-es="Descarga WakeGPU gratis y aprovecha el Guardián Zero-Waste, el Modo Sencillo y el proxy para IDEs hoy mismo." data-en="Download WakeGPU free and enjoy Zero-Waste Guardian, Simple Mode and the IDE proxy today.">
+          Descarga WakeGPU gratis y aprovecha el Guardián Zero-Waste, el Modo Sencillo y el proxy para IDEs hoy mismo.
+        </p>
+      </div>
+      <div class="prefooter-actions">
+        <a href="#descargar" class="cta-gold" data-es="⚡ Descargar Gratis" data-en="⚡ Download Free">⚡ Descargar Gratis</a>
+        <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener" class="btn-sec-outline" data-es="★ Repositorio en GitHub →" data-en="★ GitHub Repository →">★ Repositorio en GitHub →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap footer-inner">
+    <div>© 2026 WakeGPU · <span data-es="Proyecto Open Source (Licencia MIT) creado para la comunidad." data-en="Open Source Project (MIT License) built for the community.">Proyecto Open Source (Licencia MIT) creado para la comunidad.</span></div>
+    <div class="footer-links">
+      <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener">GitHub</a>
+      <a href="docs.html" data-es="Documentación" data-en="Documentation">Documentación</a>
+      <a href="docs.html#faceless-n8n" data-es="Tutorial n8n" data-en="n8n Tutorial">Tutorial n8n</a>
+    </div>
+  </div>
+</footer>
+
+<!-- MODAL ENTREGA DE CLAVE POST-CHECKOUT -->
+<div id="postCheckoutBox">
+  <div class="modal-card">
+    <h3 style="margin:0 0 12px;color:var(--gold-light);" data-es="¡Pago completado con éxito!" data-en="Payment completed successfully!">¡Pago completado con éxito!</h3>
+    <p id="postCheckoutMsg" style="color:var(--text-muted);font-size:14px;margin:0 0 16px;" data-es="Generando tu clave de licencia Pro..." data-en="Generating your Pro license key...">Generando tu clave de licencia Pro...</p>
+    <div id="postCheckoutKeyWrap" class="key-box" style="display:none;">
+      <span id="postCheckoutKey" style="font-weight:700;">WLPRO-XXXX-XXXX-XXXX</span>
+      <button id="btnCopyKey" style="background:var(--gold);border:none;border-radius:4px;color:#090a0f;padding:4px 8px;font-size:12px;font-weight:700;cursor:pointer;">Copiar clave</button>
+    </div>
+    <button onclick="document.getElementById('postCheckoutBox').classList.remove('show')" style="background:var(--bg-card);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;margin-top:10px;" data-es="Cerrar" data-en="Close">Cerrar</button>
+  </div>
+</div>
+
+<script>
+const LICENSE_API = "https://lic.wakegpu.com";
+let currentLang = "es";
+
+function setLang(l){
+  currentLang = l;
+  document.querySelectorAll("[data-es]").forEach(el=>{
+    const v = el.dataset[l];
+    if(v) el.innerHTML = v;
+  });
+  document.documentElement.lang = l;
+  const btnEs = document.getElementById("btnEs");
+  const btnEn = document.getElementById("btnEn");
+  if(btnEs) btnEs.classList.toggle("on", l==="es");
+  if(btnEn) btnEn.classList.toggle("on", l==="en");
+  try{localStorage.setItem("wl.lang",l)}catch(e){}
+}
+
+document.getElementById("btnEs").onclick=()=>setLang("es");
+document.getElementById("btnEn").onclick=()=>setLang("en");
+
+try{
+  const s=localStorage.getItem("wl.lang");
+  if(s==="en" || s==="es") currentLang=s;
+  else if((navigator.language||"").toLowerCase().startsWith("en")) currentLang="en";
+}catch(e){}
+setLang(currentLang);
+
+async function pollClaimKey(email, orderId) {
+  const box = document.getElementById("postCheckoutBox");
+  const msg = document.getElementById("postCheckoutMsg");
+  const wrap = document.getElementById("postCheckoutKeyWrap");
+  const code = document.getElementById("postCheckoutKey");
+  box.classList.add("show");
+
+  if (!email || !orderId) {
+    msg.textContent = currentLang === "en"
+      ? "Check your email inbox: we have sent your WLPRO-… license key. You can also recover it anytime from 'Recover key'."
+      : "Revisa tu bandeja de entrada: te hemos enviado tu clave WLPRO-…. También puedes pedirla en «Recuperar clave».";
+    return;
+  }
+
+  for (let i = 0; i < 8; i++) {
+    try {
+      const r = await fetch(LICENSE_API + "/api/claim", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({email: String(email), order_id: String(orderId)})
+      });
+      if (r.ok) {
+        const j = await r.json();
+        if (j && j.ready && j.key) {
+          code.textContent = j.key;
+          wrap.style.display = "flex";
+          msg.textContent = currentLang === "en"
+            ? "Here is your WakeGPU Pro license key (also sent to " + email + "):"
+            : "Aquí tienes tu clave de licencia WakeGPU Pro (también enviada a " + email + "):";
+          return;
+        }
+      }
+    } catch (_) {}
+    await new Promise(res => setTimeout(res, 2000));
+  }
+  msg.textContent = currentLang === "en"
+    ? "We have sent your WLPRO-… license key to " + email + ". Check your inbox (or use 'Recover key' if needed)."
+    : "Te hemos enviado tu clave WLPRO-… a " + email + ". Revisa tu bandeja de entrada (o usa «Recuperar clave» si lo necesitas).";
+}
+
+document.getElementById("btnCopyKey").onclick = async () => {
+  const k = document.getElementById("postCheckoutKey").textContent;
+  try {
+    await navigator.clipboard.writeText(k);
+    const b = document.getElementById("btnCopyKey");
+    b.textContent = currentLang === "en" ? "Copied ✓" : "¡Copiada! ✓";
+    setTimeout(() => { b.textContent = currentLang === "en" ? "Copy key" : "Copiar clave"; }, 2000);
+  } catch (_) {}
+};
+
+window.addEventListener("load", () => {
+  if (window.createLemonSqueezy) {
+    window.createLemonSqueezy();
+  }
+  if (window.LemonSqueezy) {
+    window.LemonSqueezy.Setup({
+      eventHandler: (event) => {
+        if (event && event.event === "Checkout.Success") {
+          const d = (event.data && event.data.order && event.data.order.data) || {};
+          const orderId = d.id || "";
+          const email = (d.attributes && d.attributes.user_email) || "";
+          pollClaimKey(email, orderId);
+        }
+      }
+    });
+  }
+  const params = new URLSearchParams(location.search);
+  if (params.get("order_id") || params.get("checkout") === "success") {
+    pollClaimKey(params.get("email") || "", params.get("order_id") || "");
+  }
+});
+</script>
+</body>
+</html>
