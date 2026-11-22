@@ -21,17 +21,18 @@ import (
 // builtinPromptGuide is Wakeloom's own short, generic advice for writing video prompts. The official MiniMax
 // H3 prompt guide is not shipped (its community license limits where it may be redistributed): users who
 // have it can import it in settings, and it is then used instead (see userGuidePath).
-const builtinPromptGuide = `You write prompts for an AI model that turns a text description (and optional reference pictures) into a short video with sound.
+const builtinPromptGuide = `You write professional cinematic prompts for modern AI video generation models (Muse, Wan 2.1, Hunyuan Video).
 
-Think like a director and make every sentence something a camera could film:
-- Subject: who or what is on screen; looks, clothing, expression, position in the frame.
-- Action: what happens, in order, at a pace that fits the requested length. Avoid too many events for a short clip.
-- Camera: shot size and angle, how the camera moves (or stays still) and how fast; say clearly where one shot ends and the next begins.
-- Light and look: time of day, light direction and quality, colours, overall visual style.
-- Sound: background ambience, sound effects, spoken lines with the speaker, and whether there is music.
+Think like an expert director and cinematographer. To guarantee cinematic coherence and prevent random or inconsistent generations, structure prompts following the 6 pillars:
+1. Duration & Aspect: Explicit timing (e.g. 5.0s, 6.0s) and aspect ratio (e.g. 16:9 widescreen or 9:16 vertical).
+2. Character / Asset Lock: Name and define subjects concretely (<Subject S1>: exact age, facial likeness, clothing, materials, colors). Keep traits 100% consistent across shots.
+3. Setting & Atmosphere: Exact location, time of day, weather, ambient lighting (volumetric, rim light, caustics, cinematic color palette).
+4. Timed Beats: Break down actions second-by-second (e.g. 0.0s-2.5s opening action; 2.5s-5.0s progression or climax). Avoid too many chaotic events in a short clip.
+5. Camera Language: Shot size (extreme close-up, medium, wide), exact lens (35mm anamorphic, 50mm prime, 90mm macro), camera movement (dolly forward, slow tracking, pedestal rise, orbit), and depth of field.
+6. Restrictions & Physics: Specify realistic fluid dynamics, cloth/hair physics, no face morphing, no limb distortion, consistent lighting.
 
 With reference pictures, say what each picture is for (opening frame, closing frame, or what a character or place should look like) and keep what is visible in them consistent.
-Prefer concrete nouns and verbs over adjectives; do not describe things the viewer cannot see or hear.`
+Prefer concrete nouns and verbs over abstract adjectives; do not describe things the viewer cannot see or hear.`
 
 const guideMaxBytes = 1 << 20
 
@@ -391,7 +392,16 @@ var modeHint = map[string]string{
 	"Ref2VA": "Ref2VA (full reference). The attached pictures, in the given order, show the subjects and look to keep; the video itself is newly composed.",
 }
 
-func buildPromptRequest(mode string, dur float64, idea, current, instruction string, nImages int) llmRequest {
+var styleInstructions = map[string]string{
+	"muse6":       "Structure the prompt according to the Muse / Wan 2.1 6-block cinematic architecture: [DURACIÓN Y FORMATO], [PERSONAJE / ASSET ID], [ESCENARIO Y ATMÓSFERA], [TIMED BEATS], [LENGUAJE DE CÁMARA], [RESTRICCIONES].",
+	"apple":       "Incorporate the dynamic 'Apple Don't Blink' commercial style: ultra-crisp studio lighting, rapid explosive zooms or orbits, clean geometry, haptic accents, and a luxury product feel with 120fps slow-motion highlights.",
+	"bladerunner": "Incorporate the monumental 'Blade Runner 2049' sci-fi aesthetic: colossal brutalist architecture, dense atmospheric orange or neon haze, 24mm/35mm anamorphic framing, and a somber, contemplative pace.",
+	"fincher":     "Incorporate the 'David Fincher' psychological noir style: clinical tripod stability, micro push-in, low contrast, muted olive-green/amber palette, deep shadows, and intense dramatic tension.",
+	"anime":       "Incorporate the 'Makoto Shinkai' anime aesthetic: breathtaking radiant skies, towering volumetric cumulus clouds, emotional character turns, drifting petals/light particles, and golden hour blooms.",
+	"macro":       "Incorporate high-end luxury macro product cinematography: extreme close-ups with a 90mm-100mm macro probe lens, ultra-shallow depth of field, caustics, dancing fluid droplets, and 1000fps slow-motion feel.",
+}
+
+func buildPromptRequest(mode string, dur float64, idea, current, instruction, style string, nImages int) llmRequest {
 	if _, ok := modeHint[mode]; !ok {
 		mode = "T2VA"
 	}
@@ -413,6 +423,9 @@ func buildPromptRequest(mode string, dur float64, idea, current, instruction str
 		"- Match all timing to the requested duration.\n"
 	var u strings.Builder
 	fmt.Fprintf(&u, "Mode: %s\nTarget duration: %.0f seconds (use %.2f where the format needs S.SS).\n", modeHint[mode], dur, dur)
+	if si, ok := styleInstructions[style]; ok && si != "" {
+		fmt.Fprintf(&u, "\nCinematic Direction & Style:\n%s\n", si)
+	}
 	if nImages > 0 {
 		fmt.Fprintf(&u, "%d reference picture(s) are attached in order (Picture 1, Picture 2, …). Ground the description in what is actually visible in them.\n", nImages)
 	} else if mode != "T2VA" {
@@ -438,6 +451,7 @@ func llmWriteHandler(w http.ResponseWriter, r *http.Request) {
 		Idea        string   `json:"idea"`
 		Current     string   `json:"current"`
 		Instruction string   `json:"instruction"`
+		Style       string   `json:"style"`
 		Images      []string `json:"images"` // data URLs
 	}
 	if err := json.NewDecoder(io.LimitReader(r.Body, 64<<20)).Decode(&in); err != nil {
@@ -453,7 +467,7 @@ func llmWriteHandler(w http.ResponseWriter, r *http.Request) {
 		errOut(w, 400, errString("先写下你的想法"))
 		return
 	}
-	req := buildPromptRequest(in.Mode, in.Duration, in.Idea, in.Current, in.Instruction, len(in.Images))
+	req := buildPromptRequest(in.Mode, in.Duration, in.Idea, in.Current, in.Instruction, in.Style, len(in.Images))
 	for _, du := range in.Images {
 		if i := strings.Index(du, ";base64,"); strings.HasPrefix(du, "data:") && i > 0 {
 			req.Images = append(req.Images, llmImage{Mime: du[5:i], B64: du[i+8:]})

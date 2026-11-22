@@ -103,6 +103,7 @@ footer a{color:var(--muted)}
     <a href="#ahorro-cu" data-es="6. Consejos para ahorrar CU" data-en="6. Tips to save Compute Units">6. Consejos para ahorrar CU</a>
     <a href="#faq-tecnico" data-es="7. Solución de problemas" data-en="7. Troubleshooting">7. Solución de problemas</a>
     <a href="#faceless-n8n" data-es="8. Canales Faceless (n8n)" data-en="8. Faceless Channels (n8n)">8. Canales Faceless (n8n)</a>
+    <a href="#muse-video" data-es="9. Vídeo en 6 Bloques (Muse / Wan)" data-en="9. 6-Block Cinematic Video (Muse / Wan)">9. Vídeo en 6 Bloques (Muse / Wan)</a>
   </aside>
 
   <!-- ===== CONTENIDO PRINCIPAL ===== -->
@@ -309,6 +310,66 @@ footer a{color:var(--muted)}
       <pre><code>ffmpeg -i video_concatenado.mp4 -i locucion.mp3 -i musica_fondo.mp3 \
   -filter_complex "[2:a]volume=0.15[bg];[1:a][bg]amix=inputs=2[audio];[0:v]subtitles=subtitulos.srt:force_style='FontName=Montserrat,FontSize=20,PrimaryColour=&amp;H0000FFFF,OutlineColour=&amp;H00000000,BorderStyle=3'[v]" \
   -map "[v]" -map "[audio]" -c:v libx264 -c:a aac -shortest short_final.mp4</code></pre>
+    </section>
+
+    <!-- 9. CINE Y PROMPTS EN 6 BLOQUES (MUSE & WAN 2.1) -->
+    <section class="doc-sec" id="muse-video">
+      <h2 data-es="9. Creación de Vídeo Profesional: Metodología Muse y Prompts en 6 Bloques 🎬" data-en="9. Professional AI Video: Muse Methodology &amp; 6-Block Prompts 🎬">9. Creación de Vídeo Profesional: Metodología Muse y Prompts en 6 Bloques 🎬</h2>
+      <p data-es="El error más común al generar vídeo con modelos como Wan 2.1, Muse, Hunyuan o MiniMax es describir escenas al azar. Esto produce clips inconexos de 5-10 segundos con saltos de cámara y personajes que mutan de rostro en cada plano. En WakeGPU integramos la <strong>arquitectura cinematográfica en 6 bloques</strong> para construir historias y planos con coherencia total."
+         data-en="The most common mistake when rendering AI video with models like Wan 2.1, Muse, Hunyuan or MiniMax is drafting unstructured descriptions. This yields disconnected 5-10s clips with erratic camera jumps and morphing faces. WakeGPU integrates the <strong>6-block cinematic architecture</strong> to ensure complete shot-to-shot coherence.">
+        El error más común al generar vídeo con modelos como Wan 2.1, Muse, Hunyuan o MiniMax es describir escenas al azar. Esto produce clips inconexos de 5-10 segundos con saltos de cámara y personajes que mutan de rostro en cada plano. En WakeGPU integramos la <strong>arquitectura cinematográfica en 6 bloques</strong> para construir historias y planos con coherencia total.
+      </p>
+
+      <div class="callout pro">
+        <strong data-es="¿Cómo acceder desde WakeGPU?" data-en="How to use it in WakeGPU?">¿Cómo acceder desde WakeGPU?</strong><br>
+        <span data-es="1. En la pestaña <strong>Generar</strong>, pulsa el botón <code>Insertar estructura</code> para desplegar las plantillas maestras.<br>2. Pulsa <code>✦ Redactar con IA</code> y selecciona tu <strong>Estilo de Dirección</strong> (Apple Don't Blink, Blade Runner, Fincher, Anime Shinkai o Macro 120fps).<br>3. Pulsa <code>Prompts guardados</code> para cargar los ejemplos completos listos para renderizar."
+              data-en="1. In the <strong>Generate</strong> tab, click <code>Insert structure</code> to open the master template selector.<br>2. Click <code>✦ Draft with AI</code> and choose your <strong>Directorial Style</strong> (Apple Don't Blink, Blade Runner, Fincher, Anime Shinkai, or 120fps Macro).<br>3. Click <code>Saved prompts</code> to load full turnkey examples.">
+          1. En la pestaña <strong>Generar</strong>, pulsa el botón <code>Insertar estructura</code> para desplegar las plantillas maestras.<br>2. Pulsa <code>✦ Redactar con IA</code> y selecciona tu <strong>Estilo de Dirección</strong> (Apple Don't Blink, Blade Runner, Fincher, Anime Shinkai o Macro 120fps).<br>3. Pulsa <code>Prompts guardados</code> para cargar los ejemplos completos listos para renderizar.
+        </span>
+      </div>
+
+      <h3 data-es="Los 6 Pilares de un Prompt de Vídeo Cinematográfico" data-en="The 6 Pillars of a Cinematic Video Prompt">Los 6 Pilares de un Prompt de Vídeo Cinematográfico</h3>
+      <table>
+        <thead>
+          <tr>
+            <th data-es="Bloque" data-en="Block">Bloque</th>
+            <th data-es="Propósito" data-en="Purpose">Propósito</th>
+            <th data-es="Ejemplo práctico" data-en="Practical Example">Ejemplo práctico</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Duración y Formato</strong></td>
+            <td data-es="Fija la escala de tiempo y relación de aspecto" data-en="Locks timing and aspect ratio">Fija la escala de tiempo y relación de aspecto</td>
+            <td><code>[DURACIÓN Y FORMATO]: 5.0s, 16:9 widescreen, 24fps</code></td>
+          </tr>
+          <tr>
+            <td><strong>2. Sujeto / Asset ID</strong></td>
+            <td data-es="Bloquea rasgos, vestuario y paleta del personaje" data-en="Locks facial features, outfit &amp; palette">Bloquea rasgos, vestuario y paleta del personaje</td>
+            <td><code>[PERSONAJE S1]: Mujer de 28 años, abrigo de lana azul marino, pelo recogido oscuro</code></td>
+          </tr>
+          <tr>
+            <td><strong>3. Escenario y Luz</strong></td>
+            <td data-es="Define la atmósfera, hora y dirección lumínica" data-en="Defines mood, time &amp; lighting direction">Define la atmósfera, hora y dirección lumínica</td>
+            <td><code>[ESCENARIO]: Callejón mojado al anochecer, reflejos de neón cian/ámbar, vapor suave</code></td>
+          </tr>
+          <tr>
+            <td><strong>4. Ritmo Temporal (Beats)</strong></td>
+            <td data-es="Desglosa las acciones segundo a segundo" data-en="Breaks down actions second-by-second">Desglosa las acciones segundo a segundo</td>
+            <td><code>0.0s-2.5s: S1 avanza bajo la lluvia; 2.5s-5.0s: alza la mano mirando a cámara</code></td>
+          </tr>
+          <tr>
+            <td><strong>5. Lenguaje de Cámara</strong></td>
+            <td data-es="Focal exacta, ángulo, movimiento y profundidad" data-en="Exact lens focal, angle, movement &amp; DoF">Focal exacta, ángulo, movimiento y profundidad</td>
+            <td><code>35mm anamórfico, plano medio, travelling lateral lento, bokeh cinematográfico</code></td>
+          </tr>
+          <tr>
+            <td><strong>6. Restricciones Físicas</strong></td>
+            <td data-es="Evita deformaciones, morphing y artefactos" data-en="Prevents distortion, morphing &amp; artifacts">Evita deformaciones, morphing y artefactos</td>
+            <td><code>Física de fluidos realista, sin mutación facial, sin extremidades dobles</code></td>
+          </tr>
+        </tbody>
+      </table>
     </section>
   </main>
 </div>

@@ -395,7 +395,13 @@ func newServer() http.Handler {
 	})
 
 	// ---- prompt library ----
-	api.HandleFunc("GET /api/prompts", func(w http.ResponseWriter, r *http.Request) { jsonOut(w, 200, loadPrompts()) })
+	api.HandleFunc("GET /api/prompts", func(w http.ResponseWriter, r *http.Request) {
+		p := loadPrompts()
+		if len(p) == 0 {
+			p = defaultPrompts()
+		}
+		jsonOut(w, 200, p)
+	})
 	api.HandleFunc("POST /api/prompts", func(w http.ResponseWriter, r *http.Request) {
 		var in []map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
@@ -642,6 +648,90 @@ func itoa(i int) string { return strconv.Itoa(i) }
 
 func sanitizeKey(k string) string {
 	return unsafeName.ReplaceAllString(strings.ReplaceAll(k, ".", "-"), "_")
+}
+
+func defaultPrompts() []map[string]any {
+	now := time.Now().UnixMilli()
+	return []map[string]any{
+		{
+			"name": "🎬 Muse/Wan 2.1: Cortometraje en 6 Bloques",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 5.0s, 16:9 cinematic aspect ratio, 24fps.
+[PERSONAJE / ASSET ID]: S1, 28-year-old female, sharp facial features, emerald eyes, messy dark bun, wearing a tailored charcoal wool coat and leather gloves.
+[ESCENARIO Y ATMÓSFERA]: Rainy neo-noir city alley at dusk, neon signs reflecting in wet asphalt puddles, soft cyan and amber rim lighting, light steam rising from manholes.
+[TIMED BEATS]:
+- 0.0s - 2.5s: S1 walks slowly into the frame, raindrops splashing around her boots; she stops and glances towards camera.
+- 2.5s - 5.0s: S1 lifts her right hand, catching raindrops, subtle breath vapor forming in the cold air as neon lights flicker.
+[LENGUAJE DE CÁMARA]: 35mm anamorphic prime lens, shallow depth of field, slow smooth dolly forward at eye-level, cinematic film grain.
+[RESTRICCIONES]: No face morphing, no limb distortion, realistic fluid physics, no text overlay, consistent lighting.`,
+		},
+		{
+			"name": "🍎 Estilo Comercial (Apple Don't Blink)",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 5.0s, 16:9 widescreen, ultra-crisp commercial feel.
+[SUJETO / ASSET ID]: Matte black titanium futuristic device with glowing amber edge ring, spinning slowly in mid-air.
+[ESCENARIO Y ATMÓSFERA]: Infinite minimalist light gray void, studio softbox lighting with crisp highlights tracing the metallic edges.
+[TIMED BEATS]:
+- 0.0s - 2.0s: Fast explosive snap zoom onto the device power button as a haptic pulse ripples through the surface.
+- 2.0s - 5.0s: 360-degree rapid orbit showing precision laser-etched ports, settling into a hero angle with dramatic studio shadows.
+[LENGUAJE DE CÁMARA]: 90mm macro lens, ultra-sharp f/4, high-speed robotic arm motion (120fps slow-motion feel), zero motion blur on key product accents.
+[RESTRICCIONES]: No artifacts, no jitter, perfectly smooth geometric lines, clean industrial design look.`,
+		},
+		{
+			"name": "🌧️ Sci-Fi Monumental (Blade Runner 2049)",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 6.0s, 2.39:1 cinemascope, heavy cinematic haze.
+[PERSONAJE / ASSET ID]: S1, lone wanderer in a weathered brown trench coat with fur collar, back turned to camera.
+[ESCENARIO Y ATMÓSFERA]: Barren apocalyptic wasteland under a dense burnt-orange dust storm; in the distance, colossal decaying brutalist statues tower into the smog.
+[TIMED BEATS]:
+- 0.0s - 3.0s: S1 stands motionless gazing up at the gargantuan monuments while dense orange dust whips across the desolate ground.
+- 3.0s - 6.0s: S1 takes two heavy steps forward; a faint blue holographic scan sweep faintly illuminates the dust particles from above.
+[LENGUAJE DE CÁMARA]: Extreme wide shot, 24mm wide angle, slow pedestal rise revealing the impossible scale of the architecture.
+[RESTRICCIONES]: Realistic dust physics, no oversaturated colors, somber contemplative pacing.`,
+		},
+		{
+			"name": "🕵️ Thriller Psicológico Noir (David Fincher)",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 5.0s, 16:9, muted olive-green and deep shadow color grade.
+[PERSONAJE / ASSET ID]: S1, detective in wrinkled white dress shirt and loosened tie, intense focused expression, beads of sweat on forehead.
+[ESCENARIO Y ATMÓSFERA]: Dimly lit archival basement office, single tungsten green-shaded desk lamp casting stark geometric shadows through venetian blinds.
+[TIMED BEATS]:
+- 0.0s - 2.5s: Extreme close-up on S1's eyes reflecting a flickering monitor; pupils dilate as he deciphers a document.
+- 2.5s - 5.0s: S1 slowly leans back into the darkness, one hand tapping a silver fountain pen against the wooden desk.
+[LENGUAJE DE CÁMARA]: 50mm Zeiss prime lens, clinical tripod stability, micro-push-in, low contrast, rich filmic blacks.
+[RESTRICCIONES]: No shaky cam, razor sharp focus plane, restrained minimal movement.`,
+		},
+		{
+			"name": "🌸 Anime Cinematográfico (Makoto Shinkai)",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 5.0s, 16:9, vibrant high-key anime aesthetics.
+[PERSONAJE / ASSET ID]: S1, young high school student with shoulder-length black hair fluttering in the wind, wearing a white school uniform with blue ribbon.
+[ESCENARIO Y ATMÓSFERA]: Sunlit Tokyo rooftop overlooking a sprawling metropolis; breathtaking summer sky with towering volumetric cumulus clouds and lens flares.
+[TIMED BEATS]:
+- 0.0s - 2.5s: S1 reaches her hand out toward the boundless azure sky; golden afternoon sunlight glints between her fingers.
+- 2.5s - 5.0s: Pink cherry blossom petals drift past in slow motion as S1 turns with an emotional, hopeful smile.
+[LENGUAJE DE CÁMARA]: 35mm anime perspective, dynamic low-angle shot, golden hour chromatic aberration, radiant light blooms.
+[RESTRICCIONES]: No 3D uncanny valley, authentic 2D anime linework, smooth natural cloth and hair animation.`,
+		},
+		{
+			"name": "💎 Macro Cinema / Joyería & Cristal (120fps)",
+			"mode": "T2VA",
+			"at":   now,
+			"text": `[DURACIÓN Y FORMATO]: 4.0s, 16:9, luxury commercial slow-motion.
+[SUJETO / ASSET ID]: Faceted crystalline emerald pendant suspended in mid-air surrounded by dancing liquid gold droplets.
+[ESCENARIO Y ATMÓSFERA]: Deep velvet black backdrop with subtle caustic light refractions dancing across the glass facets.
+[TIMED BEATS]:
+- 0.0s - 2.0s: Single golden droplet impacts the top facet of the gem, exploding into a radial crown splash in ultra-slow motion.
+- 2.0s - 4.0s: Gem gently rotates 45 degrees, prismatic light beams scattering rainbows across the frame.
+[LENGUAJE DE CÁMARA]: 100mm macro probe lens, extreme shallow depth of field, 1000fps phantom camera feel, ultra-precise focus racking.
+[RESTRICCIONES]: No liquid clipping, physically accurate optical refraction, pure luxury aesthetics.`,
+		},
+	}
 }
 
 func loadPrompts() []map[string]any {

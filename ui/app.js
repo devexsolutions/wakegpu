@@ -688,6 +688,68 @@ document.addEventListener("change", e => { if (e.target.closest && e.target.clos
 // ---------------- H3 prompt scaffolds ----------------
 let lastTextarea = null;
 function d2(n) { return Number(n).toFixed(2); }
+function cinematicSkeleton(preset, mode, dur) {
+  const D = d2(dur);
+  const half = (dur / 2).toFixed(1);
+  switch (preset) {
+    case "muse6":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 16:9 cinematic aspect ratio, 24fps.
+[PERSONAJE / ASSET ID]: S1, ___ (age, key facial features, outfit materials, colors).
+[ESCENARIO Y ATMÓSFERA]: ___ (setting, lighting, weather, time of day).
+[TIMED BEATS]:
+- 0.0s - ${half}s: S1 ___ (opening action, camera reveals subject).
+- ${half}s - ${D}s: S1 ___ (action progression, transition to climax).
+[LENGUAJE DE CÁMARA]: 35mm anamorphic lens, shallow depth of field, slow smooth dolly forward at eye-level.
+[RESTRICCIONES]: No face morphing, no limb distortion, realistic fluid physics, no text overlay, consistent lighting.`;
+    case "apple":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 16:9 widescreen, ultra-crisp commercial feel.
+[SUJETO / ASSET ID]: ___ (matte finish luxury device or product with subtle glowing accents).
+[ESCENARIO Y ATMÓSFERA]: Minimalist clean studio environment, dramatic rim light, caustic reflections.
+[TIMED BEATS]:
+- 0.0s - ${half}s: Fast dynamic snap zoom into product hero feature.
+- ${half}s - ${D}s: Smooth 360-degree rotation showing side profiles with haptic pulse.
+[LENGUAJE DE CÁMARA]: 90mm macro lens, robotic motion control, 120fps slow-motion feel.
+[RESTRICCIONES]: Perfectly clean geometry, no jitter, studio reflections.`;
+    case "bladerunner":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 2.39:1 cinemascope, heavy cinematic haze.
+[PERSONAJE / ASSET ID]: S1, lone figure in heavy trench coat standing in atmospheric solitude.
+[ESCENARIO Y ATMÓSFERA]: Colossal brutalist dystopian monuments, dense neon fog and torrential acid rain.
+[TIMED BEATS]:
+- 0.0s - ${half}s: S1 stands motionless gazing up at towering architecture.
+- ${half}s - ${D}s: S1 steps forward into the rain as holographic light sweeps through the smog.
+[LENGUAJE DE CÁMARA]: 24mm wide angle lens, slow pedestal rise, massive sense of scale.
+[RESTRICCIONES]: Realistic rain physics, contemplative pacing, rich filmic grain.`;
+    case "fincher":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 16:9, muted olive-green and deep shadow color grade.
+[PERSONAJE / ASSET ID]: S1, intense focused expression, subtle micro-movements.
+[ESCENARIO Y ATMÓSFERA]: Low-key dimly lit office, single tungsten green-tinted light source, deep blacks.
+[TIMED BEATS]:
+- 0.0s - ${half}s: Extreme close-up on eyes/hands carrying out a precise action.
+- ${half}s - ${D}s: Subject leans back slightly into shadow, lingering stillness.
+[LENGUAJE DE CÁMARA]: 50mm prime, clinical tripod stability, micro-dolly forward.
+[RESTRICCIONES]: Razor sharp focus plane, restrained camera, zero shaky movement.`;
+    case "anime":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 16:9, vibrant high-key anime aesthetics.
+[PERSONAJE / ASSET ID]: S1, anime character with fluttering hair and dynamic expression.
+[ESCENARIO Y ATMÓSFERA]: Sunlit rooftop, radiant azure summer sky, towering cumulus clouds, lens flares.
+[TIMED BEATS]:
+- 0.0s - ${half}s: S1 turns slowly towards camera as wind carries sakura petals.
+- ${half}s - ${D}s: S1 smiles gently into the golden hour sunset.
+[LENGUAJE DE CÁMARA]: 35mm anime angle, dynamic low perspective, golden light blooms.
+[RESTRICCIONES]: Authentic 2D anime linework, smooth natural cloth and hair physics.`;
+    case "macro":
+      return `[DURACIÓN Y FORMATO]: ${D}s, 16:9, luxury commercial slow-motion.
+[SUJETO / ASSET ID]: Detailed jewel, liquid droplet, or precision mechanical watch movement.
+[ESCENARIO Y ATMÓSFERA]: Velvet black void with caustic light rays and floating micro-particles.
+[TIMED BEATS]:
+- 0.0s - ${half}s: Liquid droplet collision or mechanical gear engagement in ultra slow-motion.
+- ${half}s - ${D}s: Slow rotation revealing internal facets and prismatic color dispersion.
+[LENGUAJE DE CÁMARA]: 100mm macro probe lens, extreme shallow depth of field, 1000fps feel.
+[RESTRICCIONES]: Pure luxury aesthetics, zero clipping, physical optical refraction.`;
+    default:
+      return skeleton(mode, dur);
+  }
+}
 function skeleton(mode, dur) {
   const D = d2(dur);
   const body = `integrated_multimodal_description: [Shot 1] Realistic film look. Medium-wide view of ___; slow, gentle move closer while ___.
@@ -739,19 +801,20 @@ N/A`;
   }
 }
 const SNIPS = [
+  ["🎬 6 Bloques", () => `[DURACIÓN]: ${+$("#h3Dur").value || 5}s | [PERSONAJE S1]: ___ | [ESCENARIO]: ___ | [BEATS]: 0-2.5s ___, 2.5-5s ___ | [CÁMARA]: 35mm anamórfico, ___ | [RESTRICCIONES]: ___`],
+  ["Bloqueo Personaje", () => "[Subject S1: keep exact facial identity, costume and hair consistency] "],
   ["Nuevo plano", () => `[Shot 2] Cut at ${Math.min(9, Math.floor(+$("#h3Dur").value / 2))} s to `],
   ["Diálogo", () => `(S1), speaking in a ___ voice: <d>[texto] </d>`],
   ["Voz en off", () => `(S1) off screen, mouth closed on camera: <d>[texto] </d>`],
-  ["Acercar (zoom)", () => "Slow, gentle move closer toward "],
-  ["Alejar", () => "Slow, gentle move back, "],
-  ["Seguimiento", () => "Camera travels alongside as "],
+  ["Macro 90mm", () => "90mm macro lens, ultra-shallow depth of field, "],
+  ["Travelling lento", () => "Slow, smooth dolly forward toward "],
+  ["Anamórfico 35mm", () => "35mm anamorphic lens with cinematic horizontal flare, "],
+  ["Cámara lenta 120fps", () => "High-speed 120fps slow-motion capture, "],
   ["Orbital", () => "Camera circles around "],
-  ["Travelling lateral", () => "Camera glides sideways to the right as "],
   ["Panorámica", () => "Quick turn of the camera to the right shows "],
-  ["Cámara fija", () => "Camera stays still while "],
-  ["Pedestal / Grúa", () => "Camera rises slowly, "],
+  ["Cámara fija", () => "Camera stays still on tripod while "],
+  ["Pedestal / Grúa", () => "Pedestal rise revealing "],
   ["Cámara en mano", () => "Slight handheld wobble as "],
-  ["Texto pantalla", () => `visible text "___" `],
   ["<Picture 1>", () => "<Picture 1>"],
   ["<Subject 1>", () => "<Subject 1>"],
 ];
@@ -767,13 +830,30 @@ function insertText(s) {
 $("#btnSkeleton").onclick = async () => {
   const t = mainTextarea(); if (!t) return toast("Esta plantilla no tiene parámetros de texto");
   const dur = Math.min(15, Math.max(4, +$("#h3Dur").value || 6));
-  const sk = skeleton($("#h3Mode").value, dur);
-  if (t.value.trim()) {
-    const action = await appDialog({ title: "¿Cómo deseas insertar la estructura del prompt?", message: "Ya hay texto en el prompt. Puedes reemplazarlo por completo o insertarlo en la posición del cursor.", buttons: [{ value: "cancel", label: "Cancelar" }, { value: "insert", label: "Insertar en el cursor" }, { value: "replace", label: "Reemplazar todo", primary: true }] });
-    if (action === "insert") { insertText(sk); return; }
-    if (action !== "replace") return;
-  }
-  t.value = sk; updCount(t); t.focus(); const i = t.value.indexOf("___"); if (i >= 0) { t.selectionStart = i; t.selectionEnd = i + 3; }
+  openModal(`<h3>🎬 Estructuras y Plantillas Cinematográficas</h3>
+  <p class="muted small">Elige una estructura probada para Wan 2.1, Muse, Hunyuan o MiniMax:</p>
+  <div class="plist">
+    <div class="p"><b>🎬 Muse / Wan 2.1 (6 Bloques Cinematográficos)</b><span class="tx">Estructura maestra: Duración, Sujeto/Asset ID, Entorno, Ritmo por segundos, Cámara y Restricciones</span><button class="btn sm primary" data-sk="muse6">Usar</button></div>
+    <div class="p"><b>🍎 Comercial Dinámico (Apple Don't Blink)</b><span class="tx">Ritmo rápido, snap zoom a producto, iluminación de estudio y cámara lenta 120fps</span><button class="btn sm" data-sk="apple">Usar</button></div>
+    <div class="p"><b>🌧️ Sci-Fi Monumental (Blade Runner 2049)</b><span class="tx">Atmósfera densa, escala monumental, niebla y lente anamórfica</span><button class="btn sm" data-sk="bladerunner">Usar</button></div>
+    <div class="p"><b>🕵️ Thriller Psicológico Noir (David Fincher)</b><span class="tx">Bajo contraste, tonos verdosos, iluminación cenital y dolly milimétrico</span><button class="btn sm" data-sk="fincher">Usar</button></div>
+    <div class="p"><b>🌸 Anime Cinematográfico (Makoto Shinkai)</b><span class="tx">Cielos luminosos, nubes volumétricas, partículas flotantes y emoción</span><button class="btn sm" data-sk="anime">Usar</button></div>
+    <div class="p"><b>💎 Macro Cinema Producto (High-End 120fps)</b><span class="tx">Detalle extremo de producto, reflejos de luz cáusticos y cámara lenta</span><button class="btn sm" data-sk="macro">Usar</button></div>
+    <div class="p"><b>⚡ Clásico MiniMax H3 (Multimodal)</b><span class="tx">Estructura original por planos con descripciones de audio y sonido</span><button class="btn sm ghost" data-sk="h3">Usar</button></div>
+  </div>
+  <div class="row" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Cancelar</button></div>`);
+  $$("[data-sk]").forEach(b => b.onclick = async () => {
+    const p = b.dataset.sk;
+    closeModal();
+    const sk = cinematicSkeleton(p, $("#h3Mode").value, dur);
+    if (t.value.trim()) {
+      const action = await appDialog({ title: "¿Cómo deseas insertar la estructura?", message: "Ya hay texto en el prompt. Puedes reemplazarlo por completo o insertarlo en la posición del cursor.", buttons: [{ value: "cancel", label: "Cancelar" }, { value: "insert", label: "Insertar en el cursor" }, { value: "replace", label: "Reemplazar todo", primary: true }] });
+      if (action === "insert") { insertText(sk); return; }
+      if (action !== "replace") return;
+    }
+    t.value = sk; updCount(t); t.focus();
+    const i = t.value.indexOf("___"); if (i >= 0) { t.selectionStart = i; t.selectionEnd = i + 3; }
+  });
 };
 
 // prompt library
@@ -1194,6 +1274,15 @@ $("#btnAI").onclick = async () => {
   <div class="ai-box">
     <div class="left">
       <div class="ai-row"><span class="lbl">Modelo</span><select id="aiProv" class="grow">${llms.map(p => `<option value="${esc(p.id)}" ${p.id === (defaultLLM || llms[0].id) ? "selected" : ""}>${esc(p.name)} · ${esc(p.model)}</option>`).join("")}</select></div>
+      <div class="ai-row"><span class="lbl">Estilo</span><select id="aiStyle" class="grow">
+        <option value="muse6">🎬 Cine en 6 Bloques (Muse / Wan 2.1)</option>
+        <option value="apple">🍎 Comercial Dinámico (Apple Don't Blink)</option>
+        <option value="bladerunner">🌧️ Sci-Fi Monumental (Blade Runner 2049)</option>
+        <option value="fincher">🕵️ Thriller Noir (David Fincher)</option>
+        <option value="anime">🌸 Anime Cinematográfico (Shinkai)</option>
+        <option value="macro">💎 Macro Producto de Lujo</option>
+        <option value="free">⚡ Estilo Libre / General</option>
+      </select></div>
       <div class="seg" id="aiTab"><button type="button" data-t="new">Desde una idea</button><button type="button" data-t="edit">Reescribir prompt actual</button></div>
       <textarea id="aiIn" placeholder=""></textarea>
       ${imgs.length ? `<label class="chk" style="margin:0"><input type="checkbox" id="aiImg" ${aiState.withImg ? "checked" : ""}>Adjuntar las ${imgs.length} imagen(es) del formulario para que el modelo las analice</label><div class="ai-thumbs">${imgs.map(u => `<img src="${u}">`).join("")}</div>` : `<p class="hint" style="margin:0">En modos con imagen de inicio/fin, sube una imagen en el formulario para que el modelo la use de referencia.</p>`}
@@ -1225,6 +1314,7 @@ $("#btnAI").onclick = async () => {
     if (aiState.tab === "edit" && !(t && t.value.trim())) return toast("El cuadro de prompt está vacío; usa primero «Desde una idea»");
     aiState.withImg = $("#aiImg") ? $("#aiImg").checked : false;
     const body = { provider: $("#aiProv").value, mode: $("#h3Mode").value, duration: +$("#h3Dur").value || 6,
+      style: $("#aiStyle") ? $("#aiStyle").value : "muse6",
       idea: aiState.tab === "new" ? text : "", instruction: aiState.tab === "edit" ? text : "", current: aiState.tab === "edit" ? t.value : "",
       images: aiState.withImg ? imgs : [] };
     const out = $("#aiOut"); out.value = ""; $("#aiMeta").textContent = "Conectando…";

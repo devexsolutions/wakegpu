@@ -103,18 +103,23 @@ func TestBuildPromptRequest(t *testing.T) {
 	old := dataDir
 	dataDir = t.TempDir()
 	t.Cleanup(func() { dataDir = old })
-	r := buildPromptRequest("FL2VA", 8, "女孩撑伞", "", "", 2)
+	r := buildPromptRequest("FL2VA", 8, "女孩撑伞", "", "", "", 2)
 	if !strings.Contains(r.System, builtinPromptGuide) || strings.Contains(r.System, "MiniMax") || !strings.Contains(r.User, "8.00") || !strings.Contains(r.User, "2 reference picture") {
 		t.Fatalf("bad request: %s", r.User)
 	}
-	e := buildPromptRequest("T2VA", 30, "", "OLD PROMPT", "镜头推近", 0)
+	e := buildPromptRequest("T2VA", 30, "", "OLD PROMPT", "镜头推近", "", 0)
 	if !strings.Contains(e.User, "OLD PROMPT") || !strings.Contains(e.User, "15 seconds") {
 		t.Fatalf("bad edit request: %s", e.User)
+	}
+	// test style injection
+	s := buildPromptRequest("T2VA", 5, "coche deportivo", "", "", "apple", 0)
+	if !strings.Contains(s.User, "Apple Don't Blink") {
+		t.Fatalf("style not injected: %s", s.User)
 	}
 	// an imported guide replaces the built-in advice
 	os.MkdirAll(filepath.Dir(userGuidePath()), 0o700)
 	os.WriteFile(userGuidePath(), []byte("MY GUIDE"), 0o600)
-	if g := buildPromptRequest("T2VA", 6, "x", "", "", 0); !strings.Contains(g.System, "MY GUIDE") || strings.Contains(g.System, builtinPromptGuide) {
+	if g := buildPromptRequest("T2VA", 6, "x", "", "", "", 0); !strings.Contains(g.System, "MY GUIDE") || strings.Contains(g.System, builtinPromptGuide) {
 		t.Fatalf("imported guide not used: %s", g.System)
 	}
 }
