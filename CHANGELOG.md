@@ -1,5 +1,10 @@
 # 更新日志
 
+## v1.22.1
+
+- **Traducción completa al español**: Eliminados los textos residuales en chino de logs, errores de Colab/ComfyUI, colas y alertas de Windows.
+- **Auto-selección de GPU `T4` con saldo 0 CU**: Estudio 1-Clic ahora selecciona automáticamente `T4` en cuentas gratuitas y muestra mensajes claros sin HTML crudo si una GPU superior es rechazada.
+
 ## v1.22.0
 
 - **Estudio de Vídeo 1-Clic (0 Infra)**: Nueva pestaña simplificada para conectar Google Colab en un clic, elegir objetivo (Texto a Vídeo, Animar Foto, Short Vertical 9:16) y generar vídeos automáticamente con Guardián Zero-Waste activado por defecto.
