@@ -40,10 +40,10 @@ func TestImageModelsUseRunningLoaderLists(t *testing.T) {
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("got %v", err)
 			}
-			if tc.name == "empty index" && !strings.Contains(err.Error(), "可用模型 0 个") {
+			if tc.name == "empty index" && !strings.Contains(err.Error(), "0 disponibles") {
 				t.Fatal(err)
 			}
-			if tc.name == "different model" && !strings.Contains(err.Error(), "当前可用：Other.safetensors") {
+			if tc.name == "different model" && !strings.Contains(err.Error(), "actuales: Other.safetensors") {
 				t.Fatal(err)
 			}
 		})

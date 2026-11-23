@@ -126,7 +126,7 @@ func startLocalGate() {
 		Transport:     transport,
 		FlushInterval: -1,
 		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
-			jsonOut(w, 502, map[string]string{"error": "backend_unreachable", "message": "连不上 Colab 上的 ComfyUI：" + err.Error()})
+			jsonOut(w, 502, map[string]string{"error": "backend_unreachable", "message": "No se pudo conectar a ComfyUI en Colab: " + err.Error()})
 		},
 	}
 	go http.Serve(ln, http.HandlerFunc(lg.serve))
@@ -229,7 +229,7 @@ func (g *LocalGate) restore() {
 		g.extendsUsed, g.libInstalled, g.lastActivity = p.Extends, p.LibInstalled, time.Now()
 		g.rt.OnReconnect = g.refreshToken
 		g.mu.Unlock()
-		g.logLine("重新接管运行中的 Colab GPU（" + p.Accel + "）")
+		g.logLine("Reconectando con GPU de Colab activa (" + p.Accel + ")")
 		g.setState("ready", "re-adopted")
 	}()
 }
@@ -330,7 +330,7 @@ func (g *LocalGate) serve(w http.ResponseWriter, r *http.Request) {
 	case p == "/_gate/wake" && r.Method == "POST":
 		g.wakeHandler(w, r)
 	case p == "/_gate/stop" && r.Method == "POST":
-		go g.stop("已手动停止")
+		go g.stop("Detenido manualmente")
 		jsonOut(w, 200, map[string]string{"state": "stopping"})
 	case p == "/_gate/extend" && r.Method == "POST":
 		g.mu.Lock()
@@ -340,7 +340,7 @@ func (g *LocalGate) serve(w http.ResponseWriter, r *http.Request) {
 		}
 		g.mu.Unlock()
 		if !okExt {
-			jsonOut(w, 409, map[string]string{"error": "extend_limit", "message": "不能再延长了"})
+			jsonOut(w, 409, map[string]string{"error": "extend_limit", "message": "No se puede prolongar más la sesión"})
 			return
 		}
 		g.persist()
@@ -398,7 +398,7 @@ func (g *LocalGate) serve(w http.ResponseWriter, r *http.Request) {
 		}
 		g.mu.Unlock()
 		if !ready || tunnel == "" {
-			jsonOut(w, 503, map[string]string{"error": "asleep", "message": "GPU 未就绪"})
+			jsonOut(w, 503, map[string]string{"error": "asleep", "message": "GPU no está lista"})
 			return
 		}
 		if strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
@@ -471,7 +471,7 @@ func (g *LocalGate) readCCU(ctx context.Context, seq uint64) (CCUInfo, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if seq != g.ccuSeq {
-		return CCUInfo{}, errors.New("登录状态或余额查询已更新，请重新查询")
+		return CCUInfo{}, errors.New("El estado de sesión o consulta ha cambiado, vuelve a consultar")
 	}
 	g.ccuLoading = false
 	if err != nil {
@@ -529,15 +529,15 @@ var localWakeMinimums = map[string]float64{"G4": 10}
 
 func (g *LocalGate) allocateGPU(ctx context.Context, accel string) (*Assignment, error) {
 	if minimum := localWakeMinimums[accel]; minimum > 0 {
-		g.logLine("核对 " + accel + " 启动余额…")
+		g.logLine("Comprobando saldo para iniciar " + accel + "…")
 		check, cancel := context.WithTimeout(ctx, 20*time.Second)
 		cu, err := g.queryCCU(check)
 		cancel()
 		if err != nil {
-			return nil, fmt.Errorf("无法核对 %s 启动所需余额，请在设置中重新查询后再试：%w", accel, err)
+			return nil, fmt.Errorf("No se pudo verificar el saldo necesario para %s; vuelve a consultar en Ajustes: %w", accel, err)
 		}
 		if cu.Balance < minimum {
-			return nil, fmt.Errorf("CU 余额 %.2f，不足 %s 的本地启动预留额度 %.0f CU（约 1 小时）。请充值或选择其他 GPU；尚未申请 GPU", cu.Balance, accel, minimum)
+			return nil, fmt.Errorf("Saldo CU insuficiente (%.2f) para reservar %s (mínimo %.0f CU). Recarga CU o elige T4; aún no se solicitó GPU", cu.Balance, accel, minimum)
 		}
 	}
 	g.logLine(fmt.Sprintf("Solicitando GPU %s en Colab… (espera máx. 3 min)", accel))
@@ -553,7 +553,7 @@ func (g *LocalGate) wakeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewDecoder(r.Body).Decode(&in)
 	if ok, _ := googleSignedIn(); !ok {
-		jsonOut(w, 403, map[string]string{"error": "not_signed_in", "message": "本地模式还没登录 Google（设置 → 本地模式）"})
+		jsonOut(w, 403, map[string]string{"error": "not_signed_in", "message": "Aún no has iniciado sesión en Google en modo local"})
 		return
 	}
 	g.mu.Lock()
@@ -574,7 +574,7 @@ func (g *LocalGate) wakeHandler(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		ids := sortedProfileIDs(profs)
 		if in.Profile != "" || len(ids) == 0 {
-			jsonOut(w, 404, map[string]string{"error": "unknown_profile", "message": "找不到配置 " + in.Profile})
+			jsonOut(w, 404, map[string]string{"error": "unknown_profile", "message": "Perfil no encontrado: " + in.Profile})
 			return
 		}
 		pr = profs[ids[0]]
@@ -622,7 +622,7 @@ func (g *LocalGate) wakeHandler(w http.ResponseWriter, r *http.Request) {
 func (g *LocalGate) boot(ctx context.Context, pr *LocalProfile, workflows []string, extras []LibItem) {
 	fail := func(err error) {
 		if ctx.Err() != nil {
-			g.logLine("启动已取消：" + context.Cause(ctx).Error())
+			g.logLine("Arranque cancelado: " + context.Cause(ctx).Error())
 			return // stop owns the final state; do not overwrite it with "failed".
 		}
 		g.logLine("✗ " + err.Error())
@@ -635,7 +635,7 @@ func (g *LocalGate) boot(ctx context.Context, pr *LocalProfile, workflows []stri
 			c2, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancel()
 			if colabUnassign(c2, a.Endpoint) == nil {
-				g.logLine("已释放 GPU，避免空跑扣费")
+				g.logLine("GPU liberada para evitar consumo innecesario")
 			}
 		}
 		os.Remove(lgPath())
@@ -643,7 +643,7 @@ func (g *LocalGate) boot(ctx context.Context, pr *LocalProfile, workflows []stri
 	a, err := g.allocateGPU(ctx, g.accel)
 	if err != nil {
 		if errors.Is(err, context.Canceled) && ctx.Err() == nil {
-			err = fmt.Errorf("申请 GPU 的网络请求被中断，但程序未发出停止指令。请检查代理连接，并到 Colab 查看是否已分配运行时后再重试：%w", err)
+			err = fmt.Errorf("La solicitud de GPU se interrumpió. Comprueba tu red y verifica en Colab si quedó algún runtime activo: %w", err)
 		}
 		fail(err)
 		return
@@ -657,16 +657,16 @@ func (g *LocalGate) boot(ctx context.Context, pr *LocalProfile, workflows []stri
 		cleanup, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		if err := colabUnassign(cleanup, a.Endpoint); err != nil {
-			g.logLine("⚠ 启动取消后释放 GPU 失败，请到 Colab 网页检查运行时：" + err.Error())
+			g.logLine("⚠ Error al liberar la GPU tras cancelar; revisa tu Colab en el navegador: " + err.Error())
 		} else {
-			g.logLine("启动已取消，已释放刚分配的 GPU")
+			g.logLine("Arranque cancelado, GPU liberada")
 		}
 		return
 	}
 	g.asg, g.rt, g.proxyAt = a, rt, time.Now()
 	g.mu.Unlock()
 	g.persist()
-	g.logLine("✓ 已分配 " + g.accel)
+	g.logLine("✓ GPU asignada: " + g.accel)
 	if workflows == nil {
 		workflows = []string{}
 	}
@@ -700,15 +700,15 @@ func (g *LocalGate) boot(ctx context.Context, pr *LocalProfile, workflows []stri
 		return // stopped meanwhile
 	}
 	if err != nil && st != "ready" {
-		fail(fmt.Errorf("开机失败：%v", err))
+		fail(fmt.Errorf("Error de arranque: %v", err))
 		return
 	}
 	if st != "ready" {
-		fail(errors.New("开机脚本结束但没有就绪（KIT_READY）"))
+		fail(errors.New("El script de inicio finalizó sin señal de listo (KIT_READY)"))
 		return
 	}
 	if tunnel == "" {
-		fail(errors.New("ComfyUI 起来了，但隧道地址没拿到"))
+		fail(errors.New("ComfyUI arrancó pero no se obtuvo la URL del túnel"))
 		return
 	}
 	g.mu.Lock()
@@ -799,7 +799,7 @@ func (g *LocalGate) handleLine(line string) {
 		}
 		json.Unmarshal([]byte(strings.TrimSpace(strings.TrimPrefix(line, "KIT_FETCH_FAILED"))), &d)
 		g.mu.Lock()
-		g.fetchErr = firstNonEmpty(d.Error, "安装失败")
+		g.fetchErr = firstNonEmpty(d.Error, "Error de instalación")
 		g.mu.Unlock()
 	}
 }
@@ -891,7 +891,7 @@ func (g *LocalGate) stop(reason string) {
 	g.state, g.reason, g.since = "stopping", reason, nowF()
 	g.asg, g.rt, g.tunnel = nil, nil, ""
 	g.mu.Unlock()
-	g.logLine("停止 GPU：" + reason)
+	g.logLine("Deteniendo GPU: " + reason)
 	if cancel != nil {
 		cancel(errors.New(reason))
 	}
@@ -901,9 +901,9 @@ func (g *LocalGate) stop(reason string) {
 		ctx, c2 := context.WithTimeout(context.Background(), 60*time.Second)
 		defer c2()
 		if err := colabUnassign(ctx, a.Endpoint); err != nil {
-			g.logLine("⚠ 释放 GPU 失败：" + err.Error() + "（请到 Colab 网页手动断开运行时）")
+			g.logLine("⚠ Error al liberar la GPU: " + err.Error() + " (desconéctala manualmente en Colab)")
 		} else {
-			g.logLine("✓ 已释放 GPU")
+			g.logLine("✓ GPU liberada")
 		}
 	}
 	g.mu.Lock()
@@ -1028,7 +1028,7 @@ func (g *LocalGate) loop() {
 					g.mu.Lock()
 					g.asg, g.rt, g.tunnel = nil, nil, ""
 					g.mu.Unlock()
-					g.setState("sleeping", "Colab 运行时已被回收")
+					g.setState("sleeping", "El runtime de Colab fue liberado")
 				}
 			}
 			continue
@@ -1041,7 +1041,7 @@ func (g *LocalGate) loop() {
 		}
 		g.mu.Unlock()
 		if changed {
-			g.logLine("隧道地址已更新")
+			g.logLine("URL del túnel actualizada")
 			g.persist()
 		}
 	}

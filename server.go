@@ -283,7 +283,7 @@ func newServer() http.Handler {
 		}
 		name := strings.TrimSpace(in.Name)
 		if name == "" {
-			name = "未命名工作流"
+			name = "Flujo sin nombre"
 		}
 		t := &Template{Name: name, Graph: g}
 		if err := saveTemplate(t); err != nil {
@@ -333,7 +333,7 @@ func newServer() http.Handler {
 		}
 		store.update(j, func(j *Job) {
 			if j.Status == "queued" || j.Status == "waiting" {
-				j.Status, j.Message, j.Finished = "canceled", "已取消", time.Now().Unix()
+				j.Status, j.Message, j.Finished = "canceled", "Cancelado", time.Now().Unix()
 			} else {
 				j.cancel = true
 			}
@@ -349,7 +349,7 @@ func newServer() http.Handler {
 		}
 		store.update(j, func(j *Job) {
 			if j.Status == "failed" || j.Status == "canceled" || j.Status == "done" {
-				j.Status, j.Message, j.PromptID, j.Progress, j.Outputs, j.cancel = "queued", "重新排队", "", 0, nil, false
+				j.Status, j.Message, j.PromptID, j.Progress, j.Outputs, j.cancel = "queued", "Reencolado", "", 0, nil, false
 				j.Started, j.Finished, j.QueuePos = 0, 0, 0
 			}
 		})
@@ -359,14 +359,14 @@ func newServer() http.Handler {
 	api.HandleFunc("POST /api/jobs/{id}/hires", func(w http.ResponseWriter, r *http.Request) {
 		src := store.get(r.PathValue("id"))
 		if src == nil {
-			errOut(w, 404, errString("任务不存在"))
+			errOut(w, 404, errString("La tarea no existe"))
 			return
 		}
 		store.mu.Lock()
 		s := *src
 		store.mu.Unlock()
 		if s.Status != "done" {
-			errOut(w, 409, errString("试生成还没完成"))
+			errOut(w, 409, errString("El borrador aún no ha terminado"))
 			return
 		}
 		j, err := queueHiresJob(&s)
@@ -383,7 +383,7 @@ func newServer() http.Handler {
 			jsonOut(w, 200, map[string]bool{"ok": true})
 			return
 		}
-		errOut(w, 409, errString("运行中的任务请先取消"))
+		errOut(w, 409, errString("Cancela la tarea en ejecución primero"))
 	})
 	api.HandleFunc("POST /api/jobs/clear", func(w http.ResponseWriter, r *http.Request) {
 		for _, j := range store.snapshot() {
@@ -426,7 +426,7 @@ func newServer() http.Handler {
 			os.MkdirAll(p, 0o755)
 		}
 		if !insideOut(p) && filepath.Clean(p) != filepath.Clean(getConfig().OutDir) {
-			errOut(w, 403, errString("只能打开输出文件夹里的文件"))
+			errOut(w, 403, errString("Solo se pueden abrir archivos de la carpeta de salida"))
 			return
 		}
 		openPath(p)
@@ -454,7 +454,7 @@ func newServer() http.Handler {
 		}
 		json.NewDecoder(r.Body).Decode(&in)
 		if !insideOut(in.Path) {
-			errOut(w, 403, errString("只能删除输出文件夹里的文件"))
+			errOut(w, 403, errString("Solo se pueden eliminar archivos de la carpeta de salida"))
 			return
 		}
 		if err := os.Remove(in.Path); err != nil {
@@ -511,7 +511,7 @@ func queueHiresJob(s *Job) (*Job, error) {
 	for k, v := range s.Uploads {
 		up[k] = v
 	}
-	title := strings.TrimSuffix(s.Title, " · 草稿")
+	title := strings.TrimSuffix(strings.TrimSuffix(s.Title, " · 草稿"), " · Borrador")
 	title = strings.TrimSuffix(title, " · Borrador")
 	j := &Job{
 		ID:           newID() + "-h",
@@ -550,7 +550,7 @@ func createJob(w http.ResponseWriter, r *http.Request) {
 	}
 	t, err := loadTemplate(spec.TemplateID)
 	if err != nil {
-		errOut(w, 404, errString("模板不存在"))
+		errOut(w, 404, errString("La plantilla no existe"))
 		return
 	}
 	if spec.Count < 1 {
@@ -623,7 +623,7 @@ func createJob(w http.ResponseWriter, r *http.Request) {
 			Uploads:     uploads,
 			RandomSeeds: spec.RandomSeeds,
 			Status:      "queued",
-			Message:     "排队中",
+			Message:     "En cola",
 			Created:     time.Now().Unix(),
 			Draft:       spec.Draft,
 			DraftSet:    draftSet,
@@ -843,7 +843,7 @@ func pairStart(w http.ResponseWriter, r *http.Request) {
 		res.VerifyURL = baseURL() + "/auth/device?code=" + res.UserCode
 	}
 	pair.mu.Lock()
-	pair.state, pair.code, pair.url, pair.msg = "pending", res.UserCode, res.VerifyURL, "请在打开的浏览器页面里确认"
+	pair.state, pair.code, pair.url, pair.msg = "pending", res.UserCode, res.VerifyURL, "Confirma en la página del navegador que se ha abierto"
 	pair.mu.Unlock()
 	openBrowser(res.VerifyURL)
 	go func() {
@@ -868,7 +868,7 @@ func pairStart(w http.ResponseWriter, r *http.Request) {
 				c.Token = tok.AccessToken
 				saveConfig(c)
 				pair.mu.Lock()
-				pair.state, pair.msg = "ok", "配对成功："+tok.Email
+				pair.state, pair.msg = "ok", "Emparejado con éxito: "+tok.Email
 				pair.mu.Unlock()
 				store.poke()
 				return
@@ -882,14 +882,14 @@ func pairStart(w http.ResponseWriter, r *http.Request) {
 					continue
 				default:
 					pair.mu.Lock()
-					pair.state, pair.msg = "error", "配对失败："+ge.Error()
+					pair.state, pair.msg = "error", "Error de emparejamiento: "+ge.Error()
 					pair.mu.Unlock()
 					return
 				}
 			}
 		}
 		pair.mu.Lock()
-		pair.state, pair.msg = "error", "配对超时，请重试"
+		pair.state, pair.msg = "error", "Tiempo de espera agotado al emparejar, reintenta"
 		pair.mu.Unlock()
 	}()
 	jsonOut(w, 200, map[string]any{"code": res.UserCode, "url": res.VerifyURL})

@@ -44,7 +44,7 @@ func TestNetCheck(t *testing.T) {
 	t.Cleanup(func() { netTargets = old })
 	netTargets = []netTarget{{"a.example", up.URL, "x"}, {"b.example", up.URL, "y"}}
 	r := netCheck(context.Background())
-	if r["ok"] != true || r["advice"] != "" || r["proxy"] != "直连" {
+	if r["ok"] != true || r["advice"] != "" || r["proxy"] != "Directo" {
 		t.Fatalf("all up: %v", r)
 	}
 	if getConfig().Checklist["network"] == 0 {
@@ -53,7 +53,7 @@ func TestNetCheck(t *testing.T) {
 	netTargets = append(netTargets, netTarget{"down.example", "http://127.0.0.1:1/", "z"})
 	r = netCheck(context.Background())
 	items := r["items"].([]netResult)
-	if r["ok"] != false || !strings.Contains(r["advice"].(string), "代理") || items[2].OK || items[2].Error == "" || !items[0].OK {
+	if r["ok"] != false || !strings.Contains(r["advice"].(string), "proxy") || items[2].OK || items[2].Error == "" || !items[0].OK {
 		t.Fatalf("one down: %+v", r)
 	}
 }
@@ -85,7 +85,7 @@ func TestLocalLoginMarksChecklist(t *testing.T) {
 		api.ServeHTTP(w, httptest.NewRequest("POST", "/api/local/code", strings.NewReader(`{"code":"`+code+`"}`)))
 		return w.Code, w.Body.String()
 	}
-	if c, b := call("4/bad"); c != 400 || !strings.Contains(b, "Google 拒绝了授权") {
+	if c, b := call("4/bad"); c != 400 || !strings.Contains(b, "Google rechazó la autorización") {
 		t.Fatalf("bad code: %d %s", c, b)
 	}
 	if getConfig().Checklist["login"] != 0 {

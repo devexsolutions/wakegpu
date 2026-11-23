@@ -58,16 +58,16 @@ var (
 func udValidPath(p string) error {
 	switch {
 	case p == "" || len(p) > 400:
-		return errors.New("空路径或路径太长")
+		return errors.New("Ruta vacía o demasiado larga")
 	case strings.HasPrefix(p, "/") || strings.HasPrefix(p, "\\") || udDrive.MatchString(p):
-		return fmt.Errorf("不能是绝对路径：%q", p)
+		return fmt.Errorf("No puede ser una ruta absoluta: %q", p)
 	}
 	for _, part := range strings.Split(p, "/") {
 		switch {
 		case part == "" || part == "." || part == "..":
-			return fmt.Errorf("路径不合法：%q", p)
+			return fmt.Errorf("Ruta no válida: %q", p)
 		case udBadChars.MatchString(part) || udReserved.MatchString(part) || strings.HasSuffix(part, ".") || strings.HasSuffix(part, " "):
-			return fmt.Errorf("路径里有 Windows 不支持的名字：%q", p)
+			return fmt.Errorf("La ruta contiene un nombre reservado en Windows: %q", p)
 		}
 	}
 	return nil
@@ -144,7 +144,7 @@ func (r *udRemote) do(ctx context.Context, method, u string, body []byte, limit 
 		return nil, resp.StatusCode, err
 	}
 	if strings.Contains(resp.Header.Get("Content-Type"), "text/html") && method == "GET" && strings.HasPrefix(u, "/api/v") {
-		return nil, resp.StatusCode, errors.New("返回了网页而不是数据（网关拦截或 ComfyUI 未就绪）")
+		return nil, resp.StatusCode, errors.New("Se recibió HTML en lugar de datos (ComfyUI aún no está listo)")
 	}
 	return b, resp.StatusCode, nil
 }
@@ -163,7 +163,7 @@ func (r *udRemote) list(ctx context.Context) ([]udFile, error) {
 	dirs := []string{""}
 	for n := 0; len(dirs) > 0; n++ {
 		if n > 2000 {
-			return nil, errors.New("目录太多")
+			return nil, errors.New("Demasiados directorios")
 		}
 		dir := dirs[0]
 		dirs = dirs[1:]
@@ -175,14 +175,14 @@ func (r *udRemote) list(ctx context.Context) ([]udFile, error) {
 			return r.listV1(ctx)
 		}
 		if code >= 400 {
-			return nil, fmt.Errorf("列出用户文件失败：HTTP %d", code)
+			return nil, fmt.Errorf("Error listando archivos de usuario: HTTP %d", code)
 		}
 		var es []udListEntry
 		if err := json.Unmarshal(b, &es); err != nil {
 			if dir == "" {
 				return r.listV1(ctx)
 			}
-			return nil, errors.New("ComfyUI 返回的文件列表看不懂")
+			return nil, errors.New("Formato de lista de archivos de ComfyUI no reconocido")
 		}
 		for _, e := range es {
 			p := e.Path
@@ -208,11 +208,11 @@ func (r *udRemote) listV1(ctx context.Context) ([]udFile, error) {
 		return nil, err
 	}
 	if code >= 400 {
-		return nil, fmt.Errorf("列出用户文件失败：HTTP %d（ComfyUI 版本太旧？）", code)
+		return nil, fmt.Errorf("Error listando archivos de usuario: HTTP %d", code)
 	}
 	var es []udListEntry
 	if err := json.Unmarshal(b, &es); err != nil {
-		return nil, errors.New("ComfyUI 返回的文件列表看不懂")
+		return nil, errors.New("Formato de lista de archivos de ComfyUI no reconocido")
 	}
 	out := make([]udFile, 0, len(es))
 	for _, e := range es {
@@ -227,10 +227,10 @@ func (r *udRemote) get(ctx context.Context, p string) ([]byte, error) {
 		return nil, err
 	}
 	if code >= 400 {
-		return nil, fmt.Errorf("下载 %s 失败：HTTP %d", p, code)
+		return nil, fmt.Errorf("Error descargando %s: HTTP %d", p, code)
 	}
 	if int64(len(b)) > udMaxFile {
-		return nil, fmt.Errorf("%s 超过 %d MB", p, udMaxFile>>20)
+		return nil, fmt.Errorf("%s supera %d MB", p, udMaxFile>>20)
 	}
 	return b, nil
 }
@@ -241,7 +241,7 @@ func (r *udRemote) put(ctx context.Context, p string, data []byte) error {
 		return err
 	}
 	if code >= 400 {
-		return fmt.Errorf("上传 %s 失败：HTTP %d", p, code)
+		return fmt.Errorf("Error subiendo %s: HTTP %d", p, code)
 	}
 	return nil
 }
@@ -305,7 +305,7 @@ func (s *udStore) inside(p string) (string, error) {
 	full := s.local(p)
 	rel, err := filepath.Rel(s.filesDir(), full)
 	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
-		return "", fmt.Errorf("路径越界：%q", p)
+		return "", fmt.Errorf("Ruta fuera de límites: %q", p)
 	}
 	return full, nil
 }
@@ -369,7 +369,7 @@ func udFilter(files []udFile) (keep []udFile, all map[string]udFile, skipped []s
 	var total int64
 	for _, f := range files {
 		if udValidPath(f.Path) != nil {
-			skipped = append(skipped, "路径不安全，已忽略："+f.Path)
+			skipped = append(skipped, "Ruta insegura omitida: "+f.Path)
 			continue
 		}
 		if udSkip(f.Path) {
@@ -378,9 +378,9 @@ func udFilter(files []udFile) (keep []udFile, all map[string]udFile, skipped []s
 		all[f.Path] = f
 		switch {
 		case f.Size > udMaxFile:
-			skipped = append(skipped, fmt.Sprintf("超过 %d MB，未备份：%s", udMaxFile>>20, f.Path))
+			skipped = append(skipped, fmt.Sprintf("Supera %d MB, no respaldado: %s", udMaxFile>>20, f.Path))
 		case total+f.Size > udMaxTotal:
-			skipped = append(skipped, fmt.Sprintf("总量超过 %d MB，未备份：%s", udMaxTotal>>20, f.Path))
+			skipped = append(skipped, fmt.Sprintf("Tamaño total excede %d MB, no respaldado: %s", udMaxTotal>>20, f.Path))
 		default:
 			total += f.Size
 			keep = append(keep, f)
@@ -640,17 +640,17 @@ func (u *udSyncer) restore(ctx context.Context, key string) {
 	u.mu.Lock()
 	u.running = ""
 	if err != nil {
-		u.restoreErr = "恢复工作流失败：" + err.Error()
+		u.restoreErr = "Error restaurando flujos: " + err.Error()
 		last := u.tries >= udRestoreTry
 		u.mu.Unlock()
 		if last {
-			u.log("WB_USERDATA 恢复工作流失败（不影响使用，本次开机不再自动备份）：" + err.Error())
+			u.log("WB_USERDATA Error restaurando flujos (no afecta el uso): " + err.Error())
 		}
 		return
 	}
 	u.restored, u.fresh, u.restoreErr, u.lastSync = true, fresh, "", time.Time{}
 	u.mu.Unlock()
-	u.log(fmt.Sprintf("WB_USERDATA 已恢复 %d 个工作流/设置文件", n))
+	u.log(fmt.Sprintf("WB_USERDATA Restaurados %d flujos/ajustes", n))
 }
 
 // backup runs one incremental backup now (needs a ready GPU whose session was restored).
@@ -658,7 +658,7 @@ func (u *udSyncer) backup(ctx context.Context) (udResult, error) {
 	u.init()
 	u.mu.Lock()
 	if !u.restored {
-		msg := "这次开机还没恢复过工作流，暂不备份（避免用新机器上的默认文件覆盖你的备份）"
+		msg := "Aún no se han restaurado flujos en esta sesión; copia omitida"
 		if u.restoreErr != "" {
 			msg = u.restoreErr
 		}
@@ -675,7 +675,7 @@ func (u *udSyncer) backup(ctx context.Context) (udResult, error) {
 	if err != nil {
 		u.lastErr = err.Error()
 		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
-			u.lastErr = "备份超时，部分工作流可能未备份"
+			u.lastErr = "Tiempo agotado en copia de seguridad; algunos flujos pueden faltar"
 		}
 	} else {
 		u.lastErr, u.lastSync = "", time.Now()
@@ -703,7 +703,7 @@ func (u *udSyncer) beforeStop() string {
 	ctx, cancel := context.WithTimeout(context.Background(), udStopWait)
 	defer cancel()
 	if _, err := u.backup(ctx); err != nil {
-		return "部分工作流可能未备份：" + u.statusMap()["error"].(string)
+		return "Algunos flujos pueden faltar en el respaldo: " + u.statusMap()["error"].(string)
 	}
 	return ""
 }
@@ -783,7 +783,7 @@ func registerUserdataRoutes(api *http.ServeMux) {
 	})
 	api.HandleFunc("POST /api/userdata/backup", func(w http.ResponseWriter, r *http.Request) {
 		if st, err := ud.status(); err != nil || fmt.Sprint(st["state"]) != "ready" {
-			errOut(w, 409, errors.New("GPU 未就绪，没有可备份的内容"))
+			errOut(w, 409, errors.New("GPU no está lista; nada que respaldar"))
 			return
 		} else {
 			ud.init()

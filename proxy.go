@@ -18,7 +18,7 @@ func proxyFor(req *http.Request) (*url.URL, error) {
 	}
 	p := strings.TrimSpace(getConfig().Proxy)
 	switch strings.ToLower(p) {
-	case "direct", "none", "off", "直连":
+	case "direct", "none", "off", "直连", "directo":
 		return nil, nil
 	case "", "auto", "system":
 		if u, _ := http.ProxyFromEnvironment(req); u != nil {
@@ -51,9 +51,9 @@ func proxyLabel() string {
 	}
 	u, _ := proxyFor(req)
 	if u == nil {
-		return "直连"
+		return "Directo"
 	}
-	return "经代理 " + u.Host
+	return "Vía proxy " + u.Host
 }
 
 var transport = &http.Transport{

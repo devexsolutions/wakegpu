@@ -148,10 +148,10 @@ type netTarget struct{ Name, URL, Why string }
 
 // netTargets can be replaced in tests.
 var netTargets = []netTarget{
-	{"accounts.google.com", "https://accounts.google.com/", "登录 Google（本地模式）"},
-	{"colab.research.google.com", "https://colab.research.google.com/", "开关 Colab GPU（本地模式）"},
-	{"huggingface.co", "https://huggingface.co/", "「添加模型」识别模型"},
-	{"github.com", "https://github.com/", "软件自动更新"},
+	{"accounts.google.com", "https://accounts.google.com/", "Iniciar sesión en Google (Modo Local)"},
+	{"colab.research.google.com", "https://colab.research.google.com/", "Controlar GPU de Colab (Modo Local)"},
+	{"huggingface.co", "https://huggingface.co/", "Detectar modelos de Hugging Face"},
+	{"github.com", "https://github.com/", "Actualizaciones de la app"},
 }
 
 type netResult struct {
@@ -183,7 +183,7 @@ func netCheck(ctx context.Context) map[string]any {
 				resp.Body.Close()
 				r.OK = resp.StatusCode < 500 // any answer means the site is reachable
 				if !r.OK {
-					r.Error = "服务器返回 " + resp.Status
+					r.Error = "El servidor devolvió " + resp.Status
 				}
 			}
 			res[i] = r
@@ -196,14 +196,14 @@ func netCheck(ctx context.Context) map[string]any {
 	}
 	advice := ""
 	if !allOK {
-		advice = "有网站连不上：请打开代理（软件会自动走系统代理），或在「设置 → 网关连接 → 网络代理」填写代理地址，例如 http://127.0.0.1:7890（按你代理软件的端口）。检测失败不影响继续，但对应功能可能用不了。"
+		advice = "Algunos sitios no responden: verifica tu conexión o configura un proxy en «Ajustes → Proxy de red» si es necesario."
 	} else {
 		markChecklist("network")
 	}
-	label := "直连"
+	label := "Directo"
 	if req, _ := http.NewRequest("GET", "https://accounts.google.com/", nil); req != nil {
 		if u, _ := proxyFor(req); u != nil {
-			label = "经代理 " + u.Host
+			label = "Vía proxy " + u.Host
 		}
 	}
 	return map[string]any{"ok": allOK, "proxy": label, "items": res, "advice": advice}
@@ -213,17 +213,17 @@ func netErrCN(err error) string {
 	s := err.Error()
 	switch {
 	case errors.Is(err, context.DeadlineExceeded) || strings.Contains(s, "Timeout") || strings.Contains(s, "timeout"):
-		return "超时"
+		return "Tiempo agotado"
 	case strings.Contains(s, "no such host"):
-		return "域名解析失败"
+		return "Error de DNS"
 	case strings.Contains(s, "refused"):
-		return "连接被拒绝（代理没开？）"
+		return "Conexión rechazada"
 	case strings.Contains(s, "Forbidden") || strings.Contains(s, "403"):
-		return "被代理拒绝（403）：代理不允许访问这个网站"
+		return "Rechazado por el proxy (403)"
 	case strings.Contains(s, "proxyconnect"):
-		return "连不上代理：" + truncate(s, 120)
+		return "Error de proxy: " + truncate(s, 120)
 	case strings.Contains(s, "reset") || strings.Contains(s, "EOF"):
-		return "连接被重置"
+		return "Conexión reiniciada"
 	}
 	return truncate(s, 160)
 }

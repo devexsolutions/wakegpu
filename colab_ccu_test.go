@@ -152,10 +152,10 @@ func TestCanceledBootPreservesStopState(t *testing.T) {
 		t.Error("already canceled boot made a request")
 	})
 	ctx, cancel := context.WithCancelCause(context.Background())
-	cancel(fmt.Errorf("已手动停止"))
+	cancel(fmt.Errorf("Detenido manualmente"))
 	g := &LocalGate{state: "sleeping", accel: "G4"}
 	g.boot(ctx, &LocalProfile{}, nil, nil)
-	if g.state != "sleeping" || !strings.Contains(strings.Join(g.logs, "\n"), "已手动停止") {
+	if g.state != "sleeping" || !strings.Contains(strings.Join(g.logs, "\n"), "Detenido manualmente") {
 		t.Fatalf("cancellation became a startup failure: %s %v", g.state, g.logs)
 	}
 }
@@ -175,7 +175,7 @@ func TestG4BalancePreflight(t *testing.T) {
 			g := &LocalGate{state: "allocating", accel: "G4"}
 			a, err := g.allocateGPU(context.Background(), "G4")
 			if balance < 10 {
-				if err == nil || !strings.Contains(err.Error(), "尚未申请 GPU") || assignCalls != 0 || a != nil {
+				if err == nil || !strings.Contains(err.Error(), "aún no se solicitó GPU") || assignCalls != 0 || a != nil {
 					t.Fatalf("low balance reached allocation: calls=%d err=%v", assignCalls, err)
 				}
 			} else if err != nil || a == nil || assignCalls != 1 {
@@ -194,7 +194,7 @@ func TestG4FailedBalanceCheckDoesNotAllocate(t *testing.T) {
 	})
 	g := &LocalGate{state: "allocating", accel: "G4"}
 	g.boot(context.Background(), &LocalProfile{}, nil, nil)
-	if g.state != "failed" || !strings.Contains(g.reason, "无法核对") {
+	if g.state != "failed" || !strings.Contains(g.reason, "No se pudo verificar") {
 		t.Fatalf("invalid balance left boot pending: %s %s", g.state, g.reason)
 	}
 }
@@ -206,7 +206,7 @@ func TestColabAllocationTimeoutLeavesFailedState(t *testing.T) {
 	t.Cleanup(func() { colabAssignTimeout = old })
 	g := &LocalGate{state: "allocating", accel: "L4"}
 	g.boot(context.Background(), &LocalProfile{}, nil, nil)
-	if g.state != "failed" || !strings.Contains(g.reason, "申请 GPU 超时") {
+	if g.state != "failed" || !strings.Contains(g.reason, "Tiempo de espera agotado") {
 		t.Fatalf("allocation stuck after timeout: %s %s", g.state, g.reason)
 	}
 }

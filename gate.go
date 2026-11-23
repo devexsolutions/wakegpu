@@ -63,7 +63,7 @@ func addAuth(req *http.Request) {
 func gateReq(method, path string, body io.Reader, ctype string) (*http.Response, error) {
 	b := baseURL()
 	if b == "" {
-		return nil, &GateError{Status: 0, Code: "no_url", Msg: "还没有设置网关地址"}
+		return nil, &GateError{Status: 0, Code: "no_url", Msg: "Aún no se ha configurado la dirección de la pasarela"}
 	}
 	req, err := http.NewRequest(method, b+path, body)
 	if err != nil {
@@ -103,12 +103,12 @@ func gateJSON(method, path string, in any, out any) error {
 		if errors.As(err, &ge) {
 			return err
 		}
-		return &GateError{Code: "network_error", Msg: "连不上网关（" + proxyLabel() + "）：" + err.Error()}
+		return &GateError{Code: "network_error", Msg: "No se pudo conectar a la pasarela (" + proxyLabel() + "): " + err.Error()}
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if strings.Contains(resp.Header.Get("Content-Type"), "text/html") {
-		return &GateError{Status: resp.StatusCode, Code: "cf_access", Msg: "被 Cloudflare Access 拦截（返回了登录页）。请检查令牌，或在设置里填 Access 服务令牌"}
+		return &GateError{Status: resp.StatusCode, Code: "cf_access", Msg: "Bloqueado por Cloudflare Access. Comprueba el token de servicio en Ajustes"}
 	}
 	if resp.StatusCode >= 400 {
 		var e struct {
@@ -132,7 +132,7 @@ func gateJSON(method, path string, in any, out any) error {
 	}
 	if out != nil && len(raw) > 0 {
 		if err := json.Unmarshal(raw, out); err != nil {
-			return &GateError{Status: resp.StatusCode, Code: "bad_json", Msg: "网关返回的不是 JSON"}
+			return &GateError{Status: resp.StatusCode, Code: "bad_json", Msg: "La pasarela no devolvió un JSON válido"}
 		}
 	}
 	return nil
@@ -179,14 +179,14 @@ func uploadFile(local string) (string, error) {
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode >= 400 {
-		return "", fmt.Errorf("上传 %s 失败：HTTP %d %s", name, resp.StatusCode, truncate(string(raw), 200))
+		return "", fmt.Errorf("Error subiendo %s: HTTP %d %s", name, resp.StatusCode, truncate(string(raw), 200))
 	}
 	var r struct {
 		Name      string `json:"name"`
 		Subfolder string `json:"subfolder"`
 	}
 	if err := json.Unmarshal(raw, &r); err != nil {
-		return "", fmt.Errorf("上传返回异常：%s", truncate(string(raw), 200))
+		return "", fmt.Errorf("Respuesta inesperada al subir: %s", truncate(string(raw), 200))
 	}
 	if r.Subfolder != "" {
 		return r.Subfolder + "/" + r.Name, nil
@@ -206,10 +206,10 @@ func downloadView(filename, subfolder, typ, dest string) error {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("下载 %s 失败：HTTP %d", filename, resp.StatusCode)
+		return fmt.Errorf("Error descargando %s: HTTP %d", filename, resp.StatusCode)
 	}
 	if strings.Contains(resp.Header.Get("Content-Type"), "text/html") {
-		return fmt.Errorf("下载 %s 被 Cloudflare Access 拦截", filename)
+		return fmt.Errorf("Descarga de %s bloqueada por Cloudflare Access", filename)
 	}
 	os.MkdirAll(filepath.Dir(dest), 0o755)
 	tmp := dest + ".part"
@@ -243,7 +243,7 @@ func testGateway(timeout time.Duration) (map[string]any, error) {
 	c := getConfig()
 	b := strings.TrimRight(strings.TrimSpace(c.GateURL), "/")
 	if b == "" {
-		return nil, &GateError{Code: "no_url", Msg: "还没有填网关地址"}
+		return nil, &GateError{Code: "no_url", Msg: "Falta la dirección de la pasarela"}
 	}
 	if !strings.HasPrefix(b, "http://") && !strings.HasPrefix(b, "https://") {
 		b = "https://" + b
@@ -259,19 +259,19 @@ func testGateway(timeout time.Duration) (map[string]any, error) {
 	}
 	resp, err := (&http.Client{Transport: transport, Timeout: timeout}).Do(req)
 	if err != nil {
-		return nil, &GateError{Code: "network_error", Msg: "连不上网关（" + proxyLabel() + "）：" + err.Error()}
+		return nil, &GateError{Code: "network_error", Msg: "No se pudo conectar a la pasarela (" + proxyLabel() + "): " + err.Error()}
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if strings.Contains(resp.Header.Get("Content-Type"), "text/html") {
-		return nil, &GateError{Status: resp.StatusCode, Code: "cf_access", Msg: "被 Cloudflare Access 拦截（返回了登录页），检查 Access 服务令牌"}
+		return nil, &GateError{Status: resp.StatusCode, Code: "cf_access", Msg: "Bloqueado por Cloudflare Access; revisa el token"}
 	}
 	if resp.StatusCode >= 400 {
 		return nil, &GateError{Status: resp.StatusCode, Code: "http", Msg: truncate(string(raw), 200)}
 	}
 	var st map[string]any
 	if json.Unmarshal(raw, &st) != nil {
-		return nil, &GateError{Status: resp.StatusCode, Code: "bad_json", Msg: "网关返回的不是 JSON"}
+		return nil, &GateError{Status: resp.StatusCode, Code: "bad_json", Msg: "La pasarela no devolvió un JSON válido"}
 	}
 	return st, nil
 }

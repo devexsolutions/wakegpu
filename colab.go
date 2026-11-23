@@ -87,12 +87,12 @@ func colabDo(ctx context.Context, method, rawURL string, headers map[string]stri
 	}
 	resp, err := colabHTTP.Do(req)
 	if err != nil {
-		return fmt.Errorf("连不上 Colab：%w", err)
+		return fmt.Errorf("Error de conexión con Colab: %w", err)
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
 	if err != nil {
-		return fmt.Errorf("读取 Colab 响应失败：%w", err)
+		return fmt.Errorf("Error leyendo respuesta de Colab: %w", err)
 	}
 	if resp.StatusCode >= 400 {
 		return &ColabError{Status: resp.StatusCode, Body: string(raw)}
@@ -100,10 +100,10 @@ func colabDo(ctx context.Context, method, rawURL string, headers map[string]stri
 	body := strings.TrimPrefix(string(raw), ")]}'\n")
 	if out != nil {
 		if strings.TrimSpace(body) == "" {
-			return errors.New("Colab 返回了空数据，请重试")
+			return errors.New("Colab devolvió una respuesta vacía, reintenta")
 		}
 		if err := json.Unmarshal([]byte(body), out); err != nil {
-			return fmt.Errorf("Colab 返回了无法识别的数据：%s", truncate(body, 200))
+			return fmt.Errorf("Colab devolvió datos no reconocidos: %s", truncate(body, 200))
 		}
 	}
 	return nil
@@ -121,7 +121,7 @@ func colabCCU(ctx context.Context) (CCUInfo, error) {
 		return CCUInfo{}, err
 	}
 	if r.Balance == nil || r.RatePerHour == nil || r.Assignments == nil {
-		return CCUInfo{}, errors.New("Colab 没有返回完整的 CU 余额数据，请稍后重试；这不代表余额为 0")
+		return CCUInfo{}, errors.New("Colab no devolvió datos completos del saldo de CU; reintenta más tarde")
 	}
 	return CCUInfo{Balance: *r.Balance, RatePerHour: *r.RatePerHour, Assignments: *r.Assignments}, nil
 }
@@ -152,7 +152,7 @@ func colabAssign(parent context.Context, accelerator string) (assignment *Assign
 	defer cancel()
 	defer func() {
 		if resultErr != nil && errors.Is(ctx.Err(), context.DeadlineExceeded) && parent.Err() == nil {
-			resultErr = errors.New("申请 GPU 超时，已停止等待。可能是额度、库存或网络问题；请先到 Colab 检查是否已有运行时，再重试或更换 GPU")
+			resultErr = errors.New("Tiempo de espera agotado al solicitar GPU. Puede deberse a saldo insuficiente, falta de stock o red; comprueba Colab antes de reintentar")
 		}
 	}()
 	q := url.Values{"nbh": {nbHash()}, "variant": {"GPU"}, "accelerator": {accelerator}}
@@ -193,7 +193,7 @@ func colabAssign(parent context.Context, accelerator string) (assignment *Assign
 		return nil, err
 	}
 	if a.Proxy.URL == "" {
-		return nil, errors.New("Colab 分配成功但没有返回运行时地址")
+		return nil, errors.New("Colab asignó la GPU pero no devolvió la URL del runtime")
 	}
 	return &a, nil
 }
@@ -221,7 +221,7 @@ func refreshProxy(ctx context.Context, a *Assignment) error {
 			return nil
 		}
 	}
-	return errors.New("这台 Colab 运行时已经不存在了（可能被回收）")
+	return errors.New("Este runtime de Colab ya no existe (puede haber sido liberado)")
 }
 
 // ---- Jupyter on the runtime ----
@@ -295,7 +295,7 @@ func (rt *Runtime) StartKernel(ctx context.Context) error {
 		lastErr = err
 		time.Sleep(time.Duration(3+i*2) * time.Second)
 	}
-	return fmt.Errorf("启动 Colab 内核失败：%v", lastErr)
+	return fmt.Errorf("Error al iniciar el kernel de Colab: %v", lastErr)
 }
 
 type jmsg struct {
@@ -326,7 +326,7 @@ func (rt *Runtime) dialKernel(ctx context.Context) (*websocket.Conn, error) {
 	h.Set("X-Colab-Client-Agent", "colab-cli")
 	c, _, err := websocket.Dial(ctx, wsURL, &websocket.DialOptions{HTTPHeader: h, HTTPClient: &http.Client{Transport: transport}})
 	if err != nil {
-		return nil, fmt.Errorf("连接 Colab 内核失败：%w", err)
+		return nil, fmt.Errorf("Error al conectar con el kernel de Colab: %w", err)
 	}
 	c.SetReadLimit(64 << 20)
 	return c, nil
@@ -377,7 +377,7 @@ func (rt *Runtime) Exec(ctx context.Context, code string, onLine func(string)) e
 				if partial != "" {
 					onLine(partial)
 				}
-				return fmt.Errorf("和 Colab 内核的连接断开了：%w", err)
+				return fmt.Errorf("Se perdió la conexión con el kernel de Colab: %w", err)
 			}
 			redials++
 			time.Sleep(3 * time.Second)
@@ -436,7 +436,7 @@ func (rt *Runtime) Upload(ctx context.Context, data []byte, remotePath string) e
 		"content": base64.StdEncoding.EncodeToString(data), "chunk": 1}
 	resp, err := rt.rtReq(ctx, "PUT", "/api/contents/"+(&url.URL{Path: remotePath}).EscapedPath(), body)
 	if err != nil {
-		return fmt.Errorf("上传到 Colab 失败：%w", err)
+		return fmt.Errorf("Error al subir archivos a Colab: %w", err)
 	}
 	resp.Body.Close()
 	return nil

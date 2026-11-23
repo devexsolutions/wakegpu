@@ -92,7 +92,7 @@ func findProvider(id string) (LLMProvider, error) {
 		}
 		return c.LLMs[0], nil
 	}
-	return LLMProvider{}, errors.New("还没有配置大模型 API（到「设置 → 大模型 API」添加）")
+	return LLMProvider{}, errors.New("No hay ningún modelo LLM configurado (añade uno en «Ajustes → Modelos LLM»)")
 }
 
 // ---- messages ----
@@ -152,7 +152,7 @@ func apiErrorText(raw []byte) string {
 // streamLLM calls the provider and invokes onDelta for every text chunk.
 func streamLLM(ctx context.Context, p LLMProvider, r llmRequest, maxTokens int, onDelta func(string)) error {
 	if strings.TrimSpace(p.Model) == "" {
-		return errors.New("这个 API 还没填模型名")
+		return errors.New("Falta el nombre del modelo en este proveedor")
 	}
 	switch p.Kind {
 	case "anthropic":
@@ -464,7 +464,7 @@ func llmWriteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if strings.TrimSpace(in.Idea) == "" && strings.TrimSpace(in.Instruction) == "" {
-		errOut(w, 400, errString("先写下你的想法"))
+		errOut(w, 400, errString("Escribe primero tu idea"))
 		return
 	}
 	req := buildPromptRequest(in.Mode, in.Duration, in.Idea, in.Current, in.Instruction, in.Style, len(in.Images))
@@ -510,19 +510,19 @@ func promptGuideHandler(w http.ResponseWriter, r *http.Request) {
 			Text string `json:"text"`
 		}
 		if err := json.NewDecoder(io.LimitReader(r.Body, 4*guideMaxBytes)).Decode(&in); err != nil {
-			errOut(w, 400, errString("读取失败："+err.Error()))
+			errOut(w, 400, errString("Error de lectura: "+err.Error()))
 			return
 		}
 		ext := strings.ToLower(filepath.Ext(in.Name))
 		switch {
 		case ext != ".md" && ext != ".txt":
-			errOut(w, 400, errString("只支持 .md 或 .txt 文件"))
+			errOut(w, 400, errString("Solo se admiten archivos .md o .txt"))
 		case strings.TrimSpace(in.Text) == "":
-			errOut(w, 400, errString("文件是空的"))
+			errOut(w, 400, errString("El archivo está vacío"))
 		case len(in.Text) > guideMaxBytes:
-			errOut(w, 400, errString("文件太大（最大 1 MB）"))
+			errOut(w, 400, errString("Archivo demasiado grande (máx. 1 MB)"))
 		case !utf8.ValidString(in.Text):
-			errOut(w, 400, errString("文件不是 UTF-8 文本"))
+			errOut(w, 400, errString("El archivo no es texto UTF-8 válido"))
 		default:
 			os.MkdirAll(filepath.Dir(userGuidePath()), 0o700)
 			if err := os.WriteFile(userGuidePath(), []byte(in.Text), 0o600); err != nil {
@@ -590,11 +590,11 @@ func httpErr(code int, raw []byte) error {
 	msg := apiErrorText(raw)
 	switch code {
 	case 401, 403:
-		return fmt.Errorf("API Key 无效或没有权限（%d）：%s。请确认 Key 复制完整、而且是这家服务（同一个 Base URL）发的 Key", code, msg)
+		return fmt.Errorf("API Key inválida o sin permisos (%d): %s", code, msg)
 	case 404:
-		return fmt.Errorf("接口或模型不存在（404）：%s。检查 Base URL 和模型名", msg)
+		return fmt.Errorf("Endpoint o modelo no encontrado (404): %s", msg)
 	case 429:
-		return fmt.Errorf("请求太频繁或余额不足（429）：%s", msg)
+		return fmt.Errorf("Límite de peticiones o saldo agotado (429): %s", msg)
 	}
 	return fmt.Errorf("HTTP %d：%s", code, msg)
 }

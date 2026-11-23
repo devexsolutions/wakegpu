@@ -42,92 +42,65 @@ Descarga la última versión lista para usar desde **[GitHub Releases](https://g
 - **macOS (Apple Silicon & Intel):** `WakeGPU-x.y.z-macos.zip` (extrae `WakeGPU.app` y muévelo a Aplicaciones).
 - **Windows 10 / 11:** `WakeGPU-x.y.z.exe` (ejecutable portátil único, sin instalación).
 
-## 它能做什么
+## ¿Qué necesitas para empezar?
 
-- **一键开关 GPU**：唤醒 / 停止 / 延长 Colab GPU，可选 GPU 型号（T4 / L4 / G4 / A100 / H100），实时启动日志、计时、CU 余额与 GPU 负载面板；空闲自动停机省 CU。
-- **按需加载**：用「启动配置」决定这次开机装哪些模型和插件，只下载需要的东西。
-- **生成视频**：导入 ComfyUI「导出 (API)」工作流，自动识别提示词、图片、种子、尺寸等参数（中文名 + 推荐值）；内置 MiniMax H3 提示词骨架与 AI 写提示词。
-- **任务队列**：串行提交、进度、取消、重试、重启后续跑；低清试生成满意后一键出高清；结果自动下载到本地。
-- **AI 页**：
-  - 对话：Qwen3.8 27B（GGUF，Ollama 运行在你的 GPU 上），多轮对话、深度思考开关、一键把回复用作生成提示词。
-  - 生图：RealVisXL V5.0（SDXL 写实）、Chroma1-HD（FLUX 架构）。
-  - **自定义添加模型**：粘贴 Hugging Face 链接，自动识别类型（GGUF 对话 / SDXL / Chroma / 任意 ComfyUI 模型）、大小与许可证，推荐 GPU 和参数，一键生成启动配置。
-- **两种连接方式**：
-  - **网关模式**：连接你自己部署的 [comfy-colab-kit](https://github.com/FireTable/comfy-colab-kit) 网关（VPS），可多人共用。
-  - **本地模式（实验）**：不需要 VPS，软件直接用你的 Google 账号开关 Colab。
-- **自动更新**：从 GitHub Releases 下载并校验 SHA-256 后替换。
-
-## 下载
-
-到 [Releases](../../releases/latest) 下载最新的 `Wakeloom-x.y.z.exe`，双击运行即可（单文件，无需安装；需要 Windows 10/11 自带的 WebView2）。
-
-> 安装包没有代码签名，首次运行 Windows 可能提示「Windows 已保护你的电脑」（SmartScreen）：点 **更多信息**，再点 **仍要运行**。
->
-> ![SmartScreen：更多信息 → 仍要运行](docs/img/smartscreen.png)
-
-**校验文件（可选）：** Release 里的 `latest.json` 写着 exe 的 `sha256`。在下载目录打开 PowerShell 运行 `Get-FileHash .\Wakeloom-x.y.z.exe -Algorithm SHA256`（或命令提示符 `certutil -hashfile Wakeloom-x.y.z.exe SHA256`），两边的值应该完全一样。
-
-## 你需要准备什么
-
-| | 网关模式 | 本地模式（实验） |
+| | Modo Pasarela (VPS) | Modo Local Directo |
 |---|---|---|
-| Colab 算力 | Colab Pro / Pay As You Go 的 CU | 同左 |
-| 服务器 | 一台 VPS 部署 comfy-colab-kit 网关 | 不需要 |
-| 配置 | 网关地址 + 令牌（可选 Cloudflare Access 服务令牌） | 软件内登录 Google |
+| **Cómputo en Colab** | T4 gratuita (0 CU) o Colab Pro / Pay As You Go | T4 gratuita (0 CU) o Colab Pro / Pay As You Go |
+| **Servidor** | Un VPS con `comfy-colab-kit` desplegado | **No necesitas servidor** |
+| **Configuración** | URL de pasarela + token | Iniciar sesión con Google dentro de la app |
 
-网关模式的增强功能（选择 GPU、插件/模型库、AI 页）需要给网关打补丁，见 [gateway/](gateway/README.md)。
+Las funciones mejoradas de la pasarela (selección de GPU, biblioteca de modelos/plugins, pestaña IA) requieren aplicar los parches en [gateway/](gateway/README.md).
 
-### ⚠️ 本地模式说明
+### ⚠️ Nota sobre el Modo Local
+El modo local se conecta directamente desde tu equipo usando tu cuenta de Google. Para equipos de trabajo compartidos o sesiones continuas prolongadas, se recomienda el Modo Pasarela (VPS).
 
-本地模式通过 Colab 的非公开接口工作，登录使用的是 Google Cloud SDK 的公开 OAuth 客户端。这不是 Google 官方支持的用法，**接口可能随时变化，也存在账号被限制的风险**，请自行评估后使用。长期稳定使用推荐网关模式。
+---
 
-## 模型与内容
+## Modelos y Licencias
 
-AI 页的模型来自第三方，使用时请遵守各自的许可证：
+Los modelos disponibles en la pestaña IA pertenecen a terceros; al utilizarlos debes respetar sus respectivas licencias:
 
-| 模型 | 来源 | 许可 |
+| Modelo | Origen | Licencia |
 |---|---|---|
-| Huihui-Qwen3.8-27B-abliterated (Q8_0) | [huihui-ai](https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF) | Apache-2.0（去除了拒答的版本） |
+| Huihui-Qwen3.8-27B-abliterated (Q8_0) | [huihui-ai](https://huggingface.co/huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF) | Apache-2.0 |
 | RealVisXL V5.0 | [SG161222](https://huggingface.co/SG161222/RealVisXL_V5.0) | CreativeML OpenRAIL++-M |
 | Chroma1-HD | [lodestones](https://huggingface.co/lodestones/Chroma1-HD) | Apache-2.0 |
-| MiniMax H3 | [Comfy-Org](https://huggingface.co/Comfy-Org/MiniMax-H3) | MiniMax H3 社区许可 |
+| MiniMax H3 | [Comfy-Org](https://huggingface.co/Comfy-Org/MiniMax-H3) | MiniMax H3 Community License |
 
-> MiniMax H3 社区许可的适用地区不包括美国、英国、欧盟和韩国，请自行确认你所在地区是否适用。Wakeloom 不附带 MiniMax 官方的 H3 提示词指南；如需使用，请自行从 MiniMax 官方获取并在「设置 → 大模型 API」中导入。
+> Respeta las leyes aplicables, las licencias de los modelos y los [Términos de Uso de Google Colab](https://research.google.com/colaboratory/faq.html).
 
-部分模型没有内容过滤。请遵守法律、模型许可证和 [Colab 使用条款](https://research.google.com/colaboratory/faq.html)，不要生成违法内容、未经同意的真实人物内容或任何涉及未成年人的不当内容。
+---
 
-## 从源码构建
+## Compilar desde el código fuente
 
-需要 Go 1.24+（可在 Linux / macOS 上交叉编译）：
+Requiere Go 1.23+ (con soporte de compilación cruzada en macOS / Linux):
 
 ```bash
-# macOS
+# macOS (genera WakeGPU.app y dist/WakeGPU-x.y.z-macos.zip)
 ./build_app.sh
 
-# Windows
+# Windows (genera WakeGPU.exe)
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -trimpath -ldflags "-s -w -H windowsgui" -o WakeGPU.exe .
 ```
 
-图标 / 版本资源改动后重新生成：`go run github.com/tc-hib/go-winres@v0.3.3 make --in winres/winres.json --arch amd64 --out rsrc`
+## Estructura del proyecto
 
-发版：修改 `update.go` 的 `AppVersion`、在 `CHANGELOG.md` 顶部写 `## vX.Y.Z`，推送标签 `vX.Y.Z`，或在 Actions 页面手动运行 **release** 工作流，GitHub Actions 会自动测试、构建并发布 exe 和 `latest.json`。
-
-## 目录
-
-```
-*.go            桌面程序（本地 HTTP 服务 + WebView2 窗口）
-ui/             界面（HTML / CSS / JS，编译进 exe）
-kit/            上传到 Colab 的启动套件（来自 comfy-colab-kit，MIT）与内置启动配置
-gateway/        给 comfy-colab-kit 网关打的一键补丁及其源码
-docs/           新手指南（截图位置待补：docs/img/）
+```text
+*.go            Aplicación de escritorio (servidor HTTP local + ventana nativa Cocoa / WebView2)
+ui/             Interfaz web integrada (HTML / CSS / JS, embebida en el binario)
+kit/            Kit de arranque para Colab (basado en comfy-colab-kit, MIT) y perfiles integrados
+gateway/        Parches y scripts para el modo pasarela VPS
+docs/           Guías y capturas de pantalla
+web/            Landing page y documentación estática (wakegpu.com)
 ```
 
-## 致谢
+## Agradecimientos
 
-- [comfy-colab-kit](https://github.com/FireTable/comfy-colab-kit)（FireTable，MIT）—— 网关与 Colab 启动套件
-- [ComfyUI](https://github.com/comfyanonymous/ComfyUI)、[Ollama](https://github.com/ollama/ollama)、[go-webview2](https://github.com/jchv/go-webview2)
+- [comfy-colab-kit](https://github.com/FireTable/comfy-colab-kit) (FireTable, MIT) — Pasarela base y kit de arranque Colab
+- [ComfyUI](https://github.com/comfyanonymous/ComfyUI), [Ollama](https://github.com/ollama/ollama), [go-webview2](https://github.com/jchv/go-webview2)
 
-本项目与 Google、Comfy Org 无关联。
+Este proyecto no está afiliado con Google ni con Comfy Org.
 
 ---
 

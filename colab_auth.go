@@ -116,7 +116,7 @@ func tokenRequest(ctx context.Context, form url.Values) (*gToken, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := (&http.Client{Transport: transport, Timeout: 30 * time.Second}).Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("连不上 Google：%w", err)
+		return nil, fmt.Errorf("Error de conexión con Google: %w", err)
 	}
 	defer resp.Body.Close()
 	raw, _ := io.ReadAll(resp.Body)
@@ -137,7 +137,7 @@ func tokenRequest(ctx context.Context, form url.Values) (*gToken, error) {
 		if msg == "" {
 			msg = truncate(string(raw), 200)
 		}
-		return nil, errors.New("Google 拒绝了授权：" + msg)
+		return nil, errors.New("Google rechazó la autorización: " + msg)
 	}
 	t := &gToken{AccessToken: r.AccessToken, RefreshToken: r.RefreshToken, Expiry: time.Now().Add(time.Duration(r.ExpiresIn-60) * time.Second)}
 	if r.IDToken != "" {
@@ -168,14 +168,14 @@ func googleExchange(ctx context.Context, code string) (string, error) {
 	v := gVerifier
 	gMu.Unlock()
 	if v == "" {
-		return "", errors.New("请先点「登录 Google」打开授权页")
+		return "", errors.New("Pulsa primero «Iniciar sesión con Google» para abrir la página de autorización")
 	}
 	t, err := tokenRequest(ctx, url.Values{"grant_type": {"authorization_code"}, "code": {code}, "redirect_uri": {gRedirect}, "code_verifier": {v}})
 	if err != nil {
 		return "", err
 	}
 	if t.RefreshToken == "" {
-		return "", errors.New("Google 没有返回长期令牌，请重新登录一次")
+		return "", errors.New("Google no devolvió un token persistente, vuelve a iniciar sesión")
 	}
 	gMu.Lock()
 	gTok = t
@@ -191,7 +191,7 @@ func googleAccess(ctx context.Context) (string, error) {
 	t := gTok
 	gMu.Unlock()
 	if t == nil {
-		return "", errors.New("本地模式还没登录 Google（设置 → 本地模式 → 登录）")
+		return "", errors.New("Aún no has iniciado sesión en Google en modo local (Ajustes → Modo Local)")
 	}
 	if time.Now().Before(t.Expiry) && t.AccessToken != "" {
 		return t.AccessToken, nil

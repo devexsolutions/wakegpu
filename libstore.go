@@ -88,13 +88,13 @@ func hfToHTTPS(u string) string {
 func libNormalize(in LibItem) (LibItem, error) {
 	it := LibItem{Kind: strings.TrimSpace(in.Kind), URL: strings.TrimSpace(in.URL), AutoWake: in.AutoWake}
 	if it.Kind != "node" && it.Kind != "model" {
-		return it, errors.New("类型必须是插件或模型")
+		return it, errors.New("El tipo debe ser plugin o modelo")
 	}
 	if !strings.HasPrefix(it.URL, "https://") && !strings.HasPrefix(it.URL, "hf://") {
-		return it, errors.New("地址必须以 https:// 或 hf:// 开头")
+		return it, errors.New("La URL debe empezar por https:// o hf://")
 	}
 	if secretRe.MatchString(it.URL) {
-		return it, errors.New("地址里像是带了密钥/令牌，请用公开链接")
+		return it, errors.New("La URL parece contener un token privado; usa un enlace público")
 	}
 	title := strings.TrimSpace(in.Title)
 	if it.Kind == "node" {
@@ -106,12 +106,12 @@ func libNormalize(in LibItem) (LibItem, error) {
 		it.ID = slugify(firstNonEmpty(in.ID, base))
 		it.Ref, it.Subdir = strings.TrimSpace(in.Ref), strings.Trim(strings.TrimSpace(in.Subdir), "/")
 		if strings.Contains(it.Ref+it.Subdir, "..") {
-			return it, errors.New("ref/subdir 不合法")
+			return it, errors.New("ref/subdir inválido")
 		}
 	} else {
 		it.Dest = strings.Trim(strings.TrimSpace(in.Dest), "/")
 		if !destRe.MatchString(it.Dest) || strings.Contains(it.Dest, "..") {
-			return it, errors.New("保存位置要像「文件夹/文件名.safetensors」（相对 ComfyUI/models）")
+			return it, errors.New("La ruta destino debe tener formato «carpeta/archivo.safetensors»")
 		}
 		if title == "" {
 			title = it.Dest[strings.LastIndex(it.Dest, "/")+1:]

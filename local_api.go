@@ -73,30 +73,30 @@ func localRoutes(api *http.ServeMux) {
 		ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 		defer cancel()
 		t0 := time.Now()
-		logf("申请 %s GPU…", in.Accelerator)
+		logf("Solicitando GPU %s…", in.Accelerator)
 		a, err := colabAssign(ctx, in.Accelerator)
 		if err != nil {
 			send("fail", err.Error())
 			return
 		}
-		logf("✓ 已分配（%.0f 秒）", time.Since(t0).Seconds())
+		logf("✓ Asignada (%.0f s)", time.Since(t0).Seconds())
 		defer func() {
 			c2, cancel2 := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancel2()
 			if err := colabUnassign(c2, a.Endpoint); err != nil {
-				send("log", "⚠ 释放 GPU 失败："+err.Error()+"（请到 Colab 网页手动断开）")
+				send("log", "⚠ Error liberando GPU: "+err.Error()+" (desconéctala en Colab)")
 			} else {
-				send("log", "✓ 已释放 GPU")
+				send("log", "✓ GPU liberada")
 			}
 			send("done", time.Since(t0).Seconds())
 		}()
 		rt := &Runtime{A: a}
-		logf("启动 Python 内核…")
+		logf("Iniciando kernel de Python…")
 		if err := rt.StartKernel(ctx); err != nil {
 			send("fail", err.Error())
 			return
 		}
-		logf("✓ 内核就绪，运行测试代码…")
+		logf("✓ Kernel listo, ejecutando prueba…")
 		code := "import subprocess, sys, platform\n" +
 			"print('python', sys.version.split()[0], platform.platform())\n" +
 			"print(subprocess.run(['bash','-lc','nvidia-smi --query-gpu=name,memory.total --format=csv,noheader || echo no-gpu'],capture_output=True,text=True).stdout.strip())\n" +
@@ -114,10 +114,10 @@ func localRoutes(api *http.ServeMux) {
 		var got []string
 		rt.Exec(ctx, "print(open('/content/wb_test.txt').read().strip())", func(l string) { got = append(got, l) })
 		if strings.Join(got, "") == "hello from workbench" {
-			logf("✓ 文件上传正常")
+			logf("✓ Subida de archivos correcta")
 		} else {
-			logf("⚠ 文件上传校验失败：%v", got)
+			logf("⚠ Error verificando subida: %v", got)
 		}
-		send("ok", "全部通过")
+		send("ok", "Todas las pruebas superadas")
 	})
 }

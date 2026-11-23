@@ -35,7 +35,7 @@ func runWindow(url string) {
 	if w == nil {
 		// WebView2 runtime missing: fall back to the default browser and keep serving.
 		openBrowser(url)
-		fatal("没找到 Microsoft Edge WebView2 运行时，已改用浏览器打开工作台（任务队列在后台照常运行）。\n安装 WebView2 后即可使用独立窗口。\n\n使用完毕后点「确定」退出程序。")
+		fatal("No se encontró Microsoft Edge WebView2 Runtime; se ha abierto la interfaz en tu navegador predeterminado.\nInstala WebView2 para usar la ventana nativa.\n\nPulsa Aceptar para cerrar cuando termines.")
 		return
 	}
 	defer w.Destroy()

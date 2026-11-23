@@ -333,7 +333,7 @@ func waitReady(j *Job) bool {
 		}
 		st, err := gateState()
 		if err != nil {
-			store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "网关不可用："+err.Error() })
+			store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "Pasarela no disponible: "+err.Error() })
 			time.Sleep(10 * time.Second)
 			continue
 		}
@@ -357,25 +357,25 @@ func waitReady(j *Job) bool {
 				}
 				var out map[string]any
 				if err := gateJSON("POST", "/_gate/wake", body, &out); err != nil {
-					store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "自动唤醒失败："+err.Error() })
+					store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "Error en auto-arranque: "+err.Error() })
 					time.Sleep(15 * time.Second)
 					continue
 				}
 				woke = true
 				autoStopped = false
-				store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "已自动唤醒 GPU，等待就绪…" })
+				store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "GPU despertada automáticamente, esperando que esté lista…" })
 			} else if !woke {
 				store.update(j, func(j *Job) {
-					j.Status, j.Message = "waiting", "GPU 在休眠，点「唤醒」后自动开始（或在设置里开启自动唤醒）"
+					j.Status, j.Message = "waiting", "GPU en reposo. Pulsa «Despertar GPU» para iniciar la cola"
 				})
 			} else if st == "failed" {
 				store.update(j, func(j *Job) {
-					j.Status, j.Message = "waiting", "GPU 启动失败，请查看控制台日志后重新唤醒"
+					j.Status, j.Message = "waiting", "Fallo al arrancar la GPU; revisa el registro en Consola"
 				})
 				woke = false
 			}
 		default:
-			store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "GPU 启动中（"+stateCN(st)+"）…" })
+			store.update(j, func(j *Job) { j.Status, j.Message = "waiting", "Arrancando GPU ("+stateCN(st)+")…" })
 		}
 		select {
 		case <-store.kick:
@@ -385,8 +385,8 @@ func waitReady(j *Job) bool {
 }
 
 func stateCN(s string) string {
-	m := map[string]string{"sleeping": "休眠", "allocating": "分配机器", "installing": "安装依赖", "downloading": "下载模型",
-		"booting": "启动 ComfyUI", "smoke_testing": "自检", "ready": "就绪", "switching": "切换配置", "stopping": "停止中", "failed": "失败"}
+	m := map[string]string{"sleeping": "En reposo", "allocating": "Asignando GPU", "installing": "Instalando dependencias", "downloading": "Descargando modelos",
+		"booting": "Iniciando ComfyUI", "smoke_testing": "Verificando", "ready": "Lista", "switching": "Cambiando perfil", "stopping": "Deteniendo", "failed": "Error"}
 	if v, ok := m[s]; ok {
 		return v
 	}
@@ -408,7 +408,7 @@ func runJob(j *Job) {
 func submit(j *Job) bool {
 	t, err := loadTemplate(j.TemplateID)
 	if err != nil {
-		fail(j, "模板已被删除")
+		fail(j, "La plantilla fue eliminada")
 		return false
 	}
 	required := t.Profile
@@ -418,15 +418,15 @@ func submit(j *Job) bool {
 	if required != "" {
 		st, err := gateStatus()
 		if err != nil {
-			fail(j, "无法核对当前模型配置："+err.Error())
+			fail(j, "No se pudo verificar el perfil actual: "+err.Error())
 			return false
 		}
 		if current, _ := st["profile"].(string); current != "" && current != required {
-			fail(j, fmt.Sprintf("当前 GPU 运行的是 %s，此任务需要 %s。请使用当前模型的工作流，或用对应配置重新唤醒", current, required))
+			fail(j, fmt.Sprintf("La GPU actual ejecuta %s, pero esta tarea requiere %s. Cambia de perfil.", current, required))
 			return false
 		}
 	}
-	store.update(j, func(j *Job) { j.Status, j.Message, j.Started = "uploading", "上传素材…", time.Now().Unix() })
+	store.update(j, func(j *Job) { j.Status, j.Message, j.Started = "uploading", "Subiendo archivos…", time.Now().Unix() })
 	g := cloneGraph(t.Graph)
 	for k, v := range j.Values {
 		if err := setInput(g, k, v); err != nil {
@@ -475,17 +475,17 @@ func submit(j *Job) bool {
 		var ge *GateError
 		msg := err.Error()
 		if errors.As(err, &ge) && ge.Status == 400 {
-			msg = "ComfyUI 拒绝了工作流：" + ge.Msg + nodeErrors(ge.Raw)
+			msg = "ComfyUI rechazó el flujo: " + ge.Msg + nodeErrors(ge.Raw)
 		}
 		fail(j, msg)
 		return false
 	}
 	if resp.PromptID == "" {
-		fail(j, "ComfyUI 没有返回 prompt_id")
+		fail(j, "ComfyUI no devolvió un prompt_id")
 		return false
 	}
 	store.update(j, func(j *Job) {
-		j.PromptID, j.Status, j.Message, j.UsedSeeds = resp.PromptID, "submitted", "已提交，排队中", used
+		j.PromptID, j.Status, j.Message, j.UsedSeeds = resp.PromptID, "submitted", "Enviado, en cola", used
 	})
 	return true
 }
@@ -504,11 +504,11 @@ func track(j *Job) {
 			if gateJSON("GET", "/queue", nil, &q) == nil && inQueue(q["queue_running"], j.PromptID) {
 				gateJSON("POST", "/interrupt", map[string]any{"prompt_id": j.PromptID}, nil)
 			}
-			store.update(j, func(j *Job) { j.Status, j.Message, j.Finished = "canceled", "已取消", time.Now().Unix() })
+			store.update(j, func(j *Job) { j.Status, j.Message, j.Finished = "canceled", "Cancelado", time.Now().Unix() })
 			return
 		}
 		if time.Since(start) > timeout {
-			fail(j, fmt.Sprintf("超过 %d 分钟没有完成（可在设置里调大超时）", int(timeout.Minutes())))
+			fail(j, fmt.Sprintf("Tiempo de espera agotado (%d min). Puedes ampliarlo en Ajustes.", int(timeout.Minutes())))
 			return
 		}
 		var h map[string]struct {
@@ -524,11 +524,11 @@ func track(j *Job) {
 			misses++
 			st, _ := gateState()
 			if st == "sleeping" || st == "stopping" || st == "failed" {
-				fail(j, "GPU 已停止（"+stateCN(st)+"），任务中断。可点「重试」")
+				fail(j, "GPU detenida ("+stateCN(st)+"). Pulsa «Reintentar».")
 				return
 			}
 			if misses > 60 {
-				fail(j, "长时间连不上 ComfyUI："+err.Error())
+				fail(j, "Se perdió la conexión con ComfyUI: "+err.Error())
 				return
 			}
 			time.Sleep(5 * time.Second)
@@ -537,7 +537,7 @@ func track(j *Job) {
 		misses = 0
 		if item, ok := h[j.PromptID]; ok {
 			if item.Status.StatusStr == "error" {
-				fail(j, "生成出错："+execError(item.Status.Messages))
+				fail(j, "Error al generar: "+execError(item.Status.Messages))
 				return
 			}
 			if item.Status.Completed || item.Status.StatusStr == "success" || len(item.Outputs) > 0 {
@@ -550,10 +550,10 @@ func track(j *Job) {
 			if inQueue(q["queue_running"], j.PromptID) {
 				p, node := prog.get(j.PromptID)
 				store.update(j, func(j *Job) {
-					j.Status, j.QueuePos, j.Progress, j.Node, j.Message = "running", 0, p, node, "生成中"
+					j.Status, j.QueuePos, j.Progress, j.Node, j.Message = "running", 0, p, node, "Generando"
 				})
 			} else if pos := queuePos(q["queue_pending"], j.PromptID); pos > 0 {
-				store.update(j, func(j *Job) { j.Status, j.QueuePos, j.Message = "submitted", pos, fmt.Sprintf("排队第 %d 位", pos) })
+				store.update(j, func(j *Job) { j.Status, j.QueuePos, j.Message = "submitted", pos, fmt.Sprintf("En cola (#%d)", pos) })
 			}
 		}
 		prog.ensure()
@@ -592,17 +592,17 @@ func execError(msgs [][]any) string {
 		if len(m) == 2 {
 			if t, _ := m[0].(string); t == "execution_error" {
 				d, _ := m[1].(map[string]any)
-				return fmt.Sprintf("%v（节点 %v %v）", d["exception_message"], d["node_id"], d["node_type"])
+				return fmt.Sprintf("%v (nodo %v %v)", d["exception_message"], d["node_id"], d["node_type"])
 			}
 		}
 	}
-	return "未知错误"
+	return "Error desconocido"
 }
 
 var unsafeName = regexp.MustCompile(`[\\/:*?"<>|\s]+`)
 
 func download(j *Job, outputs map[string]map[string]any) {
-	store.update(j, func(j *Job) { j.Status, j.Message, j.Progress = "downloading", "下载结果…", 1 })
+	store.update(j, func(j *Job) { j.Status, j.Message, j.Progress = "downloading", "Descargando resultado…", 1 })
 	type item struct{ fn, sub, typ string }
 	var items []item
 	var temps []item
@@ -640,7 +640,7 @@ func download(j *Job, outputs map[string]map[string]any) {
 	}
 	if len(items) == 0 {
 		store.update(j, func(j *Job) {
-			j.Status, j.Message, j.Finished = "done", "完成，但工作流没有输出文件（检查是否有 Save 节点）", time.Now().Unix()
+			j.Status, j.Message, j.Finished = "done", "Completado sin archivos de salida (verifica que el flujo tenga un nodo Save)", time.Now().Unix()
 		})
 		return
 	}
@@ -718,7 +718,7 @@ func nodeErrors(raw []byte) string {
 	var parts []string
 	for id, n := range r.NodeErrors {
 		for _, e := range n.Errors {
-			parts = append(parts, strings.TrimSpace(fmt.Sprintf("节点 #%s %s：%s %s", id, n.ClassType, e.Message, e.Details)))
+			parts = append(parts, strings.TrimSpace(fmt.Sprintf("Nodo #%s %s: %s %s", id, n.ClassType, e.Message, e.Details)))
 		}
 	}
 	sort.Strings(parts)

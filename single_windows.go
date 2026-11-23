@@ -30,5 +30,5 @@ func ensureSingleInstance() {
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	fatal("WakeGPU 已经在运行了（可能在任务栏或被其他窗口挡住）。\n\n同时开两个会让同一个任务被处理两次，所以这次不再打开新的。\n如果确实看不到窗口，请在任务管理器里结束 WakeGPU（或旧名 Wakeloom / ComfyWorkbench）后再打开。")
+	fatal("WakeGPU ya está en ejecución (puede estar en la barra de tareas).\n\nAbrir dos instancias procesaría las mismas tareas por duplicado.\nSi no ves la ventana, finaliza WakeGPU en el Administrador de tareas.")
 }

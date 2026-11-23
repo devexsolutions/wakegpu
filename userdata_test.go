@@ -294,7 +294,7 @@ func TestUserdataUnsafeAndLimits(t *testing.T) {
 		t.Errorf("downloaded %v", gets)
 	}
 	joined := strings.Join(res.Skipped, "\n")
-	for _, want := range []string{"big.json", "总量超过", "c.json", "../evil.json", "C:/Windows/x.json", "con.json"} {
+	for _, want := range []string{"big.json", "Tamaño total excede", "c.json", "../evil.json", "C:/Windows/x.json", "con.json"} {
 		if !strings.Contains(joined, want) {
 			t.Errorf("skipped list lacks %q:\n%s", want, joined)
 		}
@@ -342,7 +342,7 @@ func TestUserdataSyncerStopTimeout(t *testing.T) {
 		t.Error("backup before restore allowed")
 	}
 	u.tick(ctx) // restore
-	if len(*logs) != 1 || !strings.Contains((*logs)[0], "已恢复 0 个") {
+	if len(*logs) != 1 || !strings.Contains((*logs)[0], "Restaurados 0") {
 		t.Fatalf("log: %v", *logs)
 	}
 	u.tick(ctx) // first backup is due right after the restore
@@ -359,7 +359,7 @@ func TestUserdataSyncerStopTimeout(t *testing.T) {
 	f.mu.Unlock()
 	t0 := time.Now()
 	warn := u.beforeStop()
-	if time.Since(t0) > 3*time.Second || !strings.Contains(warn, "部分工作流可能未备份") {
+	if time.Since(t0) > 3*time.Second || !strings.Contains(warn, "Algunos flujos pueden faltar") {
 		t.Errorf("stop backup: %q after %v", warn, time.Since(t0))
 	}
 	// not ready / disabled: nothing to do
@@ -397,11 +397,11 @@ func TestSSEInjectsAppLog(t *testing.T) {
 	defer resp.Body.Close()
 	go func() {
 		time.Sleep(1200 * time.Millisecond)
-		udLog("WB_USERDATA 已恢复 3 个工作流/设置文件")
+		udLog("WB_USERDATA Restaurados 3 flujos/ajustes")
 	}()
 	var got strings.Builder
 	buf := make([]byte, 4096)
-	for !strings.Contains(got.String(), "已恢复 3") {
+	for !strings.Contains(got.String(), "Restaurados 3") {
 		n, err := resp.Body.Read(buf)
 		got.Write(buf[:n])
 		if err != nil {
@@ -412,7 +412,7 @@ func TestSSEInjectsAppLog(t *testing.T) {
 		}
 	}
 	s := got.String()
-	if !strings.Contains(s, "gate line") || !strings.Contains(s, "earlier") || !strings.Contains(s, "已恢复 3") ||
+	if !strings.Contains(s, "gate line") || !strings.Contains(s, "earlier") || !strings.Contains(s, "Restaurados 3") ||
 		strings.Index(s, "gate line") > strings.Index(s, "earlier") {
 		t.Errorf("stream:\n%s", s)
 	}
