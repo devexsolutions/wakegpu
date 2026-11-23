@@ -1,5 +1,11 @@
 # 更新日志
 
+## v1.22.0
+
+- **Estudio de Vídeo 1-Clic (0 Infra)**: Nueva pestaña simplificada para conectar Google Colab en un clic, elegir objetivo (Texto a Vídeo, Animar Foto, Short Vertical 9:16) y generar vídeos automáticamente con Guardián Zero-Waste activado por defecto.
+- **Compilador Visual de Prompts (0 € · Sin LLM)**: Traduce ideas cotidianas a prompts cinematográficos profesionales en 6 bloques (`[DURACIÓN]`, `[PERSONAJE]`, `[ESCENARIO]`, `[TIMED BEATS]`, `[CÁMARA]`, `[RESTRICCIONES]`) sin necesidad de API Keys de OpenAI/Anthropic.
+- **Estilos de Dirección Muse / Wan 2.1**: 6 estilos integrados (Cine 35mm, Comercial Apple, Blade Runner 2049, David Fincher Noir, Anime Makoto Shinkai y Macro 120fps) y biblioteca precargada.
+
 ## v1.21.3
 
 ### Internacionalización (nueva función)
