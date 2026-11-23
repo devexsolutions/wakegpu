@@ -9,8 +9,24 @@ Proyecto mantenido por: [a3974892-cmd](https://github.com/a3974892-cmd)
 
 ---
 
+## 📸 Capturas de Pantalla
+
+### 🎬 Estudio de Vídeo 1-Clic (0 € · Sin LLMs de pago)
+> Diseñado para empezar en 3 clics sin conocimientos de infraestructura: conecta Google, escribe tu idea en lenguaje normal, elige un estilo cinematográfico (Muse / Wan 2.1) y deja que WakeGPU compile el prompt, despierte la GPU y la apague automáticamente al terminar.
+
+![Estudio 1-Clic de WakeGPU](docs/screenshots/studio-1-click.png)
+
+### ⚡ Espacio de Generación Avanzado y Flujos ComfyUI
+![Generación en WakeGPU](docs/screenshots/generate-workspace.png)
+
+### 🔗 Conexión Directa a Google Colab
+![Conexión con Google Colab](docs/screenshots/google-colab-setup.png)
+
+---
+
 ## Capacidades Principales
 
+- **Estudio 1-Clic & Compilador Visual (0 €)**: Crea prompts cinematográficos de 6 bloques (estilo Muse / Wan 2.1, Apple Don't Blink, Blade Runner, Fincher, Anime) sin APIs ni LLMs de pago.
 - **Control Inteligente de GPU**: Enciende / detiene / prolonga sesiones de GPU en Colab (T4 / L4 / A100 / H100) con Guardián Zero-Waste para autoapagado en inactividad (ahorro de hasta un 70% de CU).
 - **Multiplataforma Nativo**: Disponible para **macOS (Apple Silicon e Intel)** mediante Cocoa/WebKit nativo y para **Windows 10/11** con WebView2.
 - **Generación de Vídeo & Automatización**: Compatible con flujos ComfyUI (Wan 2.1, Hunyuan, CogVideoX), escalado Auto-HD desatendido y compatibilidad con pipelines automatizados de canales Faceless con n8n y FFmpeg.
@@ -19,6 +35,12 @@ Proyecto mantenido por: [a3974892-cmd](https://github.com/a3974892-cmd)
 - **100% Gratuito y Open Source**: Publicado bajo Licencia MIT, sin cuotas mensuales ni suscripciones de pago.
 
 ---
+
+## 📥 Descargas (macOS y Windows)
+
+Descarga la última versión lista para usar desde **[GitHub Releases](https://github.com/devexsolutions/wakegpu/releases/latest)**:
+- **macOS (Apple Silicon & Intel):** `WakeGPU-x.y.z-macos.zip` (extrae `WakeGPU.app` y muévelo a Aplicaciones).
+- **Windows 10 / 11:** `WakeGPU-x.y.z.exe` (ejecutable portátil único, sin instalación).
 
 ## 它能做什么
 
