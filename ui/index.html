@@ -41,6 +41,7 @@
 
     <div class="side-label" data-i18n="side_label_nav">Navegación</div>
     <nav>
+      <button data-page="studio"><span class="n">00</span><span data-i18n="nav_studio">Estudio 1-Clic</span></button>
       <button data-page="console" class="on"><span class="n">01</span><span data-i18n="nav_console">Consola</span></button>
       <button data-page="gen"><span class="n">02</span><span data-i18n="nav_gen">Generar</span></button>
       <button data-page="ai"><span class="n">03</span><span data-i18n="nav_ai">IA</span></button>
@@ -74,6 +75,112 @@
         <button class="btn danger sm" id="btnStopTop" data-i18n="btn_stop">Detener</button>
       </div>
     </header>
+
+    <!-- Estudio 1-Clic (Cero Infra, Sin LLMs de pago) -->
+    <section class="page" id="page-studio">
+      <div class="studio-wrap">
+        <div class="studio-hero">
+          <div>
+            <h2>🎬 Estudio de Vídeo 1-Clic <span class="tag-pro-sm" style="background:rgba(31,157,85,.15);color:var(--ok);border-color:rgba(31,157,85,.3)">0 € · Sin LLM</span></h2>
+            <p>Crea vídeos cinematográficos conectando tu cuenta Google, sin saber de servidores, GPUs ni APIs de pago.</p>
+          </div>
+          <div class="studio-auth-box" id="studioAuthBox">
+            <span class="chip" id="studioAuthChip">Comprobando Google…</span>
+            <button type="button" class="btn primary sm" id="btnStudioConnect">🔗 Conectar cuenta Google</button>
+          </div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-step-hdr"><span class="studio-badge">1</span><h3>¿Qué quieres crear hoy?</h3></div>
+          <div class="studio-goals" id="studioGoals">
+            <button type="button" class="goal-card on" data-goal="t2v">
+              <span class="g-ico">🎬</span>
+              <b>Texto a Vídeo (16:9)</b>
+              <small>Escribe tu idea en español y WakeGPU crea un clip cinematográfico horizontal.</small>
+            </button>
+            <button type="button" class="goal-card" data-goal="i2v">
+              <span class="g-ico">🖼️</span>
+              <b>Dar vida a una Foto</b>
+              <small>Sube cualquier imagen o personaje y anímalo respetando su aspecto.</small>
+            </button>
+            <button type="button" class="goal-card" data-goal="short">
+              <span class="g-ico">📱</span>
+              <b>Short / TikTok (9:16)</b>
+              <small>Formato vertical dinámico listo para Reels, Shorts y TikTok.</small>
+            </button>
+          </div>
+          <div id="studioImgBox" hidden style="margin-top:14px">
+            <label class="lbl" style="display:block;margin-bottom:6px">Foto inicial de referencia:</label>
+            <input type="file" id="studioImgFile" accept="image/*" class="studio-select">
+          </div>
+        </div>
+
+        <div class="studio-card">
+          <div class="studio-step-hdr"><span class="studio-badge">2</span><h3>Describe tu escena (Compilador Visual 0 €)</h3></div>
+          <label class="lbl" style="display:block;margin-bottom:6px">¿Qué aparece y qué ocurre? (escribe normal, en español o inglés):</label>
+          <textarea id="studioIdea" class="studio-textarea" placeholder="Ej: Un astronauta caminando por Madrid bajo la lluvia de neón, mirando hacia arriba con asombro..."></textarea>
+
+          <label class="lbl" style="display:block;margin:14px 0 6px">Elige un estilo de dirección cinematográfica:</label>
+          <div class="style-grid" id="studioStyles">
+            <button type="button" class="style-chip on" data-st="muse6"><b>🎬 Cine 35mm</b><small>Natural y cinematográfico</small></button>
+            <button type="button" class="style-chip" data-st="apple"><b>🍎 Comercial Apple</b><small>Limpio, estudio, 120fps</small></button>
+            <button type="button" class="style-chip" data-st="bladerunner"><b>🌧️ Blade Runner</b><small>Sci-Fi, neón y niebla</small></button>
+            <button type="button" class="style-chip" data-st="fincher"><b>🕵️ Thriller Noir</b><small>Sombras y tensión</small></button>
+            <button type="button" class="style-chip" data-st="anime"><b>🌸 Anime Shinkai</b><small>Cielos vivos y luz</small></button>
+            <button type="button" class="style-chip" data-st="macro"><b>💎 Macro Lujo</b><small>Detalle extremo 120fps</small></button>
+          </div>
+
+          <div class="studio-fields">
+            <div>
+              <label class="lbl" style="display:block;margin-bottom:6px">Movimiento de cámara</label>
+              <select id="studioCam" class="studio-select">
+                <option value="dolly_in">Acercamiento lento (Dolly In)</option>
+                <option value="dolly_out">Alejamiento cinematográfico (Dolly Out)</option>
+                <option value="orbit">Orbital alrededor del sujeto</option>
+                <option value="crane">Plano Grúa / Drone elevándose</option>
+                <option value="tripod">Cámara fija en trípode</option>
+                <option value="handheld">Cámara en mano dinámica</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl" style="display:block;margin-bottom:6px">Duración del clip</label>
+              <select id="studioDur" class="studio-select">
+                <option value="5">5 segundos (Recomendado · Máxima calidad)</option>
+                <option value="6" selected>6 segundos (Equilibrado)</option>
+                <option value="10">10 segundos (Escena extendida)</option>
+              </select>
+            </div>
+          </div>
+
+          <details class="studio-preview">
+            <summary>Ver prompt de 6 bloques compilado automáticamente (0 € sin LLM)</summary>
+            <pre id="studioCompiledOut"></pre>
+          </details>
+
+          <div class="studio-cta-row">
+            <label class="chk" style="margin:0;font-size:13px">
+              <input type="checkbox" id="studioZeroWaste" checked>
+              <span>🛡️ <b>Guardián Zero-Waste:</b> apagar la GPU automáticamente al terminar para no gastar créditos de más</span>
+            </label>
+            <button type="button" class="btn primary studio-go" id="btnStudioGo">✨ Crear mi Vídeo Ahora</button>
+          </div>
+          <p class="err" id="studioErr" style="margin-top:8px"></p>
+        </div>
+
+        <div class="studio-status-card" id="studioStatus" hidden>
+          <div class="row between">
+            <b id="studioStatusTitle">Preparando entorno…</b>
+            <span class="chip" id="studioStatusChip">En curso</span>
+          </div>
+          <div class="studio-prog-bar"><div class="studio-prog-fill" id="studioProgFill"></div></div>
+          <p class="muted small" id="studioStatusSub" style="margin:4px 0 0"></p>
+          <div class="row" style="margin-top:12px;gap:10px" id="studioResultActions" hidden>
+            <button type="button" class="btn primary sm" id="btnStudioSeeResults">🎬 Ver y Descargar Vídeo</button>
+            <button type="button" class="btn ghost sm" id="btnStudioNew">＋ Crear otro vídeo</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- Consola -->
     <section class="page on" id="page-console">
@@ -194,6 +301,7 @@
                   <span class="lbl" data-i18n="gen_h3_duration">Duración</span>
                   <input type="number" id="h3Dur" min="4" max="15" step="1" value="6" class="mini-num"><span class="lbl" data-i18n="gen_h3_seconds">s</span>
                   <span class="grow"></span>
+                  <button type="button" class="btn xs" id="btnVisualCompiler" title="Crea un prompt cinematográfico en 6 bloques sin usar APIs ni LLMs de pago">🎨 Asistente Visual (0 €)</button>
                   <button type="button" class="btn xs" id="btnSkeleton" data-i18n="gen_btn_skeleton">Insertar estructura</button>
                   <button type="button" class="btn primary xs" id="btnAI" data-i18n="gen_btn_ai_writer">✦ Redactar con IA</button>
                 </div>

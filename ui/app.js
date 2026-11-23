@@ -2041,3 +2041,325 @@ function fmtTime(t) {
 
 // updCount word label
 function updCount0(t) { const c = $(`[data-count="${t.id}"]`); if (c) c.textContent = t.value.trim() ? t.value.trim().split(/\s+/).length + " " + i18n.t("unit_words") : ""; }
+
+// ---------------- Visual Prompt Compiler (0 € / Sin LLM) & Estudio 1-Clic ----------------
+function compileVisualPrompt({ idea, style, cam, dur, goal }) {
+  const cleanIdea = (idea || "").trim() || "A cinematic traveler standing in an atmospheric landscape";
+  const D = Number(dur || 6).toFixed(1);
+  const half = (Number(dur || 6) / 2).toFixed(1);
+  const aspect = goal === "short" ? "9:16 vertical short-form" : "16:9 cinematic widescreen";
+  const camMap = {
+    dolly_in: "slow smooth dolly forward toward the subject, shallow depth of field",
+    dolly_out: "slow dramatic dolly backward revealing the surrounding environment",
+    orbit: "smooth 180-degree orbital tracking shot circling around the subject",
+    crane: "gradual crane / drone pedestal rise revealing monumental scale",
+    tripod: "clinical tripod-locked stability with subtle atmospheric focus pull",
+    handheld: "dynamic subtle handheld camera motion adding raw realism and immediacy",
+  };
+  const styleMap = {
+    muse6: {
+      env: "Natural filmic lighting, soft volumetric rim light, rich cinematic color grading",
+      lens: "35mm anamorphic prime lens, cinematic bokeh and subtle film grain",
+      rest: "No face morphing, no limb distortion, realistic fluid and cloth physics, no text overlay",
+    },
+    apple: {
+      env: "Ultra-clean minimalist studio backdrop, crisp softbox highlights, specular reflections",
+      lens: "90mm macro lens, razor-sharp f/4, high-speed 120fps slow-motion feel",
+      rest: "Perfectly smooth geometric lines, zero jitter, pristine industrial design look",
+    },
+    bladerunner: {
+      env: "Rain-slicked futuristic atmosphere, dense neon cyan and amber haze, wet reflections",
+      lens: "24mm anamorphic wide angle, monumental scale, heavy atmospheric mist",
+      rest: "Realistic rain physics, no oversaturated colors, somber contemplative pacing",
+    },
+    fincher: {
+      env: "Low-key dimly lit interior, muted olive-green and deep shadow color grade, tungsten practical light",
+      lens: "50mm Zeiss prime lens, low contrast, rich filmic blacks",
+      rest: "No shaky cam, razor sharp focus plane, restrained minimal movement",
+    },
+    anime: {
+      env: "Sunlit vibrant sky with towering volumetric cumulus clouds, golden hour light blooms",
+      lens: "35mm anime perspective, dynamic low-angle shot, subtle chromatic aberration",
+      rest: "Authentic 2D anime linework, no 3D uncanny valley, smooth natural hair and cloth motion",
+    },
+    macro: {
+      env: "Velvet dark studio void with dancing caustic light refractions and floating micro-particles",
+      lens: "100mm macro probe lens, extreme shallow depth of field, 1000fps slow-motion feel",
+      rest: "Physically accurate optical refraction, zero clipping, pure luxury aesthetics",
+    },
+  };
+  const s = styleMap[style] || styleMap.muse6;
+  const camDesc = camMap[cam] || camMap.dolly_in;
+  const imgRef = goal === "i2v" ? "Starting seamlessly from <Picture 1>, maintaining exact character likeness and composition. " : "";
+
+  return `[DURACIÓN Y FORMATO]: ${D}s, ${aspect}, 24fps.
+[PERSONAJE / ASSET ID]: ${imgRef}${cleanIdea}.
+[ESCENARIO Y ATMÓSFERA]: ${s.env}.
+[TIMED BEATS]:
+- 0.0s - ${half}s: Opening framing establishes the subject and mood; initial subtle motion unfolds naturally.
+- ${half}s - ${D}s: Action progresses smoothly to visual climax as lighting and atmosphere accentuate the scene.
+[LENGUAJE DE CÁMARA]: ${s.lens}; ${camDesc}.
+[RESTRICCIONES]: ${s.rest}.`;
+}
+
+// Modal del Asistente Visual (0 €) en la pestaña Generar
+if ($("#btnVisualCompiler")) {
+  $("#btnVisualCompiler").onclick = () => {
+    const t = mainTextarea();
+    openModal(`<h3>🎨 Asistente Visual de Prompts (0 € · Sin LLM)</h3>
+    <p class="muted small">Describe tu idea en lenguaje normal y compilaremos automáticamente un prompt cinematográfico en 6 bloques:</p>
+    <label class="lbl" style="display:block;margin:10px 0 4px">¿Qué quieres ver?</label>
+    <textarea id="vcIdea" class="studio-textarea" placeholder="Ej: Un coche deportivo atravesando Tokio de noche bajo la lluvia"></textarea>
+    <div class="studio-fields">
+      <div><label class="lbl" style="display:block;margin-bottom:4px">Estilo</label>
+        <select id="vcStyle" class="studio-select">
+          <option value="muse6">🎬 Cine Realista 35mm</option>
+          <option value="apple">🍎 Comercial Apple (120fps)</option>
+          <option value="bladerunner">🌧️ Blade Runner Sci-Fi</option>
+          <option value="fincher">🕵️ Thriller Noir (Fincher)</option>
+          <option value="anime">🌸 Anime (Makoto Shinkai)</option>
+          <option value="macro">💎 Macro Lujo (120fps)</option>
+        </select>
+      </div>
+      <div><label class="lbl" style="display:block;margin-bottom:4px">Movimiento de cámara</label>
+        <select id="vcCam" class="studio-select">
+          <option value="dolly_in">Acercamiento lento (Dolly In)</option>
+          <option value="dolly_out">Alejamiento (Dolly Out)</option>
+          <option value="orbit">Orbital 360°</option>
+          <option value="crane">Grúa / Drone elevándose</option>
+          <option value="tripod">Cámara fija en trípode</option>
+          <option value="handheld">Cámara en mano</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:16px;gap:8px">
+      <button type="button" class="btn ghost" data-close>Cancelar</button>
+      <button type="button" class="btn primary" id="vcApply">Compilar y Aplicar Prompt</button>
+    </div>`);
+    $("#vcIdea").focus();
+    $("#vcApply").onclick = () => {
+      if (!t) return toast("Esta plantilla no tiene parámetros de texto");
+      const compiled = compileVisualPrompt({
+        idea: $("#vcIdea").value,
+        style: $("#vcStyle").value,
+        cam: $("#vcCam").value,
+        dur: +$("#h3Dur").value || 6,
+        goal: $("#h3Mode").value === "I2VA" ? "i2v" : "t2v",
+      });
+      t.value = compiled;
+      updCount(t);
+      closeModal();
+      toast("Prompt cinematográfico de 6 bloques compilado (0 €)");
+    };
+  };
+}
+
+// Controlador de Estudio 1-Clic (#page-studio)
+(function initStudio1Click() {
+  if (!$("#page-studio")) return;
+  const st = { goal: "t2v", style: "muse6", activeJobId: null };
+
+  function updatePreview() {
+    const out = $("#studioCompiledOut");
+    if (!out) return;
+    out.textContent = compileVisualPrompt({
+      idea: $("#studioIdea").value,
+      style: st.style,
+      cam: $("#studioCam").value,
+      dur: $("#studioDur").value,
+      goal: st.goal,
+    });
+  }
+
+  $$("#studioGoals .goal-card").forEach(b => b.onclick = () => {
+    st.goal = b.dataset.goal;
+    $$("#studioGoals .goal-card").forEach(x => x.classList.toggle("on", x === b));
+    $("#studioImgBox").hidden = (st.goal !== "i2v");
+    updatePreview();
+  });
+
+  $$("#studioStyles .style-chip").forEach(b => b.onclick = () => {
+    st.style = b.dataset.st;
+    $$("#studioStyles .style-chip").forEach(x => x.classList.toggle("on", x === b));
+    updatePreview();
+  });
+
+  ["#studioIdea", "#studioCam", "#studioDur"].forEach(sel => {
+    const el = $(sel);
+    if (el) el.addEventListener("input", updatePreview);
+  });
+  updatePreview();
+
+  function renderStudioAuth() {
+    const chip = $("#studioAuthChip"), btn = $("#btnStudioConnect");
+    if (!chip || !btn) return;
+    const logged = gst && (gst.logged_in || (gst.cu && Number.isFinite(gst.cu.balance)));
+    if (logged) {
+      const bal = gst.cu && Number.isFinite(gst.cu.balance) ? ` · ~${Math.max(1, Math.floor(gst.cu.balance * 2.5))} vídeos disp.` : "";
+      chip.textContent = "✅ Google Conectado" + bal;
+      chip.className = "chip ok";
+      btn.textContent = "Cuenta lista ✓";
+      btn.classList.remove("primary");
+    } else {
+      chip.textContent = "⚪ Sin conectar a Google";
+      chip.className = "chip";
+      btn.textContent = "🔗 Conectar cuenta Google";
+      btn.classList.add("primary");
+    }
+  }
+  setInterval(renderStudioAuth, 2500);
+  renderStudioAuth();
+
+  $("#btnStudioConnect").onclick = async () => {
+    try {
+      if (typeof obSetMode === "function") await obSetMode("local");
+      if ($("#btnLocalLogin")) {
+        show("console");
+        $("#btnLocalLogin").click();
+      } else {
+        obOpen("simple", 1);
+      }
+    } catch (e) { toast(e.message || "Error abriendo login"); }
+  };
+
+  $("#btnStudioSeeResults").onclick = () => show("results");
+  $("#btnStudioNew").onclick = () => {
+    st.activeJobId = null;
+    $("#studioStatus").hidden = true;
+    $("#studioResultActions").hidden = true;
+    $("#btnStudioGo").disabled = false;
+  };
+
+  $("#btnStudioGo").onclick = async () => {
+    const errEl = $("#studioErr"); errEl.textContent = "";
+    const idea = $("#studioIdea").value.trim();
+    if (!idea) { errEl.textContent = "Escribe primero qué quieres ver en tu vídeo."; $("#studioIdea").focus(); return; }
+    if (st.goal === "i2v" && (!$("#studioImgFile").files || !$("#studioImgFile").files[0])) {
+      errEl.textContent = "Has elegido «Dar vida a una Foto». Por favor sube una imagen inicial."; return;
+    }
+
+    // 1. Asegurar modo local si no hay gateway configurado
+    if (!isLocal() && (!appCfg || !appCfg.gateway_url)) {
+      try { if (typeof obSetMode === "function") await obSetMode("local"); } catch { }
+    }
+
+    // 2. Verificar conexión a Google
+    const logged = gst && (gst.logged_in || (gst.cu && Number.isFinite(gst.cu.balance)));
+    if (!logged) {
+      errEl.textContent = "Primero conecta tu cuenta de Google pulsando el botón superior «Conectar cuenta Google».";
+      return;
+    }
+
+    // 3. Activar Guardián Zero-Waste si el usuario lo dejó marcado
+    if ($("#studioZeroWaste").checked) {
+      try {
+        const c = await api("/api/config");
+        if (c && c.config && !c.config.zero_waste_enabled) {
+          c.config.zero_waste_enabled = true;
+          await api("/api/config", { json: c.config });
+        }
+      } catch { }
+    }
+
+    const compiledPrompt = compileVisualPrompt({
+      idea, style: st.style, cam: $("#studioCam").value, dur: $("#studioDur").value, goal: st.goal
+    });
+
+    $("#btnStudioGo").disabled = true;
+    $("#studioStatus").hidden = false;
+    $("#studioResultActions").hidden = true;
+    $("#studioStatusTitle").textContent = "Iniciando estudio de vídeo…";
+    $("#studioStatusChip").textContent = "Preparando";
+    $("#studioProgFill").style.width = "15%";
+    $("#studioStatusSub").textContent = "Comprobando GPU en Google Colab…";
+
+    try {
+      // 4. Despertar GPU automáticamente si no está corriendo
+      if (!gst || gst.state !== "running") {
+        $("#studioStatusTitle").textContent = "Despertando GPU en Google Colab…";
+        $("#studioStatusSub").textContent = "Esto suele tardar 1-2 minutos la primera vez. Puedes relajarte, WakeGPU se encarga de todo.";
+        $("#studioProgFill").style.width = "35%";
+        const videoProf = (profiles && profiles.profiles && profiles.profiles.find(p => /h3|video|wan|hunyuan/i.test(p.id))) || (profiles && profiles.profiles && profiles.profiles[0]);
+        if (videoProf && $("#wakeProfile")) $("#wakeProfile").value = videoProf.id;
+        if ($("#wakeAcc") && videoProf && videoProf.accelerator) $("#wakeAcc").value = videoProf.accelerator;
+        await api("/api/wake", { json: { profile: videoProf ? videoProf.id : "minimax-h3", accelerator: (videoProf && videoProf.accelerator) || "L4" } });
+
+        // Esperar hasta que esté running (máximo ~4 min)
+        for (let i = 0; i < 80; i++) {
+          await new Promise(r => setTimeout(r, 3000));
+          await pollStatus();
+          if (gst && gst.state === "running") break;
+          if (gst && (gst.state === "failed" || gst.state === "stopped")) throw new Error("No se pudo iniciar la GPU en Colab. Revisa tu saldo de Compute Units.");
+        }
+      }
+
+      // 5. Buscar plantilla de vídeo activa o primera plantilla disponible
+      await loadTemplates();
+      const tpl = curTpl || (templates && templates.find(t => /video|h3|wan|hunyuan/i.test(t.name))) || (templates && templates[0]);
+      if (!tpl) {
+        throw new Error("Aún no hay una plantilla de ComfyUI cargada para este perfil. Abre «02 Generar» para importar o seleccionar una.");
+      }
+
+      $("#studioStatusTitle").textContent = "Generando tu vídeo con IA…";
+      $("#studioStatusChip").textContent = "Renderizando";
+      $("#studioProgFill").style.width = "65%";
+      $("#studioStatusSub").textContent = "Procesando en la GPU de Colab. El Guardián Zero-Waste la apagará al terminar.";
+
+      const values = {};
+      for (const f of tpl.fields) {
+        if (/prompt|text|descrip/i.test(f.label_cn || f.key)) values[f.key] = compiledPrompt;
+        else if (/duraci|duration|seconds|时长/i.test(f.label_cn || f.key)) values[f.key] = +$("#studioDur").value || 6;
+        else if (/width|ancho/i.test(f.key)) values[f.key] = st.goal === "short" ? 720 : 1280;
+        else if (/height|alto/i.test(f.key)) values[f.key] = st.goal === "short" ? 1280 : 720;
+        else if (f.rec != null) values[f.key] = f.rec;
+      }
+
+      const fd = new FormData();
+      fd.append("spec", JSON.stringify({
+        template: tpl.id,
+        title: "Estudio 1-Clic · " + idea.slice(0, 24),
+        values,
+        rand: [],
+        count: 1,
+        auto_hires: false,
+        draft: false,
+      }));
+      if (st.goal === "i2v" && $("#studioImgFile").files[0]) {
+        const imgFld = tpl.fields.find(f => f.type === "image" || f.kind === "image");
+        if (imgFld) fd.append("file:" + imgFld.key, $("#studioImgFile").files[0]);
+      }
+
+      const r = await api("/api/jobs", { body: fd });
+      st.activeJobId = (r && r.ids && r.ids[0]) || null;
+
+      // Seguir estado del trabajo
+      const track = setInterval(async () => {
+        await loadJobs();
+        const job = jobs && jobs.find(j => j.id === st.activeJobId);
+        if (!job) return;
+        if (job.status === "done") {
+          clearInterval(track);
+          $("#studioStatusTitle").textContent = "✅ ¡Vídeo creado con éxito!";
+          $("#studioStatusChip").textContent = "Completado";
+          $("#studioStatusChip").className = "chip ok";
+          $("#studioProgFill").style.width = "100%";
+          $("#studioStatusSub").textContent = "Tu vídeo ya está descargado en tu equipo. Guardián Zero-Waste gestionará el apagado seguro.";
+          $("#studioResultActions").hidden = false;
+          $("#btnStudioGo").disabled = false;
+        } else if (job.status === "failed" || job.status === "canceled") {
+          clearInterval(track);
+          $("#studioStatusTitle").textContent = "❌ Error en la generación";
+          $("#studioStatusChip").textContent = "Fallido";
+          $("#studioProgFill").style.width = "100%";
+          $("#studioStatusSub").textContent = job.error || "Revisa la pestaña Cola para más detalles.";
+          $("#btnStudioGo").disabled = false;
+        }
+      }, 2500);
+    } catch (e) {
+      $("#studioStatusTitle").textContent = "⚠️ No se pudo completar";
+      $("#studioStatusChip").textContent = "Detenido";
+      $("#studioStatusSub").textContent = e.message || String(e);
+      $("#btnStudioGo").disabled = false;
+    }
+  };
+})();

@@ -9,6 +9,7 @@ const T = {
   es: {
     app_name: `WakeGPU`,
     tagline: `Despierta GPUs en la nube bajo demanda para generar vídeo, imágenes y chat con IA.`,
+    nav_studio: `Estudio 1-Clic`,
     nav_console: `Consola`,
     nav_gen: `Generar`,
     nav_ai: `IA`,
@@ -799,6 +800,7 @@ Al cambiar de modo, la GPU previa seguirá activa consumiendo CU y las tareas en
   en: {
     app_name: `WakeGPU`,
     tagline: `Wake cloud GPUs on demand to generate video, images and AI chat.`,
+    nav_studio: `1-Click Studio`,
     nav_console: `Console`,
     nav_gen: `Generate`,
     nav_ai: `AI`,
