@@ -1,0 +1,56 @@
+{
+ "ai": null,
+ "comfyui": {
+  "args": [
+   "--preview-method",
+   "auto"
+  ],
+  "commit": "2c75dc1b",
+  "env": {},
+  "extra_model_paths": null,
+  "frontend_package": "comfyui-frontend-package==1.57.6",
+  "repo": "https://github.com/comfyanonymous/ComfyUI",
+  "settings": {}
+ },
+ "custom_nodes": [],
+ "default_view": "app",
+ "download_concurrency": 4,
+ "download_connections": 8,
+ "fast_start": true,
+ "max_session_hours": 7.0,
+ "model_aliases": {},
+ "model_store": "disk",
+ "models": [
+  {
+   "core": true,
+   "dest": "diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors",
+   "id": "wan21-1.3b",
+   "sha256": "be531024cd9018cb5b48c40cfbb6a6191645b1c792eb8bf4f8c1c6e10f924dc5",
+   "size_gb": 2.84,
+   "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors"
+  },
+  {
+   "core": true,
+   "dest": "text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+   "id": "umt5-xxl-fp8",
+   "sha256": "c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68",
+   "size_gb": 6.74,
+   "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+  },
+  {
+   "core": true,
+   "dest": "vae/wan_2.1_vae.safetensors",
+   "id": "wan21-vae",
+   "sha256": "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b",
+   "size_gb": 0.25,
+   "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors"
+  }
+ ],
+ "on_demand": {},
+ "pip_installer": "uv",
+ "profile": "wan21-t4-free",
+ "smoke": null,
+ "watchdog_gate_lost_min": 20,
+ "workflows": [],
+ "xet_high_performance": true
+}

@@ -1,0 +1,32 @@
+# Wan 2.1 T2V 1.3B (Apache-2.0) — Lightweight video generation profile designed for free Colab T4 (15 GB VRAM).
+id: wan21-t4-free
+title: Wan 2.1 1.3B · Vídeo Gratis (T4)
+accelerator: T4
+comfyui:
+  repo: https://github.com/comfyanonymous/ComfyUI
+  commit: 2c75dc1b
+  args: [--preview-method, auto]
+frontend:
+  package: comfyui-frontend-package==1.57.6
+models:
+- id: wan21-1.3b
+  dest: diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors
+  url: hf://Comfy-Org/Wan_2.1_ComfyUI_repackaged/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors
+  license: apache-2.0
+  sha256: be531024cd9018cb5b48c40cfbb6a6191645b1c792eb8bf4f8c1c6e10f924dc5
+  size_gb: 2.84
+  core: true
+- id: umt5-xxl-fp8
+  dest: text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+  url: hf://Comfy-Org/Wan_2.1_ComfyUI_repackaged/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors
+  license: apache-2.0
+  sha256: c3355d30191f1f066b26d93fba017ae9809dce6c627dda5f6a66eaa651204f68
+  size_gb: 6.74
+  core: true
+- id: wan21-vae
+  dest: vae/wan_2.1_vae.safetensors
+  url: hf://Comfy-Org/Wan_2.1_ComfyUI_repackaged/split_files/vae/wan_2.1_vae.safetensors
+  license: apache-2.0
+  sha256: 2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b
+  size_gb: 0.25
+  core: true

@@ -1,5 +1,10 @@
 # 更新日志
 
+## v1.22.2
+
+- **Perfil gratuito `Wan 2.1 1.3B (T4 Gratis)`**: Nuevo perfil nativo (~9.8 GB en total) que cabe en la GPU T4 gratuita de Google Colab (15 GB VRAM) con `0.0 CU`.
+- **Estudio 1-Clic totalmente autónomo**: Auto-genera e importa la plantilla ComfyUI de Wan 2.1 si no tienes ninguna, permitiendo generar vídeos reales en T4 sin configuración previa.
+
 ## v1.22.1
 
 - **Traducción completa al español**: Eliminados los textos residuales en chino de logs, errores de Colab/ComfyUI, colas y alertas de Windows.

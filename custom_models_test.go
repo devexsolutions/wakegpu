@@ -646,8 +646,8 @@ for d in sorted(pathlib.Path(kit, "profiles").iterdir()):
 		t.Fatalf("python: %v\n%s", err, o)
 	}
 	want, _ := filepath.Glob("testdata/plans/*.json")
-	if len(want) != 7 {
-		t.Fatalf("expected 7 snapshots, got %d", len(want))
+	if len(want) != 8 {
+		t.Fatalf("expected 8 snapshots, got %d", len(want))
 	}
 	for _, f := range want {
 		a, _ := os.ReadFile(f)

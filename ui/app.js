@@ -2274,32 +2274,52 @@ if ($("#btnVisualCompiler")) {
     $("#studioStatusSub").textContent = "Comprobando GPU en Google Colab…";
 
     try {
+      const hasBal = gst && gst.cu && gst.cu.balance > 0;
+      const defaultWanProf = (profiles && profiles.profiles && profiles.profiles.find(p => p.id === "wan21-t4-free"))
+        || (profiles && profiles.profiles && profiles.profiles.find(p => /wan|h3|video|hunyuan/i.test(p.id)))
+        || (profiles && profiles.profiles && profiles.profiles[0]);
+      const targetProf = hasBal
+        ? ((profiles && profiles.profiles && profiles.profiles.find(p => /h3|wan|video/i.test(p.id))) || defaultWanProf)
+        : defaultWanProf;
+      const targetAcc = hasBal ? ((targetProf && targetProf.accelerator) || "L4") : "T4";
+
       // 4. Despertar GPU automáticamente si no está corriendo
       if (!gst || gst.state !== "running") {
-        $("#studioStatusTitle").textContent = "Despertando GPU en Google Colab…";
-        $("#studioStatusSub").textContent = "Esto suele tardar 1-2 minutos la primera vez. Puedes relajarte, WakeGPU se encarga de todo.";
+        $("#studioStatusTitle").textContent = "Despertando GPU en Google Colab (" + targetAcc + ")…";
+        $("#studioStatusSub").textContent = "Esto suele tardar 1-2 minutos la primera vez. WakeGPU está preparando el modelo de vídeo gratuito Wan 2.1.";
         $("#studioProgFill").style.width = "35%";
-        const videoProf = (profiles && profiles.profiles && profiles.profiles.find(p => /h3|video|wan|hunyuan/i.test(p.id))) || (profiles && profiles.profiles && profiles.profiles[0]);
-        const hasBal = gst && gst.cu && gst.cu.balance > 0;
-        const targetAcc = hasBal ? ((videoProf && videoProf.accelerator) || "L4") : "T4";
-        if (videoProf && $("#wakeProfile")) $("#wakeProfile").value = videoProf.id;
+        if (targetProf && $("#wakeProfile")) $("#wakeProfile").value = targetProf.id;
         if ($("#wakeAcc")) $("#wakeAcc").value = targetAcc;
-        await api("/api/wake", { json: { profile: videoProf ? videoProf.id : "minimax-h3", accelerator: targetAcc } });
+        await api("/api/wake", { json: { profile: targetProf ? targetProf.id : "wan21-t4-free", accelerator: targetAcc } });
 
-        // Esperar hasta que esté running (máximo ~4 min)
-        for (let i = 0; i < 80; i++) {
+        // Esperar hasta que esté running (máximo ~5 min)
+        for (let i = 0; i < 100; i++) {
           await new Promise(r => setTimeout(r, 3000));
           await pollStatus();
           if (gst && gst.state === "running") break;
-          if (gst && (gst.state === "failed" || gst.state === "stopped")) throw new Error("No se pudo iniciar la GPU en Colab. Revisa tu saldo de Compute Units.");
+          if (gst && (gst.state === "failed" || gst.state === "stopped")) throw new Error("No se pudo iniciar la GPU en Colab. Revisa el registro en Consola.");
         }
       }
 
-      // 5. Buscar plantilla de vídeo activa o primera plantilla disponible
+      // 5. Buscar o auto-crear la plantilla de vídeo Wan 2.1 1.3B
       await loadTemplates();
-      const tpl = curTpl || (templates && templates.find(t => /video|h3|wan|hunyuan/i.test(t.name))) || (templates && templates[0]);
+      let tpl = curTpl || (templates && templates.find(t => /wan|video|h3|hunyuan/i.test(t.name))) || (templates && templates[0]);
       if (!tpl) {
-        throw new Error("Aún no hay una plantilla de ComfyUI cargada para este perfil. Abre «02 Generar» para importar o seleccionar una.");
+        const wanGraph = {
+          "1": { "class_type": "UNETLoader", "inputs": { "unet_name": "wan2.1_t2v_1.3B_fp16.safetensors", "weight_dtype": "default" } },
+          "2": { "class_type": "CLIPLoader", "inputs": { "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors", "type": "wan", "device": "default" } },
+          "3": { "class_type": "VAELoader", "inputs": { "vae_name": "wan_2.1_vae.safetensors" } },
+          "4": { "class_type": "ModelSamplingSD3", "inputs": { "model": ["1", 0], "shift": 8.0 } },
+          "5": { "class_type": "CLIPTextEncode", "_meta": { "title": "Prompt Positivo" }, "inputs": { "text": "", "clip": ["2", 0] } },
+          "6": { "class_type": "CLIPTextEncode", "_meta": { "title": "Prompt Negativo negative" }, "inputs": { "text": "overexposed, static, blurred details, subtitles, worst quality, low quality, ugly, deformed, extra fingers, malformed limbs", "clip": ["2", 0] } },
+          "7": { "class_type": "EmptyHunyuanLatentVideo", "inputs": { "width": 832, "height": 480, "length": 49, "batch_size": 1 } },
+          "8": { "class_type": "KSampler", "inputs": { "model": ["4", 0], "positive": ["5", 0], "negative": ["6", 0], "latent_image": ["7", 0], "seed": 0, "steps": 25, "cfg": 6.0, "sampler_name": "uni_pc", "scheduler": "simple", "denoise": 1.0 } },
+          "9": { "class_type": "VAEDecode", "inputs": { "samples": ["8", 0], "vae": ["3", 0] } },
+          "10": { "class_type": "SaveAnimatedWEBP", "inputs": { "images": ["9", 0], "filename_prefix": "WakeGPU_Wan21", "fps": 16, "lossless": false, "quality": 85, "method": "default" } }
+        };
+        const created = await api("/api/templates", { json: { name: "🎬 Wan 2.1 1.3B (T4 Gratis)", json: JSON.stringify(wanGraph) } });
+        await loadTemplates(created.id);
+        tpl = templates.find(t => t.id === created.id) || templates[0];
       }
 
       $("#studioStatusTitle").textContent = "Generando tu vídeo con IA…";
@@ -2307,12 +2327,16 @@ if ($("#btnVisualCompiler")) {
       $("#studioProgFill").style.width = "65%";
       $("#studioStatusSub").textContent = "Procesando en la GPU de Colab. El Guardián Zero-Waste la apagará al terminar.";
 
+      const durSec = +$("#studioDur").value || 5;
+      const frames = Math.min(81, Math.max(33, Math.round(durSec * 16) + 1));
       const values = {};
       for (const f of tpl.fields) {
-        if (/prompt|text|descrip/i.test(f.label_cn || f.key)) values[f.key] = compiledPrompt;
-        else if (/duraci|duration|seconds|时长/i.test(f.label_cn || f.key)) values[f.key] = +$("#studioDur").value || 6;
-        else if (/width|ancho/i.test(f.key)) values[f.key] = st.goal === "short" ? 720 : 1280;
-        else if (/height|alto/i.test(f.key)) values[f.key] = st.goal === "short" ? 1280 : 720;
+        if (/negative|negativo/i.test(f.label_cn || f.key)) { if (f.rec != null) values[f.key] = f.rec; }
+        else if (/prompt|text|descrip/i.test(f.label_cn || f.key)) values[f.key] = compiledPrompt;
+        else if (/duraci|duration|seconds|时长/i.test(f.label_cn || f.key)) values[f.key] = durSec;
+        else if (/length|frames/i.test(f.key)) values[f.key] = frames;
+        else if (/width|ancho/i.test(f.key)) values[f.key] = st.goal === "short" ? 480 : 832;
+        else if (/height|alto/i.test(f.key)) values[f.key] = st.goal === "short" ? 832 : 480;
         else if (f.rec != null) values[f.key] = f.rec;
       }
 
