@@ -104,6 +104,7 @@ footer a{color:var(--muted)}
     <a href="#faq-tecnico" data-es="7. Solución de problemas" data-en="7. Troubleshooting">7. Solución de problemas</a>
     <a href="#faceless-n8n" data-es="8. Canales Faceless (n8n)" data-en="8. Faceless Channels (n8n)">8. Canales Faceless (n8n)</a>
     <a href="#muse-video" data-es="9. Vídeo en 6 Bloques (Muse / Wan)" data-en="9. 6-Block Cinematic Video (Muse / Wan)">9. Vídeo en 6 Bloques (Muse / Wan)</a>
+    <a href="#tutorial-muse" data-es="10. Tutorial Real: Corto 15s" data-en="10. Real Tutorial: 15s Short">10. Tutorial Real: Corto 15s</a>
   </aside>
 
   <!-- ===== CONTENIDO PRINCIPAL ===== -->
@@ -370,6 +371,105 @@ footer a{color:var(--muted)}
           </tr>
         </tbody>
       </table>
+    </section>
+
+    <!-- 10. TUTORIAL REAL MUSE / WAN 2.1 -->
+    <section class="doc-sec" id="tutorial-muse">
+      <h2 data-es="10. Tutorial Real: Cortometraje de 15s con Muse / Wan 2.1 🎥" data-en="10. Real Tutorial: 15s Short Film with Muse / Wan 2.1 🎥">10. Tutorial Real: Cortometraje de 15s con Muse / Wan 2.1 🎥</h2>
+      <p data-es="En este caso práctico paso a paso vamos a producir un <strong>micro-cortometraje cinematográfico de 15 segundos</strong> continuo y coherente, dividido en 3 planos enlazados mediante <em>Match-Cut</em> y continuidad de fotograma clave (I2V), con el mismo personaje y atmósfera constante."
+         data-en="In this step-by-step hands-on case study, we will produce a <strong>15-second continuous and coherent cinematic short</strong>, divided into 3 shots chained through <em>Match-Cut</em> and keyframe continuity (I2V), keeping the exact same character and mood.">
+        En este caso práctico paso a paso vamos a producir un <strong>micro-cortometraje cinematográfico de 15 segundos</strong> continuo y coherente, dividido en 3 planos enlazados mediante <em>Match-Cut</em> y continuidad de fotograma clave (I2V), con el mismo personaje y atmósfera constante.
+      </p>
+
+      <div class="callout pro">
+        <strong data-es="Ficha técnica del proyecto de ejemplo:" data-en="Sample Project Specs:">Ficha técnica del proyecto de ejemplo:</strong><br>
+        <span data-es="• <strong>Título:</strong> «La detective en el callejón de neón» (Género Neo-Noir / Cyberpunk).<br>• <strong>Estructura:</strong> 3 planos de 5 segundos encadenados (15 segundos en total, 16:9 widescreen).<br>• <strong>Coste estimado en Colab:</strong> ~0,18 € en Compute Units (GPU L4 o A100).<br>• <strong>Tiempo total de inferencia:</strong> ~2,5 minutos con WakeGPU."
+              data-en="• <strong>Title:</strong> 'The Detective in the Neon Alley' (Neo-Noir / Cyberpunk).<br>• <strong>Structure:</strong> 3 chained 5-second shots (15 seconds total, 16:9 widescreen).<br>• <strong>Estimated Colab Cost:</strong> ~€0.18 in Compute Units (L4 or A100 GPU).<br>• <strong>Total Inference Time:</strong> ~2.5 minutes with WakeGPU.">
+          • <strong>Título:</strong> «La detective en el callejón de neón» (Género Neo-Noir / Cyberpunk).<br>• <strong>Estructura:</strong> 3 planos de 5 segundos encadenados (15 segundos en total, 16:9 widescreen).<br>• <strong>Coste estimado en Colab:</strong> ~0,18 € en Compute Units (GPU L4 o A100).<br>• <strong>Tiempo total de inferencia:</strong> ~2,5 minutos con WakeGPU.
+        </span>
+      </div>
+
+      <h3 data-es="Paso 1: Bloquear la identidad del personaje (Character Lock)" data-en="Step 1: Lock Character Identity (Character Lock)">Paso 1: Bloquear la identidad del personaje (Character Lock)</h3>
+      <p data-es="Antes de gastar cómputo en vídeo, generamos una imagen maestra fija del personaje con Flux o SDXL (en la pestaña IA de WakeGPU). Esta imagen servirá de referencia visual absoluta para que el modelo nunca cambie sus rasgos faciales ni su vestuario:"
+         data-en="Before spending compute on video, generate a master still image of the character with Flux or SDXL (in WakeGPU's AI tab). This image serves as the ground truth visual anchor so the model never morphs her facial features or outfit:">
+        Antes de gastar cómputo en vídeo, generamos una imagen maestra fija del personaje con Flux o SDXL (en la pestaña IA de WakeGPU). Esta imagen servirá de referencia visual absoluta para que el modelo nunca cambie sus rasgos faciales ni su vestuario:
+      </p>
+      <pre><code>A high-end cinematic character portrait of S1: a 28-year-old female detective with sharp facial features, emerald green eyes, dark brown hair in an elegant messy bun with loose strands, wearing a charcoal wool trench coat with popped lapels and a burgundy silk scarf, natural skin texture, dramatic soft studio side-lighting, 8k photo.</code></pre>
+      <p data-es="Guarda la imagen generada en tu equipo como <code>personaje_base.png</code>." data-en="Save the generated still to your drive as <code>personaje_base.png</code>.">Guarda la imagen generada en tu equipo como <code>personaje_base.png</code>.</p>
+
+      <h3 data-es="Paso 2: Plano 1 (Apertura y Atmósfera · 0.0s - 5.0s)" data-en="Step 2: Shot 1 (Opening &amp; Atmosphere · 0.0s - 5.0s)">Paso 2: Plano 1 (Apertura y Atmósfera · 0.0s - 5.0s)</h3>
+      <ol>
+        <li data-es="En WakeGPU, ve a la pestaña <strong>Generar</strong> y fija la duración en <code>5 s</code>." data-en="In WakeGPU, go to the <strong>Generate</strong> tab and set the duration to <code>5 s</code>.">En WakeGPU, ve a la pestaña <strong>Generar</strong> y fija la duración en <code>5 s</code>.</li>
+        <li data-es="Selecciona el modo <code>I2VA</code> y arrastra <code>personaje_base.png</code> como imagen de referencia." data-en="Select <code>I2VA</code> mode and drop <code>personaje_base.png</code> as reference image.">Selecciona el modo <code>I2VA</code> y arrastra <code>personaje_base.png</code> como imagen de referencia.</li>
+        <li data-es="Pega el prompt cinematográfico del Plano 1:" data-en="Paste the cinematic prompt for Shot 1:">Pega el prompt cinematográfico del Plano 1:</li>
+      </ol>
+      <pre><code>[DURACIÓN Y FORMATO]: 5.0s, 16:9 widescreen, 24fps.
+[PERSONAJE S1]: S1 from &lt;Picture 1&gt;, 28yo female detective, charcoal wool trench coat, emerald eyes, messy dark bun.
+[ESCENARIO Y ATMÓSFERA]: Rain-slicked neo-noir alleyway at night, glowing cyan and amber neon signs reflecting in deep asphalt puddles, gentle steam rising from sewer grates.
+[TIMED BEATS]:
+- 0.0s - 2.5s: S1 walks slowly forward along the wet pavement, raindrops splashing beneath her boots; she stops and raises her chin.
+- 2.5s - 5.0s: S1 glances slightly to her right, noticing a faint flicker of light; raindrops glisten on the shoulders of her charcoal coat.
+[LENGUAJE DE CÁMARA]: 35mm anamorphic prime lens, slow smooth tracking shot moving backward at eye level, shallow depth of field, subtle chromatic flare.
+[RESTRICCIONES]: No face morphing, realistic fluid dynamics, consistent rain density, no text overlays, no anatomical distortion.</code></pre>
+      <p data-es="Haz clic en <strong>Añadir a la cola</strong>. WakeGPU procesará el primer plano y descargará <code>plano_01.mp4</code>. Extrae el último fotograma de este vídeo como <code>frame_final_01.png</code>."
+         data-en="Click <strong>Add to Queue</strong>. WakeGPU processes Shot 1 and downloads <code>plano_01.mp4</code>. Extract the last frame of this clip as <code>frame_final_01.png</code>.">
+        Haz clic en <strong>Añadir a la cola</strong>. WakeGPU procesará el primer plano y descargará <code>plano_01.mp4</code>. Extrae el último fotograma de este vídeo como <code>frame_final_01.png</code>.
+      </p>
+
+      <h3 data-es="Paso 3: Plano 2 (Transición y Acción media · 5.0s - 10.0s)" data-en="Step 3: Shot 2 (Action Progression &amp; Match-Cut · 5.0s - 10.0s)">Paso 3: Plano 2 (Transición y Acción media · 5.0s - 10.0s)</h3>
+      <p data-es="Para que el corte sea invisible, cargamos <code>frame_final_01.png</code> como fotograma de inicio (First-Frame I2V). Así la postura corporal y la luz continúan exactamente donde quedaron:"
+         data-en="To achieve an invisible cut, load <code>frame_final_01.png</code> as the starting keyframe (First-Frame I2V). Body posture and ambient lighting pick up seamlessly:">
+        Para que el corte sea invisible, cargamos <code>frame_final_01.png</code> como fotograma de inicio (First-Frame I2V). Así la postura corporal y la luz continúan exactamente donde quedaron:
+      </p>
+      <pre><code>[DURACIÓN Y FORMATO]: 5.0s, 16:9 widescreen, 24fps.
+[PERSONAJE S1]: Starting exactly from &lt;Picture 1&gt;, keep S1's exact facial likeness, hair bun and wet charcoal coat.
+[ESCENARIO Y ATMÓSFERA]: Same rainy alleyway; an amber neon sign buzzes softly above, casting warm light on S1's profile.
+[TIMED BEATS]:
+- 0.0s - 2.5s: Close-up on S1 pulling a brass pocket watch from her trench coat, thumb clicking the latch open.
+- 2.5s - 5.0s: The pocket watch face reflects the flickering amber neon; S1's emerald eyes narrow in realization.
+[LENGUAJE DE CÁMARA]: 85mm portrait telephoto lens, slow push-in from medium shot to tight close-up, razor-sharp focus on the watch dial.
+[RESTRICCIONES]: Smooth hand motion, realistic metallic reflections, no warping of hands or numbers, continuous rain.</code></pre>
+      <p data-es="Pulsa <strong>Añadir a la cola</strong>. Se descargará <code>plano_02.mp4</code>. Extrae su último fotograma como <code>frame_final_02.png</code>."
+         data-en="Click <strong>Add to Queue</strong>. <code>plano_02.mp4</code> downloads. Extract its last frame as <code>frame_final_02.png</code>.">
+        Pulsa <strong>Añadir a la cola</strong>. Se descargará <code>plano_02.mp4</code>. Extrae su último fotograma como <code>frame_final_02.png</code>.
+      </p>
+
+      <h3 data-es="Paso 4: Plano 3 (Clímax y Despedida · 10.0s - 15.0s)" data-en="Step 4: Shot 3 (Climax &amp; Outro · 10.0s - 15.0s)">Paso 4: Plano 3 (Clímax y Despedida · 10.0s - 15.0s)</h3>
+      <p data-es="Cargamos <code>frame_final_02.png</code> como imagen de inicio y pegamos el prompt de desenlace:"
+         data-en="Load <code>frame_final_02.png</code> as start image and paste the climax prompt:">
+        Cargamos <code>frame_final_02.png</code> como imagen de inicio y pegamos el prompt de desenlace:
+      </p>
+      <pre><code>[DURACIÓN Y FORMATO]: 5.0s, 16:9 widescreen, 24fps.
+[PERSONAJE S1]: S1 from &lt;Picture 1&gt;, closing the watch and looking up sharply into the distance.
+[ESCENARIO Y ATMÓSFERA]: Heavy downpour intensifies; headlights of an approaching vintage sedan sweep golden light beams through the alley mist.
+[TIMED BEATS]:
+- 0.0s - 2.5s: S1 snaps the watch shut and turns with urgent purpose towards the alley exit.
+- 2.5s - 5.0s: Camera pulls back rapidly as the headlights engulf her silhouette in brilliant backlighting; fade to black.
+[LENGUAJE DE CÁMARA]: 50mm anamorphic lens, fast dynamic dolly-out tracking her exit, intense anamorphic lens flare.
+[RESTRICCIONES]: Consistent wet coat physics, volumetric light beams, no artifacting in high-contrast backlight.</code></pre>
+
+      <h3 data-es="Paso 5: Ensamblaje Lossless en 1 segundo (FFmpeg)" data-en="Step 5: 1-Second Lossless Assembly (FFmpeg)">Paso 5: Ensamblaje Lossless en 1 segundo (FFmpeg)</h3>
+      <p data-es="Con los tres planos generados en tu carpeta local, los unimos de forma instantánea sin perder ni un píxel de calidad (sin re-compresión):"
+         data-en="With all three clips in your local folder, stitch them instantly without losing a single pixel of quality (no re-encoding):">
+        Con los tres planos generados en tu carpeta local, los unimos de forma instantánea sin perder ni un píxel de calidad (sin re-compresión):
+      </p>
+      <pre><code># 1. Crear el archivo de lista de clips
+printf "file 'plano_01.mp4'\nfile 'plano_02.mp4'\nfile 'plano_03.mp4'\n" > clips.txt
+
+# 2. Concatenar los 3 clips de forma instantánea (lossless):
+ffmpeg -f concat -safe 0 -i clips.txt -c copy corto_15s_completo.mp4
+
+# 3. (Opcional) Mezclar con audio ambiental de lluvia y música noir:
+ffmpeg -i corto_15s_completo.mp4 -i audio_lluvia_noir.mp3 \
+  -c:v copy -c:a aac -shortest corto_final_con_audio.mp4</code></pre>
+
+      <div class="callout pro">
+        <strong data-es="💡 Ventaja WakeGPU con Guardián Zero-Waste:" data-en="💡 The WakeGPU Zero-Waste Advantage:">💡 Ventaja WakeGPU con Guardián Zero-Waste:</strong><br>
+        <span data-es="Puedes preparar los 3 planos tranquilamente con la GPU apagada (0 CU/h). Al enviarlos en cola, WakeGPU despierta la máquina, procesa los 3 clips seguidos y el Guardián Zero-Waste apaga la GPU en cuanto termina el tercer render, ahorrándote más del 70% de créditos de Google Colab."
+              data-en="You can draft all 3 shot prompts with the GPU turned off (0 CU/h). When sent to the queue, WakeGPU wakes the instance, renders the 3 clips back-to-back, and Zero-Waste Guardian immediately halts the GPU when the final job completes, saving over 70% in Google Colab credits.">
+          Puedes preparar los 3 planos tranquilamente con la GPU apagada (0 CU/h). Al enviarlos en cola, WakeGPU despierta la máquina, procesa los 3 clips seguidos y el Guardián Zero-Waste apaga la GPU en cuanto termina el tercer render, ahorrándote más del 70% de créditos de Google Colab.
+        </span>
+      </div>
     </section>
   </main>
 </div>
