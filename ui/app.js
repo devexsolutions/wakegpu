@@ -2280,9 +2280,11 @@ if ($("#btnVisualCompiler")) {
         $("#studioStatusSub").textContent = "Esto suele tardar 1-2 minutos la primera vez. Puedes relajarte, WakeGPU se encarga de todo.";
         $("#studioProgFill").style.width = "35%";
         const videoProf = (profiles && profiles.profiles && profiles.profiles.find(p => /h3|video|wan|hunyuan/i.test(p.id))) || (profiles && profiles.profiles && profiles.profiles[0]);
+        const hasBal = gst && gst.cu && gst.cu.balance > 0;
+        const targetAcc = hasBal ? ((videoProf && videoProf.accelerator) || "L4") : "T4";
         if (videoProf && $("#wakeProfile")) $("#wakeProfile").value = videoProf.id;
-        if ($("#wakeAcc") && videoProf && videoProf.accelerator) $("#wakeAcc").value = videoProf.accelerator;
-        await api("/api/wake", { json: { profile: videoProf ? videoProf.id : "minimax-h3", accelerator: (videoProf && videoProf.accelerator) || "L4" } });
+        if ($("#wakeAcc")) $("#wakeAcc").value = targetAcc;
+        await api("/api/wake", { json: { profile: videoProf ? videoProf.id : "minimax-h3", accelerator: targetAcc } });
 
         // Esperar hasta que esté running (máximo ~4 min)
         for (let i = 0; i < 80; i++) {

@@ -34,13 +34,19 @@ type ColabError struct {
 func (e *ColabError) Error() string {
 	switch e.Status {
 	case 401, 403:
-		return fmt.Sprintf("Colab 拒绝访问（%d），请重新登录 Google", e.Status)
+		return fmt.Sprintf("Colab denegó el acceso (%d). Vuelve a iniciar sesión con tu cuenta de Google.", e.Status)
 	case 412:
-		return "Colab 拒绝分配（可能已有太多运行中的会话，或这种 GPU 暂时没有额度/库存）"
+		return "Colab rechazó la asignación (es posible que ya tengas demasiadas sesiones abiertas o no haya stock temporalmente de esta GPU)."
 	case 400:
-		return "Colab 拒绝了这种 GPU（账号可能没有这个型号的权限或额度）：" + truncate(e.Body, 200)
+		if strings.Contains(e.Body, "<html") || strings.Contains(e.Body, "<!DOCTYPE") {
+			return "Google Colab rechazó esta GPU (con saldo 0 CU solo está disponible la GPU T4; las GPUs L4/A100 requieren Compute Units)."
+		}
+		return "Colab rechazó esta GPU (tu cuenta no tiene saldo o permisos para este modelo): " + truncate(e.Body, 200)
 	}
-	return fmt.Sprintf("Colab 返回 %d：%s", e.Status, truncate(e.Body, 200))
+	if strings.Contains(e.Body, "<html") || strings.Contains(e.Body, "<!DOCTYPE") {
+		return fmt.Sprintf("Colab devolvió error HTTP %d.", e.Status)
+	}
+	return fmt.Sprintf("Colab devolvió %d: %s", e.Status, truncate(e.Body, 200))
 }
 
 type ProxyInfo struct {

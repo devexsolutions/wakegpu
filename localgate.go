@@ -540,7 +540,7 @@ func (g *LocalGate) allocateGPU(ctx context.Context, accel string) (*Assignment,
 			return nil, fmt.Errorf("CU 余额 %.2f，不足 %s 的本地启动预留额度 %.0f CU（约 1 小时）。请充值或选择其他 GPU；尚未申请 GPU", cu.Balance, accel, minimum)
 		}
 	}
-	g.logLine(fmt.Sprintf("申请 Colab %s GPU …（最多等待 3 分钟）", accel))
+	g.logLine(fmt.Sprintf("Solicitando GPU %s en Colab… (espera máx. 3 min)", accel))
 	return colabAssign(ctx, accel)
 }
 
