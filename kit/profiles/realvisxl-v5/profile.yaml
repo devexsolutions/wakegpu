@@ -1,6 +1,6 @@
 # RealVisXL V5.0 (SDXL, photorealism) for the workbench "AI" page text-to-image panel. ~7 GB, any GPU.
 id: realvisxl-v5
-title: RealVisXL V5.0 · 写实生图
+title: RealVisXL V5.0 · Imagen fotorrealista
 accelerator: L4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI

@@ -236,6 +236,22 @@ func listTemplates() []*Template {
 	return out
 }
 
+func sanitizeTemplate(t *Template) {
+	if t == nil {
+		return
+	}
+	t.Name = translateTitle(t.Name)
+	t.Name = strings.ReplaceAll(t.Name, "AI 生图", "Imagen IA")
+	t.Name = strings.ReplaceAll(t.Name, "生图", "Generación")
+	for _, n := range t.Graph {
+		if m, ok := n["_meta"].(map[string]any); ok {
+			if title, ok := m["title"].(string); ok {
+				m["title"] = translateTitle(title)
+			}
+		}
+	}
+}
+
 func loadTemplate(id string) (*Template, error) {
 	if strings.ContainsAny(id, `/\.`) {
 		return nil, errors.New("bad id")
@@ -248,6 +264,7 @@ func loadTemplate(id string) (*Template, error) {
 	if err := json.Unmarshal(b, &t); err != nil {
 		return nil, err
 	}
+	sanitizeTemplate(&t)
 	return &t, nil
 }
 

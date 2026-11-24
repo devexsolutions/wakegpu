@@ -1,7 +1,7 @@
 # Huihui Qwen3.8 27B abliterated (GGUF Q8_0, 29 GB) served by Ollama for the workbench "AI" page.
 # Needs >= 40 GB VRAM: G4 / A100 / H100 (L4 and T4 are too small).
 id: qwen38-27b-chat
-title: Qwen3.8 27B abliterated · Q8_0 对话
+title: Qwen3.8 27B abliterated · Chat Q8_0
 accelerator: G4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI

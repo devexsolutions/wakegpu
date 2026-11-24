@@ -1,5 +1,5 @@
 id: minimax-h3
-title: MiniMax H3 · 文生视频
+title: MiniMax H3 · Texto a vídeo
 accelerator: G4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI
@@ -48,7 +48,7 @@ models:
   core: true
 workflows:
 - id: h3-t2v
-  title: MiniMax H3 文生视频 (official)
+  title: MiniMax H3 Texto a vídeo (official)
   source: https://github.com/Comfy-Org/workflow_templates
   license: MIT template; weights under MiniMax H3 Community License
   url: https://raw.githubusercontent.com/Comfy-Org/workflow_templates/main/templates/video_minimax_h3_t2v.json

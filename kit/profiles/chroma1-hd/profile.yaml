@@ -1,7 +1,7 @@
 # Chroma1-HD (8.9B, FLUX.1-schnell based, Apache 2.0) for the workbench "AI" page text-to-image panel.
 # bf16 model 17.8 GB + T5-XXL fp16 9.8 GB + FLUX VAE; same graph as the official ComfyUI template.
 id: chroma1-hd
-title: Chroma1-HD · 生图
+title: Chroma1-HD · Generación de imagen
 accelerator: G4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI

@@ -420,9 +420,40 @@ function connectEvents() {
 }
 
 // ---------------- templates & form ----------------
+function cleanCN(s) {
+  if (!s || typeof s !== "string") return s || "";
+  return s
+    .replace(/AI\s*生图/gi, "Imagen IA")
+    .replace(/生图/g, "Generación")
+    .replace(/写实/g, "Fotorrealista")
+    .replace(/文生视频/g, "Texto a vídeo")
+    .replace(/对话/g, "Chat")
+    .replace(/正向提示词(\s*\(Positive Prompt\))?/g, "Prompt Positivo")
+    .replace(/反向提示词(\s*\(Negative Prompt\))?/g, "Prompt Negativo")
+    .replace(/负面提示词(\s*\(Negative Prompt\))?/g, "Prompt Negativo")
+    .replace(/画布/g, "Lienzo")
+    .replace(/采样/g, "Muestreo")
+    .replace(/模型/g, "Modelo")
+    .replace(/解码/g, "Decodificador")
+    .replace(/保存图片/g, "Guardar imagen")
+    .replace(/随机种子(\s*\(Seed\))?/g, "Semilla aleatoria")
+    .replace(/文本提示词/g, "Prompt")
+    .replace(/参数配置/g, "Configuración")
+    .replace(/高清修复/g, "Auto-HD");
+}
+
 let templates = [], curTpl = null, lastJobForm = null;
 async function loadTemplates(selectId) {
   templates = await api("/api/templates");
+  templates.forEach(t => {
+    t.name = cleanCN(t.name);
+    if (t.fields) {
+      t.fields.forEach(f => {
+        f.node_name = cleanCN(f.node_name);
+        f.label_cn = cleanCN(f.label_cn);
+      });
+    }
+  });
   const list = $("#tplList");
   list.innerHTML = templates.length ? templates.map(t => `<button data-id="${t.id}"><b>${esc(t.name)}</b><small>${t.nodes} nodos · ${t.fields.filter(f => f.primary).length} parámetros principales</small></button>`).join("") : `<div class="tpl-empty"><p class="muted small" data-i18n="gen_no_templates">Aún no hay plantillas. Puedes usar los modelos integrados en la pestaña IA o importar tu propio flujo de ComfyUI:</p>
       <button class="btn sm block" data-empty="ai">Ir a IA con modelos integrados</button>
@@ -493,7 +524,7 @@ function renderForm(values) {
   $("#formEmpty").hidden = !!curTpl; $("#genForm").hidden = !curTpl;
   $("#btnRename").hidden = $("#btnDelTpl").hidden = $("#btnResetForm").hidden = !curTpl;
   if (!curTpl) { $("#formTitle").textContent = i18n.t("gen_parameters"); return; }
-  $("#formTitle").textContent = curTpl.name;
+  $("#formTitle").textContent = cleanCN(curTpl.name);
   const prim = curTpl.fields.filter(f => f.primary);
   const adv = curTpl.fields.filter(f => !f.primary);
   const v = values || {};
@@ -505,7 +536,7 @@ function renderForm(values) {
   // advanced grouped by node
   let html = "", last = "";
   for (const f of adv) {
-    if (f.node !== last) { if (last) html += "</div>"; html += `<div class="node">#${esc(f.node)} ${esc(f.node_name)}</div><div class="f-grid">`; last = f.node; }
+    if (f.node !== last) { if (last) html += "</div>"; html += `<div class="node">#${esc(f.node)} ${esc(cleanCN(f.node_name))}</div><div class="f-grid">`; last = f.node; }
     html += fieldHTML(f, v, false);
   }
   if (last) html += "</div>";
@@ -531,9 +562,9 @@ function fieldHTML(f, v, primary) {
   const id = fieldId(f.key);
   const base = f.rec !== undefined && f.rec !== null ? f.rec : f.default;
   const val = v[f.key] !== undefined ? v[f.key] : base;
-  const name = f.label_cn || (primary ? f.node_name : f.input);
-  const sub = f.label_cn ? (primary && !/^Primitive/.test(f.class || "") ? f.node_name : "") : (primary ? f.input : "");
-  const tip = esc([f.hint, `Nodo #${f.node} ${f.node_name} · ${f.input}`, f.rec != null ? `Recomendado: ${recText(f)}` : ""].filter(Boolean).join("\n"));
+  const name = cleanCN(f.label_cn || (primary ? f.node_name : f.input));
+  const sub = cleanCN(f.label_cn ? (primary && !/^Primitive/.test(f.class || "") ? f.node_name : "") : (primary ? f.input : ""));
+  const tip = esc([f.hint, `Nodo #${f.node} ${cleanCN(f.node_name)} · ${f.input}`, f.rec != null ? `Recomendado: ${recText(f)}` : ""].filter(Boolean).join("\n"));
   const recBtn = f.rec != null ? `<button type="button" class="x rec" data-rec="${esc(f.key)}" title="Restablecer valor recomendado" ${String(val) === String(f.rec) ? "hidden" : ""}>Recomendado ${esc(recText(f))}</button>` : "";
   const lbl = `<span class="f-lbl" title="${tip}">${esc(name)}${sub ? ` <span class="muted">· ${esc(sub)}</span>` : ""}${f.hint ? ` <i class="q">?</i>` : ""}</span>`;
   const hideBtn = primary ? `<button type="button" class="x" data-hide="${esc(f.key)}" title="Mover a parámetros avanzados">Ocultar</button>` : (curTpl.hidden || []).includes(f.key) ? `<button type="button" class="x" data-unhide="${esc(f.key)}">Destacar</button>` : "";

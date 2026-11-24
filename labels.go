@@ -171,8 +171,36 @@ func fieldRoles(g map[string]map[string]any) map[string]role {
 	return roles
 }
 
+func translateTitle(t string) string {
+	if t == "" {
+		return t
+	}
+	t = strings.ReplaceAll(t, "正向提示词 (Positive Prompt)", "Prompt Positivo")
+	t = strings.ReplaceAll(t, "正向提示词", "Prompt Positivo")
+	t = strings.ReplaceAll(t, "反向提示词 (Negative Prompt)", "Prompt Negativo")
+	t = strings.ReplaceAll(t, "反向提示词 negative", "Prompt Negativo (negative)")
+	t = strings.ReplaceAll(t, "反向提示词", "Prompt Negativo")
+	t = strings.ReplaceAll(t, "负面提示词 (Negative Prompt)", "Prompt Negativo")
+	t = strings.ReplaceAll(t, "负面提示词", "Prompt Negativo")
+	t = strings.ReplaceAll(t, "随机种子 (Seed)", "Semilla aleatoria")
+	t = strings.ReplaceAll(t, "随机种子", "Semilla aleatoria")
+	t = strings.ReplaceAll(t, "画布", "Lienzo")
+	t = strings.ReplaceAll(t, "采样", "Muestreo")
+	t = strings.ReplaceAll(t, "模型", "Modelo")
+	t = strings.ReplaceAll(t, "解码", "Decodificador")
+	t = strings.ReplaceAll(t, "保存图片", "Guardar imagen")
+	t = strings.ReplaceAll(t, "写实生图", "Imagen fotorrealista")
+	t = strings.ReplaceAll(t, "生图", "Generación de imagen")
+	t = strings.ReplaceAll(t, "文生视频", "Texto a vídeo")
+	t = strings.ReplaceAll(t, "对话", "Chat")
+	t = strings.ReplaceAll(t, "文本提示词", "Prompt")
+	t = strings.ReplaceAll(t, "参数配置", "Configuración")
+	t = strings.ReplaceAll(t, "高清修复", "Auto-HD")
+	return t
+}
+
 func nodeNameCN(n map[string]any) string {
-	t := nodeTitle(n)
+	t := translateTitle(nodeTitle(n))
 	cls, _ := n["class_type"].(string)
 	if t == cls || t == "" {
 		if cn, ok := classCN[cls]; ok {

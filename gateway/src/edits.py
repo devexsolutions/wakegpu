@@ -735,7 +735,7 @@ PROFILE_QWEN = """\
 # Huihui Qwen3.8 27B abliterated (GGUF Q8_0, 29 GB) served by Ollama for the workbench "AI" page.
 # Needs >= 40 GB VRAM: G4 / A100 / H100 (L4 and T4 are too small).
 id: qwen38-27b-chat
-title: Qwen3.8 27B abliterated · Q8_0 对话
+title: Qwen3.8 27B abliterated · Chat Q8_0
 accelerator: G4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI
@@ -763,7 +763,7 @@ ai:
 PROFILE_REALVIS = """\
 # RealVisXL V5.0 (SDXL, photorealism) for the workbench "AI" page text-to-image panel. ~7 GB, any GPU.
 id: realvisxl-v5
-title: RealVisXL V5.0 · 写实生图
+title: RealVisXL V5.0 · Imagen fotorrealista
 accelerator: L4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI
@@ -795,7 +795,7 @@ PROFILE_CHROMA = """\
 # Chroma1-HD (8.9B, FLUX.1-schnell based, Apache 2.0) for the workbench "AI" page text-to-image panel.
 # bf16 model 17.8 GB + T5-XXL fp16 9.8 GB + FLUX VAE; same graph as the official ComfyUI template.
 id: chroma1-hd
-title: Chroma1-HD · 生图
+title: Chroma1-HD · Generación de imagen
 accelerator: G4
 comfyui:
   repo: https://github.com/comfyanonymous/ComfyUI
