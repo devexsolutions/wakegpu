@@ -1,5 +1,9 @@
 # 更新日志
 
+## v1.22.3
+
+- **Interfaz 100% Open Source (MIT)**: Eliminadas todas las etiquetas, insignias (`Pro Activo`, `Pro`) y menús residuales de planes de pago en la barra lateral, pestaña Generar y Ajustes. Todas las capacidades avanzadas vienen desbloqueadas de serie.
+
 ## v1.22.2
 
 - **Perfil gratuito `Wan 2.1 1.3B (T4 Gratis)`**: Nuevo perfil nativo (~9.8 GB en total) que cabe en la GPU T4 gratuita de Google Colab (15 GB VRAM) con `0.0 CU`.

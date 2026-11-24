@@ -614,38 +614,10 @@ function collectValues(forRender) {
 
 $("#genForm").onsubmit = e => { e.preventDefault(); submitJob(false); };
 $("#btnDraft").onclick = () => submitJob(true);
-const chkAutoHires = $("#chkAutoHires");
-if (chkAutoHires) {
-  chkAutoHires.addEventListener("click", e => {
-    if ((!currentLicense || !currentLicense.is_pro) && chkAutoHires.checked) {
-      e.preventDefault();
-      chkAutoHires.checked = false;
-      openLicenseModal("El pipeline encadenado Auto-HD es una función exclusiva de WakeGPU Pro. Te permite generar automáticamente la versión final de alta resolución tras validar el borrador.");
-    }
-  });
-}
-const jobCountInp = $("#jobCount");
-if (jobCountInp) {
-  jobCountInp.addEventListener("change", () => {
-    if ((!currentLicense || !currentLicense.is_pro) && parseInt(jobCountInp.value) > 1) {
-      jobCountInp.value = "1";
-      openLicenseModal("La generación simultánea por lotes (más de 1 copia) es una función exclusiva de WakeGPU Pro. Puedes generar hasta 50 variantes en un solo clic.");
-    }
-  });
-}
 async function submitJob(draft) {
   $("#genErr").textContent = "";
   const count = parseInt($("#jobCount").value) || 1;
   const autoHires = $("#chkAutoHires") ? $("#chkAutoHires").checked : false;
-
-  if (count > 1 && (!currentLicense || !currentLicense.is_pro)) {
-    openLicenseModal("La generación simultánea por lotes (más de 1 copia) es una función de WakeGPU Pro. Te permite generar variantes con semillas aleatorias automáticamente.");
-    return;
-  }
-  if (autoHires && (!currentLicense || !currentLicense.is_pro)) {
-    openLicenseModal("El pipeline encadenado Auto-HD es una función de WakeGPU Pro. Ejecuta la prueba rápida y, si tiene éxito, lanza automáticamente el escalado en alta resolución sin que tengas que esperar frente al ordenador.");
-    return;
-  }
 
   const mismatch = templateProfileMismatch(curTpl);
   if (mismatch) { $("#genErr").textContent = mismatch; return; }
@@ -1483,60 +1455,20 @@ $("#btnUpdCheck").onclick = async () => { await $("#setForm").onsubmit({ prevent
 setTimeout(() => checkUpdate(false), 5000);
 setInterval(() => checkUpdate(false), 6 * 3600 * 1000);
 
-// ---------------- licensing & freemium ----------------
-let currentLicense = { tier: "free", is_pro: false, key: "", email: "", expires_text: "Plan Free", features: [] };
+// ---------------- open source edition (100% unlocked) ----------------
+let currentLicense = { tier: "oss", is_pro: true, key: "", email: "", expires_text: "Open Source · MIT", features: [] };
 
 async function loadLicense() {
-  try { currentLicense = await api("/api/license"); }
-  catch (e) { currentLicense = { tier: "free", is_pro: false, key: "", email: "", expires_text: "Plan Free", features: [] }; }
+  try { currentLicense = await api("/api/license"); currentLicense.is_pro = true; }
+  catch (e) { currentLicense = { tier: "oss", is_pro: true, key: "", email: "", expires_text: "Open Source · MIT", features: [] }; }
   renderLicenseUI();
 }
 
 function renderLicenseUI() {
-  const isPro = currentLicense && currentLicense.is_pro;
-  const tierName = isPro ? (currentLicense.tier === "studio" ? i18n.t("sec_license_status_pro") : i18n.t("sec_license_status_pro")) : i18n.t("sec_license_status_free");
-
   const sidePill = $("#sideTierPill");
   if (sidePill) {
-    sidePill.className = "pill sm " + (isPro ? "pro" : "free");
-    sidePill.textContent = tierName;
-  }
-  const sideUp = $("#btnSideUpgrade");
-  if (sideUp) sideUp.hidden = isPro;
-
-  const licPill = $("#licPill");
-  if (licPill) {
-    licPill.className = "pill sm " + (isPro ? "pro" : "free");
-    licPill.textContent = isPro ? i18n.t("sec_license_status_pro") : i18n.t("sec_license_status_free");
-  }
-  const desc = $("#licTierDesc");
-  if (desc) desc.textContent = tierName;
-
-  const exp = $("#licExpiresText");
-  if (exp) exp.textContent = currentLicense.expires_text || "";
-
-  const ver = $("#licVerifyText");
-  if (ver) ver.textContent = (isPro && currentLicense.verified_text) ? currentLicense.verified_text : "";
-
-  const em = $("#licEmailText");
-  if (em) em.textContent = currentLicense.email ? `Titular: ${currentLicense.email} · Clave: ${currentLicense.key}` : "";
-
-  const btnDeact = $("#btnLicDeactivate");
-  if (btnDeact) btnDeact.hidden = !isPro;
-
-  const btnModal = $("#btnLicModal");
-  if (btnModal) btnModal.textContent = isPro ? "Cambiar clave" : "Activar clave";
-
-  const btnSub = $("#btnSubscribePro");
-  if (btnSub) btnSub.hidden = isPro;
-
-  const cta = $("#licCtaBanner");
-  if (cta) cta.hidden = isPro;
-
-  const zwPill = $("#zwStatusPill");
-  if (zwPill) {
-    zwPill.className = "pill sm " + (isPro ? "zw" : "free");
-    zwPill.textContent = isPro ? "Pro Activo" : "Requiere Pro";
+    sidePill.className = "pill sm ok";
+    sidePill.textContent = i18n.t("side_tier_oss") || "Open Source · MIT";
   }
 }
 
@@ -1688,21 +1620,6 @@ async function loadSettings() {
   const ds = f.elements.draft_scale; if (![...ds.options].some(o => +o.value === +r.config.draft_scale)) ds.add(new Option(Math.round(r.config.draft_scale * 100) + "%", r.config.draft_scale)); ds.value = String(r.config.draft_scale);
   draftHint();
 
-  const zwChk = $("#zwEnabled");
-  if (zwChk) {
-    zwChk.onchange = async () => {
-      if (zwChk.checked && !currentLicense.is_pro) {
-        zwChk.checked = false;
-        const act = await appDialog({
-          title: "Característica Pro: Zero-Waste Watchdog",
-          message: i18n.t("sec_license_zw_feature_msg"),
-          buttons: [{ value: "activate", label: "Activar Pro ahora", primary: true }, { value: "cancel", label: "Más tarde" }]
-        });
-        if (act === "activate") openLicenseModal();
-      }
-    };
-  }
-
   return r.config;
 }
 $("#setForm").onsubmit = async e => {
@@ -1751,9 +1668,6 @@ $("#btnPair").onclick = async () => {
 const bNotify = $("#btnNotifyTest");
 if (bNotify) {
   bNotify.onclick = async () => {
-    if (!currentLicense || !currentLicense.is_pro) {
-      return openLicenseModal("Las notificaciones remotas en Discord y Telegram son una función exclusiva de WakeGPU Pro.");
-    }
     const msg = $("#notifyTestMsg");
     msg.textContent = "Enviando notificación de prueba...";
     try {
@@ -1768,9 +1682,6 @@ if (bNotify) {
 const bSyncExp = $("#btnSyncExport");
 if (bSyncExp) {
   bSyncExp.onclick = async () => {
-    if (!currentLicense || !currentLicense.is_pro) {
-      return openLicenseModal("La exportación y sincronización de bibliotecas en la nube es una función exclusiva de WakeGPU Pro.");
-    }
     window.location.href = "/api/sync/export";
   };
 }
@@ -1778,10 +1689,6 @@ if (bSyncExp) {
 const fSyncImp = $("#syncImportFile");
 if (fSyncImp) {
   fSyncImp.onchange = async () => {
-    if (!currentLicense || !currentLicense.is_pro) {
-      fSyncImp.value = "";
-      return openLicenseModal("La importación y sincronización de bibliotecas en la nube es una función exclusiva de WakeGPU Pro.");
-    }
     if (!fSyncImp.files || !fSyncImp.files[0]) return;
     const file = fSyncImp.files[0];
     const fd = new FormData();
