@@ -1788,9 +1788,6 @@ function renderUsage() {
 }
 // ---------------- Mobile PWA Pairing Modal ----------------
 async function openMobileModal() {
-  if (!currentLicense || !currentLicense.is_pro) {
-    return openLicenseModal("El Control Móvil (PWA + emparejamiento por QR) es una función exclusiva de WakeGPU Pro.");
-  }
   let st = null;
   try {
     st = await api("/api/mobile/status");

@@ -128,7 +128,7 @@ func getMobileStatus() MobileStatus {
 
 func startMobileServer(withTunnel bool) (MobileStatus, error) {
 	if !IsPro() {
-		return MobileStatus{}, errors.New("El Control Móvil (PWA + QR) requiere una licencia WakeGPU Pro activa.")
+		return MobileStatus{}, errors.New("El Control Móvil (PWA + QR) requiere activar el servicio.")
 	}
 	mobMu.Lock()
 	if mobLn == nil {
@@ -258,7 +258,7 @@ func registerMobileRoutes(api *http.ServeMux) {
 	})
 	api.HandleFunc("POST /api/mobile/rotate", func(w http.ResponseWriter, r *http.Request) {
 		if !IsPro() {
-			errOut(w, http.StatusForbidden, errors.New("requiere WakeGPU Pro"))
+			errOut(w, http.StatusForbidden, errors.New("requiere servicio activo"))
 			return
 		}
 		mobMu.Lock()
@@ -479,11 +479,11 @@ func generateQRSVG(text string) string {
 		}
 	}
 
-	// Render compact SVG
+	// Render compact SVG with explicit styles and attributes to prevent global CSS stroke inheritance
 	margin := 3
 	dim := n + margin*2
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" shape-rendering="crispEdges"><rect width="%d" height="%d" fill="#ffffff"/><path fill="#000000" d="`, dim, dim, dim, dim)
+	fmt.Fprintf(&buf, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" shape-rendering="crispEdges" style="stroke:none;fill:none"><rect width="%d" height="%d" fill="#ffffff" stroke="none" stroke-width="0"/><path fill="#000000" stroke="none" stroke-width="0" d="`, dim, dim, dim, dim)
 	for r := 0; r < n; r++ {
 		for c := 0; c < n; c++ {
 			if mat[r][c] == 1 {

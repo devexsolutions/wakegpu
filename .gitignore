@@ -33,3 +33,4 @@ profile.cov
 
 # Env file
 .env
+.hallmark/
