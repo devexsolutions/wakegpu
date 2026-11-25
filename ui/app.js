@@ -645,10 +645,38 @@ function collectValues(forRender) {
 
 $("#genForm").onsubmit = e => { e.preventDefault(); submitJob(false); };
 $("#btnDraft").onclick = () => submitJob(true);
+const chkAutoHires = $("#chkAutoHires");
+if (chkAutoHires) {
+  chkAutoHires.addEventListener("click", e => {
+    if ((!currentLicense || !currentLicense.is_pro) && chkAutoHires.checked) {
+      e.preventDefault();
+      chkAutoHires.checked = false;
+      openLicenseModal("El pipeline encadenado Auto-HD es una función exclusiva de WakeGPU Pro. Te permite generar automáticamente la versión final de alta resolución tras validar el borrador.");
+    }
+  });
+}
+const jobCountInp = $("#jobCount");
+if (jobCountInp) {
+  jobCountInp.addEventListener("change", () => {
+    if ((!currentLicense || !currentLicense.is_pro) && parseInt(jobCountInp.value) > 1) {
+      jobCountInp.value = "1";
+      openLicenseModal("La generación simultánea por lotes (más de 1 copia) es una función exclusiva de WakeGPU Pro. Puedes generar hasta 50 variantes en un solo clic.");
+    }
+  });
+}
 async function submitJob(draft) {
   $("#genErr").textContent = "";
   const count = parseInt($("#jobCount").value) || 1;
   const autoHires = $("#chkAutoHires") ? $("#chkAutoHires").checked : false;
+
+  if (count > 1 && (!currentLicense || !currentLicense.is_pro)) {
+    openLicenseModal("La generación simultánea por lotes (más de 1 copia) es una función de WakeGPU Pro. Te permite generar variantes con semillas aleatorias automáticamente.");
+    return;
+  }
+  if (autoHires && (!currentLicense || !currentLicense.is_pro)) {
+    openLicenseModal("El pipeline encadenado Auto-HD es una función de WakeGPU Pro. Ejecuta la prueba rápida y, si tiene éxito, lanza automáticamente el escalado en alta resolución sin que tengas que esperar frente al ordenador.");
+    return;
+  }
 
   const mismatch = templateProfileMismatch(curTpl);
   if (mismatch) { $("#genErr").textContent = mismatch; return; }
@@ -1486,20 +1514,60 @@ $("#btnUpdCheck").onclick = async () => { await $("#setForm").onsubmit({ prevent
 setTimeout(() => checkUpdate(false), 5000);
 setInterval(() => checkUpdate(false), 6 * 3600 * 1000);
 
-// ---------------- open source edition (100% unlocked) ----------------
-let currentLicense = { tier: "oss", is_pro: true, key: "", email: "", expires_text: "Open Source · MIT", features: [] };
+// ---------------- licensing & freemium ----------------
+let currentLicense = { tier: "free", is_pro: false, key: "", email: "", expires_text: "Plan Free", features: [] };
 
 async function loadLicense() {
-  try { currentLicense = await api("/api/license"); currentLicense.is_pro = true; }
-  catch (e) { currentLicense = { tier: "oss", is_pro: true, key: "", email: "", expires_text: "Open Source · MIT", features: [] }; }
+  try { currentLicense = await api("/api/license"); }
+  catch (e) { currentLicense = { tier: "free", is_pro: false, key: "", email: "", expires_text: "Plan Free", features: [] }; }
   renderLicenseUI();
 }
 
 function renderLicenseUI() {
+  const isPro = currentLicense && currentLicense.is_pro;
+  const tierName = isPro ? (currentLicense.tier === "studio" ? "Plan Studio" : "WakeGPU Pro") : "Plan Free";
+
   const sidePill = $("#sideTierPill");
   if (sidePill) {
-    sidePill.className = "pill sm ok";
-    sidePill.textContent = i18n.t("side_tier_oss") || "Open Source · MIT";
+    sidePill.className = "pill sm " + (isPro ? "pro" : "free");
+    sidePill.textContent = tierName;
+  }
+  const sideUp = $("#btnSideUpgrade");
+  if (sideUp) sideUp.hidden = isPro;
+
+  const licPill = $("#licPill");
+  if (licPill) {
+    licPill.className = "pill sm " + (isPro ? "pro" : "free");
+    licPill.textContent = isPro ? "Pro Activo" : "Plan Free";
+  }
+  const desc = $("#licTierDesc");
+  if (desc) desc.textContent = tierName;
+
+  const exp = $("#licExpiresText");
+  if (exp) exp.textContent = currentLicense.expires_text || "";
+
+  const ver = $("#licVerifyText");
+  if (ver) ver.textContent = (isPro && currentLicense.verified_text) ? currentLicense.verified_text : "";
+
+  const em = $("#licEmailText");
+  if (em) em.textContent = currentLicense.email ? `Titular: ${currentLicense.email} · Clave: ${currentLicense.key}` : "";
+
+  const btnDeact = $("#btnLicDeactivate");
+  if (btnDeact) btnDeact.hidden = !isPro;
+
+  const btnModal = $("#btnLicModal");
+  if (btnModal) btnModal.textContent = isPro ? "Cambiar clave" : "Activar clave";
+
+  const btnSub = $("#btnSubscribePro");
+  if (btnSub) btnSub.hidden = isPro;
+
+  const cta = $("#licCtaBanner");
+  if (cta) cta.hidden = isPro;
+
+  const zwPill = $("#zwStatusPill");
+  if (zwPill) {
+    zwPill.className = "pill sm " + (isPro ? "zw" : "free");
+    zwPill.textContent = isPro ? "Pro Activo" : "Requiere Pro";
   }
 }
 
@@ -1539,6 +1607,16 @@ function openLicenseModal(reason) {
           <td><b>Consumo Colab (Zero-Waste)</b></td>
           <td>30 min inactivo obligado</td>
           <td>⚡ Apagado automático al terminar cola</td>
+        </tr>
+        <tr>
+          <td><b>Coding Agent (VS Code / Cline)</b></td>
+          <td>No disponible</td>
+          <td>⚡ Conexión ilimitada por proxy OpenAI sin rate limits</td>
+        </tr>
+        <tr>
+          <td><b>Control Móvil (PWA + QR)</b></td>
+          <td>Solo escritorio</td>
+          <td>⚡ App móvil remota en red local y túnel 4G</td>
         </tr>
         <tr>
           <td><b>Lotes y Variaciones</b></td>
@@ -1819,6 +1897,9 @@ function renderUsage() {
 }
 // ---------------- Mobile PWA Pairing Modal ----------------
 async function openMobileModal() {
+  if (!currentLicense || !currentLicense.is_pro) {
+    return openLicenseModal("El Control Móvil (PWA + emparejamiento por QR) es una función exclusiva de WakeGPU Pro. Te permite supervisar y controlar el render desde tu iPhone o Android.");
+  }
   let st = null;
   try {
     st = await api("/api/mobile/status");

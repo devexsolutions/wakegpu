@@ -1,5 +1,10 @@
 # 更新日志
 
+## v1.22.4
+
+- **Modelo Freemium reactivado**: Plan Free (0 € de por vida) para arranques de GPU, generación individual de imágenes/vídeo y flujos ComfyUI.
+- **WakeGPU Pro**: Guardián Zero-Waste para auto-apagado inmediato de Colab, Agente de Código ilimitado para VS Code / Cline (proxy OpenAI sin rate limits ni telemetría), generación por lotes (hasta 50 variaciones), Auto-HD encadenado, control móvil PWA con código QR y alertas push en Discord/Telegram.
+
 ## v1.22.3
 
 - **Interfaz 100% Open Source (MIT)**: Eliminadas todas las etiquetas, insignias (`Pro Activo`, `Pro`) y menús residuales de planes de pago en la barra lateral, pestaña Generar y Ajustes. Todas las capacidades avanzadas vienen desbloqueadas de serie.

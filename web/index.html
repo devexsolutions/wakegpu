@@ -52,7 +52,7 @@
     <nav class="nav-links" aria-label="Principal">
       <a href="#funcionalidades" data-es="Funciones" data-en="Features">Funciones</a>
       <a href="#como-funciona" data-es="Cómo funciona" data-en="How it works">Cómo funciona</a>
-      <a href="#costes-cu" data-es="Costes" data-en="Costs">Costes</a>
+      <a href="#precios" data-es="Precios" data-en="Pricing">Precios</a>
       <a href="#comparativa" data-es="Comparativa" data-en="Compare">Comparativa</a>
       <a href="docs.html" data-es="Documentación" data-en="Docs">Documentación</a>
       <a href="https://github.com/devexsolutions/wakegpu" target="_blank" rel="noopener">GitHub</a>
@@ -287,7 +287,7 @@
           <tbody>
             <tr>
               <td data-es="Licencia del software" data-en="Software license">Licencia del software</td>
-              <td class="col-cobalt" data-es="0 € (Código abierto MIT)" data-en="€0 (MIT Open Source)">0 € (Código abierto MIT)</td>
+              <td class="col-cobalt" data-es="Freemium (Plan Free 0 € o Pro)" data-en="Freemium (Free €0 or Pro)">Freemium (Plan Free 0 € o Pro)</td>
               <td data-es="29 € a 99 € al mes" data-en="$29 to $99 per month">29 € a 99 € al mes</td>
             </tr>
             <tr>
@@ -312,6 +312,53 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREEMIUM PRICING TIERS -->
+  <section class="sec sec--paper" id="precios">
+    <div class="container">
+      <div class="head-split">
+        <h2 data-es="Elige el plan adaptado a tu flujo de trabajo" data-en="Choose the plan built for your workflow">Elige el plan adaptado a tu flujo de trabajo</h2>
+        <p class="lead" data-es="Empieza gratis para generar con Colab o pásate a Pro para programar sin límites y ahorrar hasta un 70 % de cómputo." data-en="Start free with Colab or upgrade to Pro to code without limits and save up to 70% in compute.">
+          Empieza gratis para generar con Colab o pásate a Pro para programar sin límites y ahorrar hasta un 70 % de cómputo.
+        </p>
+      </div>
+
+      <div class="dl-grid">
+        <div class="cut dl-card">
+          <h3 style="margin:0 0 var(--space-2xs)" data-es="WakeGPU Free" data-en="WakeGPU Free">WakeGPU Free</h3>
+          <p class="prose" style="font-size:var(--text-sm)" data-es="Ideal para probar modelos abiertos y generar imágenes y vídeos puntuales en la GPU de Colab." data-en="Ideal for testing open models and generating occasional video or images on Colab GPUs.">
+            Ideal para probar modelos abiertos y generar imágenes y vídeos puntuales en la GPU de Colab.
+          </p>
+          <div class="ruler-val" style="margin:var(--space-sm) 0">0 € <span style="font-size:var(--text-sm);font-weight:400;color:var(--color-muted)" data-es="/ para siempre" data-en="/ forever">/ para siempre</span></div>
+          <ul class="switcher-list" style="margin-top:0">
+            <li data-es="Arranque directo de GPUs Google Colab (T4 gratis, L4, A100)" data-en="Direct Google Colab GPU boot (free T4, L4, A100)">Arranque directo de GPUs Google Colab (T4 gratis, L4, A100)</li>
+            <li data-es="Generación individual de vídeo (Wan 2.1) e imagen (RealVisXL)" data-en="Single image &amp; video generation (Wan 2.1, RealVisXL)">Generación individual de vídeo (Wan 2.1) e imagen (RealVisXL)</li>
+            <li data-es="Importación de flujos ComfyUI API (.json)" data-en="ComfyUI API (.json) workflow import">Importación de flujos ComfyUI API (.json)</li>
+            <li data-es="Compilador visual de prompts cinematográficos (6 bloques)" data-en="Visual cinematic prompt compiler (6 blocks)">Compilador visual de prompts cinematográficos (6 bloques)</li>
+            <li data-es="Descarga directa automática a tu disco local" data-en="Direct automatic download to your local drive">Descarga directa automática a tu disco local</li>
+          </ul>
+          <a href="#descargar" class="btn" style="margin-top:auto" data-es="Descargar gratis" data-en="Download free">Descargar gratis</a>
+        </div>
+
+        <div class="cut dl-card dl-card--primary">
+          <h3 style="margin:0 0 var(--space-2xs)" data-es="WakeGPU Pro" data-en="WakeGPU Pro">WakeGPU Pro</h3>
+          <p class="prose" style="font-size:var(--text-sm)" data-es="Para desarrolladores que buscan un Coding Agent sin cuotas y creadores que generan lotes masivos de vídeo." data-en="For developers seeking a limit-free Coding Agent and creators running massive video batches.">
+            Para desarrolladores que buscan un Coding Agent sin cuotas y creadores que generan lotes masivos de vídeo.
+          </p>
+          <div class="ruler-val ruler-val--accent" style="margin:var(--space-sm) 0">49 € <span style="font-size:var(--text-sm);font-weight:400;color:var(--color-muted)" data-es="/ año" data-en="/ year">/ año</span></div>
+          <ul class="switcher-list" style="margin-top:0">
+            <li data-es="Guardián Zero-Waste: auto-apagado inmediato (ahorro hasta 70 % de CU)" data-en="Zero-Waste Guardian: instant auto-shutdown (save up to 70% CU)">Guardián Zero-Waste: auto-apagado inmediato (ahorro hasta 70 % de CU)</li>
+            <li data-es="Coding Agent ilimitado para VS Code / Cline sin rate limits ni telemetría" data-en="Unlimited Coding Agent for VS Code / Cline with zero rate limits or telemetry">Coding Agent ilimitado para VS Code / Cline sin rate limits ni telemetría</li>
+            <li data-es="Generación por lotes: hasta 50 variantes en cola simultáneas" data-en="Batch generation: queue up to 50 variations simultaneously">Generación por lotes: hasta 50 variantes en cola simultáneas</li>
+            <li data-es="Control móvil PWA: emparejamiento con código QR en Wi-Fi o 4G" data-en="Mobile PWA remote: QR code pairing over Wi-Fi or 4G tunnel">Control móvil PWA: emparejamiento con código QR en Wi-Fi o 4G</li>
+            <li data-es="Alertas remotas push instantáneas en Discord Webhook y Telegram Bot" data-en="Instant push alerts via Discord Webhook and Telegram Bot">Alertas remotas push instantáneas en Discord Webhook y Telegram Bot</li>
+            <li data-es="Cloud Sync &amp; Backup de prompts y flujos en un clic" data-en="1-Click Cloud Sync &amp; Backup for prompts and workflows">Cloud Sync &amp; Backup de prompts y flujos en un clic</li>
+          </ul>
+          <a href="#descargar" class="btn btn--primary" style="margin-top:auto" data-es="Obtener WakeGPU Pro" data-en="Get WakeGPU Pro">Obtener WakeGPU Pro</a>
+        </div>
       </div>
     </div>
   </section>

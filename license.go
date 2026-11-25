@@ -69,6 +69,11 @@ var defaultPlanComparison = []PlanComparison{
 		Pro:     "Auto-apagado inmediato al vaciar la cola (ahorro de hasta 70% de CU)",
 	},
 	{
+		Feature: "Agente de Código (Proxy OpenAI en VS Code)",
+		Free:    "No disponible",
+		Pro:     "Conexión ilimitada a Cline / Continue.dev con modelos Coder y total privacidad",
+	},
+	{
 		Feature: "Generación por Lotes (Batch)",
 		Free:    "1 tarea por envío (generación individual)",
 		Pro:     "Hasta 50 variantes por lote con semillas aleatorias automáticas",
@@ -77,6 +82,11 @@ var defaultPlanComparison = []PlanComparison{
 		Feature: "Pipelines Encadenados (Auto-HD)",
 		Free:    "Manual (requiere esperar y pulsar botón HD en la cola)",
 		Pro:     "Auto-HD encadenado automático (borrador ➔ HD sin esperas)",
+	},
+	{
+		Feature: "Control desde el Móvil (iOS y Android PWA + QR)",
+		Free:    "Solo uso en el escritorio",
+		Pro:     "App Web Progresiva (PWA) con conexión por código QR en Wi-Fi o túnel 4G/5G",
 	},
 	{
 		Feature: "Notificaciones Remotas en Móvil",
@@ -88,15 +98,11 @@ var defaultPlanComparison = []PlanComparison{
 		Free:    "Solo almacenamiento local",
 		Pro:     "Copia de seguridad y Cloud Sync de prompts y plantillas en 1 clic",
 	},
-	{
-		Feature: "Control desde el Móvil (iOS y Android PWA + QR)",
-		Free:    "Solo uso en el escritorio",
-		Pro:     "App Web Progresiva (PWA) con conexión por código QR en Wi-Fi o túnel 4G/5G",
-	},
 }
 
 var proFeatures = []string{
 	"zero_waste_watchdog",
+	"coding_agent_proxy",
 	"batch_generation",
 	"chained_pipelines",
 	"cloud_sync",
@@ -178,15 +184,8 @@ func verifyLicenseKey(key string) (*LicensePayload, error) {
 }
 
 // IsPro returns true if the current application configuration has a valid Pro license.
-// In this Open Source community release, all features are enabled for all users by default.
 func IsPro() bool {
 	c := getConfig()
-	if c.LicenseTier == "free" {
-		return false // test isolation
-	}
-	if c.LicenseTier == "" || c.LicenseTier == "community" {
-		return true // open-source community edition: all features unlocked by default
-	}
 	if c.LicenseTier != "pro" && c.LicenseTier != "studio" {
 		return false
 	}

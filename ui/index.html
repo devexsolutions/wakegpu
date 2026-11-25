@@ -34,7 +34,8 @@
       <h1 class="tagline" data-i18n="app_name">WakeGPU</h1>
       <p class="tagline-sub" data-i18n="tagline">Despierta GPUs en la nube bajo demanda para generar vídeo, imágenes y chat con IA.</p>
       <div class="side-tier">
-        <span class="pill sm ok" id="sideTierPill" data-i18n="side_tier_oss">Open Source · MIT</span>
+        <span class="pill sm" id="sideTierPill" data-i18n="side_tier_free">Plan Free</span>
+        <button type="button" class="btn-upgrade-side" id="btnSideUpgrade" data-i18n="side_upgrade_pro" data-i18n-title="side_upgrade_title">⚡ Mejorar a Pro</button>
       </div>
     </div>
 
@@ -312,10 +313,10 @@
 
               <div class="submit-bar">
                 <label class="fld"><span data-i18n="gen_field_title">Título de tarea</span><input id="jobTitle" data-i18n-placeholder="gen_field_title_placeholder" placeholder="Opcional, usado en el archivo"></label>
-                <label class="fld narrow" id="batchCountWrap" data-i18n-title="gen_batch_count_title" title="Generación de múltiples variantes por lote (hasta 50 copias)"><span data-i18n="gen_batch_count">Copias</span><input type="number" id="jobCount" value="1" min="1" max="50"></label>
+                <label class="fld narrow" id="batchCountWrap" data-i18n-title="gen_batch_count_title" title="Generación de variantes por lote (Pro para > 1 copia)"><span data-i18n="gen_batch_count">Copias</span><span class="tag-pro-sm" data-i18n="gen_batch_count_pro">Pro</span><input type="number" id="jobCount" value="1" min="1" max="50"></label>
                 <label class="autohd-wrap" id="autoHiresWrap" data-i18n-title="gen_auto_hires_title" title="Encadena automáticamente la versión en Alta Resolución cuando termine el borrador">
                   <input type="checkbox" id="chkAutoHires">
-                  <span><span data-i18n="gen_auto_hires">⚡ Auto-HD</span></span>
+                  <span><span data-i18n="gen_auto_hires">⚡ Auto-HD</span><span class="tag-pro-sm" data-i18n="gen_auto_hires_pro">Pro</span></span>
                 </label>
                 <div class="sb-actions">
                   <button type="button" class="btn ghost" id="btnLoadPrompt" data-i18n="gen_btn_load_prompt">Prompts guardados</button>
@@ -530,9 +531,81 @@
         <div class="card cm-card"><div id="cmList" class="cm-list"><p class="muted small" data-i18n="common_loading">Cargando…</p></div>
           <p class="hint" data-i18n="sec_custom_models_hint">Los perfiles integrados no se pueden modificar ni eliminar. Los modelos provienen de terceros; respeta sus licencias correspondientes.</p></div>
 
-        <div class="sec-h"><span class="n">12</span><b data-i18n="sec_oss_title">Edición Open Source</b><span class="d" data-i18n="sec_oss_desc">100% Gratuita y Libre (Licencia MIT)</span></div>
-        <div class="card">
-          <p class="muted small" style="margin:0" data-i18n="sec_oss_text">Todas las herramientas avanzadas (Guardián Zero-Waste, generación por lotes, Auto-HD, proxy OpenAI local, alertas Discord/Telegram y copia de seguridad) están incluidas de serie sin límites, claves ni suscripciones.</p>
+        <div class="sec-h"><span class="n">12</span><b data-i18n="sec_license">Licencia y Plan</b><span class="d" id="licTierDesc">Plan Free</span><span class="grow"></span>
+          <div class="row gap">
+            <button type="button" class="btn primary xs" id="btnSubscribePro" data-i18n="set_btn_subscribe_pro">⭐ Suscribirse a Pro</button>
+            <button type="button" class="btn ghost xs" id="btnLicModal" data-i18n="sec_license_activate">Activar clave</button>
+          </div>
+        </div>
+        <div class="card" id="licCard">
+          <div class="row between wrap gap">
+            <div>
+              <div class="row gap center"><b data-i18n="sec_license_account">Estado de la cuenta:</b> <span class="pill sm" id="licPill">Free</span> <span id="licExpiresText" class="muted small"></span></div>
+              <div class="muted small" id="licEmailText" style="margin-top:4px"></div>
+              <div class="muted small" id="licVerifyText" style="margin-top:2px"></div>
+            </div>
+            <div class="row gap">
+              <button type="button" class="btn sm" id="btnLicDeactivate" hidden data-i18n="sec_license_deactivate">Desactivar clave</button>
+            </div>
+          </div>
+
+          <div class="pro-cta-banner" id="licCtaBanner">
+            <div>
+              <h4 data-i18n="lic_banner_title">⚡ Pasa a WakeGPU Pro</h4>
+              <p data-i18n="lic_banner_text">Evita el gasto innecesario de Compute Units con el Guardián Zero-Waste, usa tu propio Coding Agent ilimitado para VS Code, genera por lotes y recibe avisos en tu móvil.</p>
+            </div>
+            <button type="button" class="btn primary sm" id="btnBannerUpgrade" data-i18n="btn_view_plans">Ver planes y precios ↗</button>
+          </div>
+
+          <div style="margin-top:14px">
+            <b class="small" data-i18n="lic_compare_title">Comparativa de planes:</b>
+            <table class="plan-comp-table">
+              <thead>
+                <tr>
+                  <th data-i18n="lic_th_feature">Funcionalidad</th>
+                  <th data-i18n="side_tier_free">Plan Free</th>
+                  <th data-i18n="lic_th_pro">Plan Pro</th>
+                </tr>
+              </thead>
+              <tbody id="planCompBody">
+                <tr>
+                  <td><b data-i18n="lic_comp_zw">Ahorro de saldo Colab (Zero-Waste)</b></td>
+                  <td data-i18n="lic_comp_free_zw">30 min inactividad obligatoria</td>
+                  <td data-i18n="lic_comp_pro_zw">⚡ Apagado agresivo al terminar cola</td>
+                </tr>
+                <tr>
+                  <td><b>Agente de Código (Proxy OpenAI en VS Code)</b></td>
+                  <td>No disponible</td>
+                  <td>⚡ Conexión ilimitada a Cline / Continue sin rate limits</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="lic_comp_batch">Generación por lotes (Batch)</b></td>
+                  <td data-i18n="lic_comp_free_batch">1 tarea individual por envío</td>
+                  <td data-i18n="lic_comp_pro_batch">⚡ Hasta 50 variantes en cola con semillas aleatorias</td>
+                </tr>
+                <tr>
+                  <td><b>Pipelines encadenados (Auto-HD)</b></td>
+                  <td>Manual (requiere esperar)</td>
+                  <td data-i18n="lic_comp_pro_autohd">⚡ Automático (Borrador ➔ Alta resolución)</td>
+                </tr>
+                <tr>
+                  <td><b>Control desde el Móvil (iOS / Android PWA)</b></td>
+                  <td>Solo escritorio</td>
+                  <td>⚡ PWA con código QR y control en la red o túnel 4G</td>
+                </tr>
+                <tr>
+                  <td><b>Notificaciones remotas</b></td>
+                  <td>No disponible</td>
+                  <td data-i18n="lic_comp_pro_notify">⚡ Discord Webhook y Telegram Bot</td>
+                </tr>
+                <tr>
+                  <td><b data-i18n="lic_comp_sync">Copia de Seguridad y Sincronización</b></td>
+                  <td data-i18n="lic_comp_free_sync">Almacenamiento local</td>
+                  <td data-i18n="lic_comp_pro_sync">⚡ Exportación y Cloud Sync en 1 clic</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div class="sec-h"><span class="n">13</span><b data-i18n="set_zw_cost_title">Guardián de costes Zero-Waste</b><span class="d" data-i18n="set_zw_cost_desc">Protección automática contra consumo fantasma de saldo</span></div>

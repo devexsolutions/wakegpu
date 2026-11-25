@@ -84,6 +84,7 @@ func TestSDXLGraphFields(t *testing.T) {
 }
 
 func TestOpenAIProxyRoutes(t *testing.T) {
+	withTempConfig(t, Config{LicenseTier: "free"})
 	mux := http.NewServeMux()
 	aiRoutes(mux)
 
@@ -95,7 +96,18 @@ func TestOpenAIProxyRoutes(t *testing.T) {
 		t.Fatalf("OPTIONS /v1/chat/completions: %d, header=%v", recOpts.Code, recOpts.Header())
 	}
 
-	// 2. GET /v1/models fallback without active gate
+	// 2. In Free mode, POST /v1/chat/completions requires Pro (403)
+	reqFree := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(`{"messages":[]}`))
+	recFree := httptest.NewRecorder()
+	mux.ServeHTTP(recFree, reqFree)
+	if recFree.Code != 403 {
+		t.Fatalf("POST free expected 403, got: %d", recFree.Code)
+	}
+
+	// 3. In Pro mode:
+	withTempConfig(t, Config{LicenseTier: "pro", LicenseKey: "WLPRO-DEMO-2026"})
+
+	// GET /v1/models fallback without active gate
 	reqMod := httptest.NewRequest("GET", "/v1/models", nil)
 	recMod := httptest.NewRecorder()
 	mux.ServeHTTP(recMod, reqMod)
@@ -103,7 +115,7 @@ func TestOpenAIProxyRoutes(t *testing.T) {
 		t.Fatalf("GET /v1/models: %d, body=%s", recMod.Code, recMod.Body.String())
 	}
 
-	// 3. POST /v1/chat/completions with empty body -> 400
+	// POST /v1/chat/completions with empty body -> 400
 	reqChat := httptest.NewRequest("POST", "/v1/chat/completions", strings.NewReader(""))
 	recChat := httptest.NewRecorder()
 	mux.ServeHTTP(recChat, reqChat)

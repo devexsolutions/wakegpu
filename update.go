@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const AppVersion = "1.22.3"
+const AppVersion = "1.22.4"
 const defaultUpdateURLWindows = "https://github.com/devexsolutions/wakegpu/releases/latest/download/latest.json"
 
 // macOS builds read their own manifest so a Mac never downloads the Windows exe.

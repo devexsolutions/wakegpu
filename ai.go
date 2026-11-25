@@ -445,6 +445,11 @@ func aiOpenAIChatHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !IsPro() {
+		http.Error(w, `{"error":{"message":"El Agente de Código / Proxy OpenAI para VS Code requiere una licencia WakeGPU Pro activa.","type":"permission_error"}}`, http.StatusForbidden)
+		return
+	}
+
 	body, err := io.ReadAll(io.LimitReader(r.Body, 32<<20))
 	if err != nil || len(body) == 0 {
 		http.Error(w, `{"error":{"message":"Invalid request body","type":"invalid_request_error"}}`, http.StatusBadRequest)

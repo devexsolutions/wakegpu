@@ -122,13 +122,13 @@ func getMobileStatus() MobileStatus {
 		TunnelURL:     tunFull,
 		TunnelRunning: mobTunnelStop != nil && mobTunnelURL != "",
 		TunnelError:   mobTunnelErr,
-		QRSVG:          generateQRSVG(primary),
+		QRSVG:         generateQRSVG(primary),
 	}
 }
 
 func startMobileServer(withTunnel bool) (MobileStatus, error) {
 	if !IsPro() {
-		return MobileStatus{}, errors.New("El Control Móvil (PWA + QR) requiere activar el servicio.")
+		return MobileStatus{}, errors.New("El Control Móvil (PWA + QR) es una función exclusiva de WakeGPU Pro.")
 	}
 	mobMu.Lock()
 	if mobLn == nil {
@@ -258,7 +258,7 @@ func registerMobileRoutes(api *http.ServeMux) {
 	})
 	api.HandleFunc("POST /api/mobile/rotate", func(w http.ResponseWriter, r *http.Request) {
 		if !IsPro() {
-			errOut(w, http.StatusForbidden, errors.New("requiere servicio activo"))
+			errOut(w, http.StatusForbidden, errors.New("requiere WakeGPU Pro"))
 			return
 		}
 		mobMu.Lock()
@@ -536,4 +536,3 @@ func rsEncode(data []byte, ecLen int) []byte {
 	}
 	return res
 }
-
